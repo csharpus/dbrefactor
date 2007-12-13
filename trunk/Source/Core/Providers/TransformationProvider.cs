@@ -209,12 +209,12 @@ namespace Migrator.Providers
 						FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
 						UNION ALL
 						SELECT s.name, o.name, c.name, d.name
-						FROM sys.default_constraints as d
-						JOIN sys.objects as o
+						FROM sys.default_constraints AS d
+						JOIN sys.objects AS o
 							ON o.object_id = d.parent_object_id
-						JOIN sys.columns as c
-							ON c.object_id = o.object_id and c.column_id = d.parent_column_id
-						JOIN sys.schemas as s
+						JOIN sys.columns AS c
+							ON c.object_id = o.object_id AND c.column_id = d.parent_column_id
+						JOIN sys.schemas AS s
 							ON s.schema_id = o.schema_id
 						)
 					SELECT c.CONSTRAINT_NAME

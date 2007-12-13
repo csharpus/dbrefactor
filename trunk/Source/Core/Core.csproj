@@ -53,7 +53,6 @@
     <Compile Include="MigrationException.cs" />
     <Compile Include="Migrator.cs" />
     <Compile Include="Providers\ColumnPropertiesMappers\ColumnPropertiesMapper.cs" />
-    <Compile Include="Providers\ColumnPropertiesMappers\IColumnPropertiesMapper.cs" />
     <Compile Include="Providers\ForeignKeys\SQLServerForeignKeyConstraintMapper.cs" />
     <Compile Include="Providers\ForeignKeys\ForeignKeyConstraint.cs" />
     <Compile Include="Providers\ForeignKeys\ForeignKeyConstraintMapper.cs" />
@@ -63,7 +62,6 @@
     <Compile Include="Providers\SqlServerEnvironment.cs" />
     <Compile Include="Providers\TransformationProvider.cs" />
     <Compile Include="Providers\TypeToSqlProviders\SQLServerTypeToSqlProvider.cs" />
-    <Compile Include="Providers\TypeToSqlProviders\ITypeToSqlProvider.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Tools\DesignByContract.cs" />
     <Compile Include="Tools\SchemaDumper.cs" />

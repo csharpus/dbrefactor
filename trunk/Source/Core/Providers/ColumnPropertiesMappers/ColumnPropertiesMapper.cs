@@ -8,7 +8,7 @@ namespace Migrator.Providers.ColumnPropertiesMappers
 	/// This is basically a just a helper base class
 	/// per-database implementors may want to override ColumnSql
 	/// </summary>
-	public sealed class ColumnPropertiesMapper : IColumnPropertiesMapper
+	public sealed class ColumnPropertiesMapper
 	{
 		/// <summary>
 		/// the type of the column
@@ -66,7 +66,7 @@ namespace Migrator.Providers.ColumnPropertiesMappers
 		/// <summary>
 		/// The sql for this column, override in database-specific implementation classes
 		/// </summary>
-		string IColumnPropertiesMapper.ColumnSql
+		public string ColumnSql
 		{
 			get
 			{

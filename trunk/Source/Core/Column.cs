@@ -170,14 +170,14 @@ namespace Migrator
 			}
 		}
 
-		private IColumnPropertiesMapper GetAndMapColumnProperties(Column column)
+		private ColumnPropertiesMapper GetAndMapColumnProperties(Column column)
 		{
-			IColumnPropertiesMapper mapper = GetColumnMapper(column);
+			ColumnPropertiesMapper mapper = GetColumnMapper(column);
 			MapColumnProperties(mapper, column);
 			return mapper;
 		}
 
-		private void MapColumnProperties(IColumnPropertiesMapper mapper, Column column)
+		private void MapColumnProperties(ColumnPropertiesMapper mapper, Column column)
 		{
 			mapper.Name = column.Name;
 			ColumnProperties properties = column.ColumnProperty;
@@ -222,12 +222,12 @@ namespace Migrator
 			}
 		}
 
-		public ITypeToSqlProvider TypeToSqlProvider
+		public SQLServerTypeToSqlProvider TypeToSqlProvider
 		{
 			get { return new SQLServerTypeToSqlProvider(); }
 		}
 
-		private IColumnPropertiesMapper GetColumnMapper(Column column)
+		private ColumnPropertiesMapper GetColumnMapper(Column column)
 		{
 			if (column.Type == typeof(char))
 			{

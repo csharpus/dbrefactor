@@ -140,7 +140,7 @@ namespace Tipait.DbRefactor.Tests.Core
 		{
 			Column coolumn = new Column("Column1", typeof (string), 10);
 			SQLServerTypeToSqlProvider provider = new SQLServerTypeToSqlProvider();
-			IColumnPropertiesMapper mapper = provider.Char(10);
+			ColumnPropertiesMapper mapper = provider.Char(10);
 			Assert.That(mapper.ColumnSql, Is.EqualTo("nchar(10) NULL"));
 		}
 
