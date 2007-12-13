@@ -255,11 +255,15 @@ namespace Migrator.Providers
 			{
 				string indexSql = column.IndexSQL();
 				if (indexSql != null)
+				{
 					indexes.Add(indexSql);
+				}
 			}
 
 			if (indexes.Count == 0)
+			{
 				return null;
+			}
 
 			return String.Join(", ", (string[])indexes.ToArray(typeof(string)));
 		}
@@ -471,8 +475,6 @@ namespace Migrator.Providers
 			get { return new SQLServerForeignKeyConstraintMapper(); }
 		}
 
-		
-
 		public string[] GetTables()
 		{
 			List<string> tables = new List<string>();
@@ -526,6 +528,7 @@ namespace Migrator.Providers
 		{
 			return Select(what, from, "1=1");
 		}
+
 		public IDataReader Select(string what, string from, string where)
 		{
 			return ExecuteQuery("SELECT {0} FROM {1} WHERE {2}", what, from, where);
@@ -535,6 +538,7 @@ namespace Migrator.Providers
 		{
 			return SelectScalar(what, from, "1=1");
 		}
+
 		public object SelectScalar(string what, string from, string where)
 		{
 			return ExecuteScalar("SELECT {0} FROM {1} WHERE {2}", what, from, where);
