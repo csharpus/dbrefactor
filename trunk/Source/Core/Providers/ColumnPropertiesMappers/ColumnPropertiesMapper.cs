@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using DesignByContract;
 
 namespace Migrator.Providers.ColumnPropertiesMappers
 {
@@ -8,53 +8,53 @@ namespace Migrator.Providers.ColumnPropertiesMappers
 	/// This is basically a just a helper base class
 	/// per-database implementors may want to override ColumnSql
 	/// </summary>
-	public abstract class ColumnPropertiesMapper : IColumnPropertiesMapper
+	public sealed class ColumnPropertiesMapper : IColumnPropertiesMapper
 	{
 		/// <summary>
 		/// the type of the column
 		/// </summary>
-		protected string type;
-		
+		private readonly string type;
+
 		/// <summary>
 		/// name of the column
 		/// </summary>
-		protected string name;
-		
+		private string name;
+
 		/// <summary>
 		/// This should be set to whatever passes for NULL in implementing 
 		/// classes constructors, if it is not NULL
 		/// </summary>
-		protected string sqlNull = "NULL";
+		private string sqlNull = "NULL";
 
 		/// <summary>
 		/// Sql if This column is a primary key
 		/// </summary>
-		protected string sqlPrimaryKey;
+		private string sqlPrimaryKey;
 
 		/// <summary>
 		/// Sql if This column is Unique
 		/// </summary>
-		protected string sqlUnique;
+		private string sqlUnique;
 
 		/// <summary>
 		/// Sql if This column is Indexed
 		/// </summary>
-		protected bool indexed = false;
+		private bool indexed = false;
 
 		/// <summary>
 		/// Sql if This column is Unsigned
 		/// </summary>
-		protected string sqlUnsigned;
+		private string sqlUnsigned;
 
 		/// <summary>
 		/// Sql if This column is an Identity Colu,m
 		/// </summary>
-		protected string sqlIdentity;
+		private string sqlIdentity;
 
 		/// <summary>
 		/// Sql if this column has a default value
 		/// </summary>
-		protected string sqlDefault;
+		private string sqlDefault;
 
 		public ColumnPropertiesMapper(string type)
 		{
@@ -70,8 +70,22 @@ namespace Migrator.Providers.ColumnPropertiesMappers
 		{
 			get
 			{
-				return String.Join(" ", new string[] { name, type, sqlUnsigned, sqlNull, sqlIdentity, sqlUnique, sqlPrimaryKey, sqlDefault});
+				return IgnoreEmptyJoin(" ", new string[] { name, type, sqlUnsigned, sqlNull, sqlIdentity, sqlUnique, sqlPrimaryKey, sqlDefault });
 			}
+		}
+
+		private static string IgnoreEmptyJoin(string delimiter, IEnumerable<string> sqlElements)
+		{
+			string result = String.Empty;
+			foreach (string s in sqlElements)
+			{
+				if (!String.IsNullOrEmpty(s))
+				{
+					result += s + delimiter;
+				}
+			}
+			Check.Ensure(result.Length > 0);
+			return result.Substring(0, result.Length - 1);
 		}
 
 		public string Name
@@ -85,19 +99,43 @@ namespace Migrator.Providers.ColumnPropertiesMappers
 			indexed = true;
 		}
 
-		public abstract string IndexSql { get;}
+		public string IndexSql
+		{
+			get
+			{
+				return null;
+			}
+		}
 
-		public abstract void NotNull();
+		public void NotNull()
+		{
+			sqlNull = "NOT NULL";
+		}
 
-		public abstract void PrimaryKey();
+		public void PrimaryKey()
+		{
+			sqlPrimaryKey = "PRIMARY KEY";
+		}
 
-		public abstract void Unique();
+		public void Unique()
+		{
+			sqlUnique = "UNIQUE";
+		}
 
-		public abstract void Unsigned();
+		public void Unsigned()
+		{
+			sqlUnsigned = "";
+		}
 
-		public abstract void Identity();
+		public void Identity()
+		{
+			sqlIdentity = "IDENTITY";
+		}
 
-		public abstract void Default(string defaultValue);
+		public void Default(string defaultValue)
+		{
+			sqlDefault = String.Format("DEFAULT {0}", defaultValue);
+		}
 
 		#endregion
 	}

@@ -19,6 +19,7 @@ using System.Collections;
 using Migrator.Providers.ColumnPropertiesMappers;
 using Migrator.Columns;
 using System.Collections.Generic;
+using DesignByContract;
 
 namespace Migrator.Providers
 {
@@ -30,7 +31,7 @@ namespace Migrator.Providers
 	{
 		private ILogger _logger = new Logger(false);
 
-		private IDatabaseEnvironment _environment;
+		private readonly IDatabaseEnvironment _environment;
 
 		public TransformationProvider(IDatabaseEnvironment environment)
 		{
@@ -62,53 +63,138 @@ namespace Migrator.Providers
 		/// </example>
 		public void AddTable(string name, params Column[] columns)
 		{
-			#region Parameter validation
-			if (name == null)
-			{
-				throw new ArgumentNullException("name");
-			}
-			if (columns.Length == 0)
-			{
-				throw new ArgumentException("You should pass at least one column");
-			}
-			#endregion
+			Check.RequireNonEmpty(name, "name");
+			Check.Require(columns.Length > 0, "At least one column should be passed");
 			if (TableExists(name))
 			{
 				Logger.Warn("Table {0} already exists", name);
 				return;
 			}
 
-			List<IColumnPropertiesMapper> columnProviders = new List<IColumnPropertiesMapper>(columns.Length);
-			foreach (Column column in columns)
-			{
-				IColumnPropertiesMapper mapper = GetAndMapColumnProperties(column);
-				columnProviders.Add(mapper);
-			}
+			//List<IColumnPropertiesMapper> columnProviders = new List<IColumnPropertiesMapper>(columns.Length);
+			//foreach (Column column in columns)
+			//{
+			//    IColumnPropertiesMapper mapper = GetAndMapColumnProperties(column);
+			//    columnProviders.Add(mapper);
+			//}
 
-			IColumnPropertiesMapper[] columnArray = columnProviders.ToArray();
-			string columnsAndIndexes = JoinColumnsAndIndexes(columnArray);
+//			IColumnPropertiesMapper[] columnArray = columnProviders.ToArray();
+			string columnsAndIndexes = JoinColumnsAndIndexes(columns);
 			AddTable(name, columnsAndIndexes);
 		}
 
-		public void RemoveTable(string name)
+		/// <summary>
+		/// Remove a column from an existing table
+		/// </summary>
+		/// <param name="table">Table name</param>
+		/// <param name="column">Column name</param>
+		public void DropColumn(string table, string column)
 		{
-			if (name == null)
+			Check.RequireNonEmpty(table, "table");
+			Check.RequireNonEmpty(column, "column");
+			if (!ColumnExists(table, column))
 			{
-				throw new ArgumentNullException("name");
+				Logger.Warn("Column {0} does not exists", column);
+				return;
 			}
-			if (TableExists(name))
+			DeleteColumnConstraints(table, column);
+			ExecuteNonQuery("ALTER TABLE {0} DROP COLUMN {1} ", table, column);
+		}
+
+		/// <summary>
+		/// Removes an existing table from the database
+		/// </summary>
+		/// <param name="name">Table name</param>
+		public void DropTable(string name)
+		{
+			Check.RequireNonEmpty(name, "name");
+			if (!TableExists(name))
 			{
-				ExecuteNonQuery("DROP TABLE {0}", name);
+				Logger.Warn("Table {0} does not exist", name);
+				return;
+			}
+			ExecuteNonQuery("DROP TABLE [{0}]", name);
+		}
+
+		/// <summary>
+		/// Renames an existing column
+		/// </summary>
+		/// <param name="table">Table name</param>
+		/// <param name="oldColumnName">Old column name</param>
+		/// <param name="newColumnName">New column name</param>
+		public void RenameColumn(string table, string oldColumnName, string newColumnName)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.RequireNonEmpty(oldColumnName, "oldColumnName");
+			Check.RequireNonEmpty(newColumnName, "newColumnName");
+			ExecuteNonQuery("EXEC sp_rename '[{0}].[{1}]', '[{2}]', 'COLUMN'",
+				table, oldColumnName, newColumnName);
+		}
+
+		/// <summary>
+		/// Renames an existing table
+		/// </summary>
+		/// <param name="oldName">Old table name</param>
+		/// <param name="newName">New table name</param>
+		public void RenameTable(string oldName, string newName)
+		{
+			Check.RequireNonEmpty(oldName, "oldName");
+			Check.RequireNonEmpty(newName, "newName");
+			ExecuteNonQuery("EXEC sp_rename '[{0}]', '[{1}]', 'OBJECT'",
+				oldName, newName);
+		}
+
+		public bool ColumnExists(string table, string column)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.RequireNonEmpty(column, "column");
+			if (!TableExists(table))
+			{
+				Logger.Warn("Table {0} does not exists", table);
+				return false;
+			}
+			using (IDataReader reader =
+				ExecuteQuery(
+					"SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}') and name='{1}'",
+					table,
+					column))
+			{
+				return reader.Read();
 			}
 		}
 
-		public void AddColumn(string table, string sqlColumn)
+		public bool TableExists(string table)
 		{
-			ExecuteNonQuery("ALTER TABLE {0} ADD {1}", table, sqlColumn);
+			Check.RequireNonEmpty(table, "table");
+			using (IDataReader reader =
+				ExecuteQuery("SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}')",
+					table))
+			{
+				return reader.Read();
+			}
+		}
+
+		/// <summary>
+		/// Determines if a constraint exists.
+		/// </summary>
+		/// <param name="name">Constraint name</param>
+		/// <param name="table">Table owning the constraint</param>
+		/// <returns><c>true</c> if the constraint exists.</returns>
+		//		public abstract bool ConstraintExists(string name, string table);
+		public bool ConstraintExists(string name, string table)
+		{
+			using (IDataReader reader =
+				ExecuteQuery("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')",
+					name))
+			{
+				return reader.Read();
+			}
 		}
 
 		public void AlterColumn(string table, string sqlColumn)
 		{
+			Check.RequireNonEmpty(table, "table");
+			Check.RequireNonEmpty(sqlColumn, "sqlColumn");
 			ExecuteNonQuery("ALTER TABLE {0} ALTER COLUMN {1}", table, sqlColumn);
 		}
 
@@ -116,11 +202,26 @@ namespace Migrator.Providers
 		{
 			string sqlContrainte =
 				String.Format(
-					"SELECT cont.name FROM SYSOBJECTS cont, SYSCOLUMNS col, SYSCONSTRAINTS cnt "
-					+ "WHERE cont.parent_obj = col.id AND cnt.constid = cont.id AND cnt.colid=col.colid "
-					+ "AND col.name = '{1}' AND col.id = object_id('{0}')",
+					@"WITH constraint_depends
+						AS
+						(
+						SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.CONSTRAINT_NAME
+						FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
+						UNION ALL
+						SELECT s.name, o.name, c.name, d.name
+						FROM sys.default_constraints as d
+						JOIN sys.objects as o
+							ON o.object_id = d.parent_object_id
+						JOIN sys.columns as c
+							ON c.object_id = o.object_id and c.column_id = d.parent_column_id
+						JOIN sys.schemas as s
+							ON s.schema_id = o.schema_id
+						)
+					SELECT c.CONSTRAINT_NAME
+					FROM constraint_depends as c
+					WHERE c.TABLE_NAME = '{0}' AND c.COLUMN_NAME = '{1}';",
 					table, column);
-			ArrayList constraints = new ArrayList();
+			List<string> constraints = new List<string>();
 
 			using (IDataReader reader = ExecuteQuery(sqlContrainte))
 			{
@@ -136,215 +237,23 @@ namespace Migrator.Providers
 			}
 		}
 
-		public void RemoveColumn(string table, string column)
+		private void AddTable(string name, string columns)
 		{
-			DeleteColumnConstraints(table, column);
-			if (ColumnExists(table, column))
-			{
-				ExecuteNonQuery("ALTER TABLE {0} DROP COLUMN {1} ", table, column);
-			}
+			ExecuteNonQuery("CREATE TABLE [{0}] ({1})", name, columns);
 		}
 
-		public void RenameColumn(string table, string oldColumnName, string newColumnName)
-		{
-			ExecuteNonQuery("EXEC sp_rename '{0}.[{1}]', '{2}', 'COLUMN'",
-				table, oldColumnName, newColumnName);
-		}
-
-		public void RenameTable(string oldTableName, string newTableName)
-		{
-			ExecuteNonQuery(
-				"EXEC sp_rename '{0}', '{1}', 'OBJECT'",
-					oldTableName, newTableName);
-		}
-
-		public bool ColumnExists(string table, string column)
-		{
-			#region Parameter validation
-			if (table == null)
-			{
-				throw new ArgumentNullException("table");
-			}
-			if (column == null)
-			{
-				throw new ArgumentNullException("column");
-			}
-			if (table == String.Empty)
-			{
-				throw new ArgumentException("Should not be empty", "table");
-			}
-			if (column == String.Empty)
-			{
-				throw new ArgumentException("Should not be empty", "column");
-			}
-			#endregion
-			if (!TableExists(table))
-				return false;
-
-			using (IDataReader reader =
-				ExecuteQuery(
-					"SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}') and name='{1}'", 
-					table, 
-					column))
-			{
-				return reader.Read();
-			}
-		}
-
-		public bool TableExists(string table)
-		{
-			using (IDataReader reader =
-				ExecuteQuery(
-					"SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}')",
-					table))
-			{
-				return reader.Read();
-			}
-		}
-
-		private string JoinColumnsAndIndexes(IColumnPropertiesMapper[] columns)
+		private string JoinColumnsAndIndexes(Column[] columns)
 		{
 			string indexes = JoinIndexes(columns);
 			return JoinColumns(columns) + (indexes != null ? "," + indexes : string.Empty);
 		}
 
-		private void AddTable(string name, string columns)
-		{
-			ExecuteNonQuery("CREATE TABLE {0} ({1})", name, columns);
-		}
-
-		private IColumnPropertiesMapper GetAndMapColumnProperties(Column column)
-		{
-			IColumnPropertiesMapper mapper = GetColumnMapper(column);
-			MapColumnProperties(mapper, column);
-			return mapper;
-		}
-
-		private void MapColumnProperties(IColumnPropertiesMapper mapper, Column column)
-		{
-			mapper.Name = column.Name;
-			ColumnProperties properties = column.ColumnProperty;
-			if ((properties & ColumnProperties.NotNull) == ColumnProperties.NotNull)
-			{
-				mapper.NotNull();
-			}
-			if ((properties & ColumnProperties.PrimaryKey) == ColumnProperties.PrimaryKey)
-			{
-				mapper.PrimaryKey();
-			}
-			if ((properties & ColumnProperties.Identity) == ColumnProperties.Identity)
-			{
-				mapper.Identity();
-			}
-			if ((properties & ColumnProperties.Unique) == ColumnProperties.Unique)
-			{
-				mapper.Unique();
-			}
-			if ((properties & ColumnProperties.Indexed) == ColumnProperties.Indexed)
-			{
-				mapper.Indexed();
-			}
-			if ((properties & ColumnProperties.Unsigned) == ColumnProperties.Unsigned)
-			{
-				mapper.Unsigned();
-			}
-			if (column.DefaultValue != null)
-			{
-				if (column.Type == typeof(char) || column.Type == typeof(string))
-				{
-					mapper.Default(String.Format("'{0}'", column.DefaultValue));
-				}
-				if (column.Type == typeof(bool))
-				{
-					mapper.Default(Convert.ToBoolean(column.DefaultValue) ? "1" : "0");
-				}
-				else
-				{
-					mapper.Default(column.DefaultValue.ToString());
-				}
-			}
-		}
-
-		private IColumnPropertiesMapper GetColumnMapper(Column column)
-		{
-			if (column.Type == typeof(char))
-			{
-				if (column.Size <= Convert.ToInt32(byte.MaxValue))
-					return TypeToSqlProvider.Char(Convert.ToByte(column.Size));
-				else if (column.Size <= Convert.ToInt32(ushort.MaxValue))
-					return TypeToSqlProvider.Text;
-				else
-					return TypeToSqlProvider.LongText;
-			}
-
-			if (column.Type == typeof(string))
-			{
-				if (column.Size <= 255)
-					return TypeToSqlProvider.String(Convert.ToUInt16(column.Size));
-				else if (column.Size <= Convert.ToInt32(ushort.MaxValue))
-					return TypeToSqlProvider.Text;
-				else
-					return TypeToSqlProvider.LongText;
-			}
-
-			if (column.Type == typeof(int))
-			{
-				if ((column.ColumnProperty & ColumnProperties.PrimaryKey) == ColumnProperties.PrimaryKey)
-					return TypeToSqlProvider.PrimaryKey;
-				else
-					return TypeToSqlProvider.Integer;
-			}
-			if (column.Type == typeof(long))
-				return TypeToSqlProvider.Long;
-
-			if (column.Type == typeof(float))
-				return TypeToSqlProvider.Float;
-
-			if (column.Type == typeof(double))
-			{
-				if (column.Size == 0)
-					return TypeToSqlProvider.Double;
-				else
-					return TypeToSqlProvider.Decimal(column.Size);
-			}
-
-			if (column.Type == typeof(decimal))
-			{
-				if (typeof(DecimalColumn).IsAssignableFrom(column.GetType()))
-				{
-					return TypeToSqlProvider.Decimal(column.Size, (column as DecimalColumn).Remainder);
-				}
-				else
-				{
-					return TypeToSqlProvider.Decimal(column.Size);
-				}
-			}
-
-			if (column.Type == typeof(bool))
-				return TypeToSqlProvider.Bool;
-
-			if (column.Type == typeof(DateTime))
-				return TypeToSqlProvider.DateTime;
-
-			if (column.Type == typeof(byte[]))
-			{
-				if (column.Size <= Convert.ToInt32(byte.MaxValue))
-					return TypeToSqlProvider.Binary(Convert.ToByte(column.Size));
-				else if (column.Size <= Convert.ToInt32(ushort.MaxValue))
-					return TypeToSqlProvider.Blob;
-				else
-					return TypeToSqlProvider.LongBlob;
-			}
-
-			throw new ArgumentOutOfRangeException("column.Type", "The " + column.Type.ToString() + " type is not supported");
-		}
-
-		private string JoinIndexes(IColumnPropertiesMapper[] columns)
+		private string JoinIndexes(Column[] columns)
 		{
 			ArrayList indexes = new ArrayList(columns.Length);
-			foreach (IColumnPropertiesMapper column in columns)
+			foreach (Column column in columns)
 			{
-				string indexSql = column.IndexSql;
+				string indexSql = column.IndexSQL();
 				if (indexSql != null)
 					indexes.Add(indexSql);
 			}
@@ -356,29 +265,25 @@ namespace Migrator.Providers
 		}
 
 
-		private string JoinColumns(IColumnPropertiesMapper[] columns)
+		private string JoinColumns(Column[] columns)
 		{
 			string[] columnStrings = new string[columns.Length];
 			int i = 0;
-			foreach (IColumnPropertiesMapper column in columns)
+			foreach (Column column in columns)
 			{
-				columnStrings[i++] = column.ColumnSql;
+				columnStrings[i++] = column.ColumnSQL();
 			}
 			return String.Join(", ", columnStrings);
 		}
 
-		/// <summary>
-		/// Add a new column to an existing table.
-		/// </summary>
-		/// <param name="table">Table to which to add the column</param>
-		/// <param name="column">Column name</param>
-		/// <param name="type">Date type of the column</param>
-		/// <param name="size">Max length of the column</param>
-		/// <param name="property">Properties of the column, see <see cref="ColumnProperties">ColumnProperties</see>,</param>
-		/// <param name="defaultValue">Default value</param>
-		public void AddColumn(string table, string column, Type type, int size, ColumnProperties property, object defaultValue)
+		public void AlterColumn(string table, Column column)
 		{
-			AddColumn(table, new Column(column, type, size, property, defaultValue));
+			if (!ColumnExists(table, column.Name))
+			{
+				Logger.Warn("Column {0}.{1} does not exists", table, column.Name);
+				return;
+			}
+			AlterColumn(table, column.ColumnSQL());
 		}
 
 		public void AddColumn(string table, Column column)
@@ -389,20 +294,7 @@ namespace Migrator.Providers
 				return;
 			}
 
-			IColumnPropertiesMapper mapper = GetAndMapColumnProperties(column);
-
-			AddColumn(table, mapper.ColumnSql);
-		}
-
-		public void AlterColumn(string table, Column column)
-		{
-			if (!ColumnExists(table, column.Name))
-			{
-				Logger.Warn("Column {0}.{1} does not exists", table, column.Name);
-				return;
-			}
-			IColumnPropertiesMapper mapper = GetAndMapColumnProperties(column);
-			AlterColumn(table, mapper.ColumnSql);
+			AddColumn(table, column.ColumnSQL());
 		}
 
 		/// <summary>
@@ -446,6 +338,27 @@ namespace Migrator.Providers
 		}
 
 		/// <summary>
+		/// Add a new column to an existing table.
+		/// </summary>
+		/// <param name="table">Table to which to add the column</param>
+		/// <param name="column">Column name</param>
+		/// <param name="type">Date type of the column</param>
+		/// <param name="size">Max length of the column</param>
+		/// <param name="property">Properties of the column, see <see cref="ColumnProperties">ColumnProperties</see>,</param>
+		/// <param name="defaultValue">Default value</param>
+		public void AddColumn(string table, string column, Type type, int size, ColumnProperties property, object defaultValue)
+		{
+			AddColumn(table, new Column(column, type, size, property, defaultValue));
+		}
+
+		public void AddColumn(string table, string sqlColumn)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.RequireNonEmpty(sqlColumn, "sqlColumn");
+			ExecuteNonQuery("ALTER TABLE [{0}] ADD {1}", table, sqlColumn);
+		}
+
+		/// <summary>
 		/// Append a primary key to a table.
 		/// </summary>
 		/// <param name="name">Constraint name</param>
@@ -458,7 +371,7 @@ namespace Migrator.Providers
 				Logger.Warn("Primary key {0} already exists", name);
 				return;
 			}
-			ExecuteNonQuery("ALTER TABLE {0} ADD CONSTRAINT {1} PRIMARY KEY ({2}) ", table, name, String.Join(",", columns));
+			ExecuteNonQuery("ALTER TABLE [{0}] ADD CONSTRAINT {1} PRIMARY KEY ({2}) ", table, name, String.Join(",", columns));
 		}
 
 		/// <summary>
@@ -521,7 +434,6 @@ namespace Migrator.Providers
 		public void AddForeignKey(string name, string primaryTable, string primaryColumn, string refTable, string refColumn, ForeignKeyConstraint constraint)
 		{
 			AddForeignKey(name, primaryTable, new string[] { primaryColumn }, refTable, new string[] { refColumn }, constraint);
-
 		}
 
 		// Not sure how SQL server handles ON UPDATRE & ON DELETE
@@ -546,39 +458,20 @@ namespace Migrator.Providers
 		/// <param name="table">Table owning the constraint</param>
 		public void RemoveForeignKey(string name, string table)
 		{
-			if (TableExists(table) && ConstraintExists(name, table))
-			{
-				ExecuteNonQuery("ALTER TABLE {0} DROP CONSTRAINT {1}", table, name);
-			}
+			Check.RequireNonEmpty(name, "name");
+			Check.RequireNonEmpty(table, "table");
+			//if (TableExists(table) && ConstraintExists(name, table))
+			//{
+			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT {1}", table, name);
+			//}
 		}
 
-		/// <summary>
-		/// Determines if a constraint exists.
-		/// </summary>
-		/// <param name="name">Constraint name</param>
-		/// <param name="table">Table owning the constraint</param>
-		/// <returns><c>true</c> if the constraint exists.</returns>
-		//		public abstract bool ConstraintExists(string name, string table);
-
-		public bool ConstraintExists(string name, string table)
+		public IForeignKeyConstraintMapper ForeignKeyMapper
 		{
-			using (IDataReader reader =
-				ExecuteQuery("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')",
-					name))
-			{
-				return reader.Read();
-			}
+			get { return new SQLServerForeignKeyConstraintMapper(); }
 		}
 
-		public ForeignKeys.IForeignKeyConstraintMapper ForeignKeyMapper
-		{
-			get { return new ForeignKeys.SQLServerForeignKeyConstraintMapper(); }
-		}
-
-		public global::Migrator.Providers.TypeToSqlProviders.ITypeToSqlProvider TypeToSqlProvider
-		{
-			get { return new SQLServerTypeToSqlProvider(); }
-		}
+		
 
 		public string[] GetTables()
 		{
@@ -716,7 +609,7 @@ namespace Migrator.Providers
 				}
 				else
 				{
-					return (int)Convert.ToInt32(version);
+					return Convert.ToInt32(version);
 				}
 			}
 			set
@@ -754,13 +647,18 @@ namespace Migrator.Providers
 
 		#endregion
 
-		#region Helper methods
-
-		private string Quote(string text)
+		#region Obsolete
+		[Obsolete("Use DropTable instead")]
+		public void RemoveTable(string name)
 		{
-			return String.Format("`{0}`", text);
+			DropTable(name);
 		}
 
+		[Obsolete("Use DropColumn instead")]
+		public void RemoveColumn(string table, string column)
+		{
+			DropColumn(table, column);
+		}
 		#endregion
 
 	}

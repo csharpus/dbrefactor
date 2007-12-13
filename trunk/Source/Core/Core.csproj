@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Migrator\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DBC_CHECK_ALL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -54,7 +54,6 @@
     <Compile Include="Migrator.cs" />
     <Compile Include="Providers\ColumnPropertiesMappers\ColumnPropertiesMapper.cs" />
     <Compile Include="Providers\ColumnPropertiesMappers\IColumnPropertiesMapper.cs" />
-    <Compile Include="Providers\ColumnPropertiesMappers\SQLServerColumnPropertiesMapper.cs" />
     <Compile Include="Providers\ForeignKeys\SQLServerForeignKeyConstraintMapper.cs" />
     <Compile Include="Providers\ForeignKeys\ForeignKeyConstraint.cs" />
     <Compile Include="Providers\ForeignKeys\ForeignKeyConstraintMapper.cs" />
@@ -66,6 +65,7 @@
     <Compile Include="Providers\TypeToSqlProviders\SQLServerTypeToSqlProvider.cs" />
     <Compile Include="Providers\TypeToSqlProviders\ITypeToSqlProvider.cs" />
     <Compile Include="Attributes.cs" />
+    <Compile Include="Tools\DesignByContract.cs" />
     <Compile Include="Tools\SchemaDumper.cs" />
   </ItemGroup>
   <ItemGroup>

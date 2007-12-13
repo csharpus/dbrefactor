@@ -9,6 +9,9 @@
 //under the License.
 #endregion
 using System;
+using Migrator.Columns;
+using Migrator.Providers.ColumnPropertiesMappers;
+using Migrator.Providers.TypeToSqlProviders;
 
 namespace Migrator
 {
@@ -56,107 +59,256 @@ namespace Migrator
 		PrimaryKeyWithIdentity = PrimaryKey | Identity
 
 	}
-	
+
 	/// <summary>
 	/// Represents a table column.
 	/// </summary>
 	public class Column
 	{
-		private string _name;
-		private Type _type;
-		private int _size;
-		private ColumnProperties _property;
-		private object _defaultValue;
-		
+
 		public Column(string name, Type type)
+			: this(name, type, 0)
 		{
-			this._name = name;
-			this._type = type;
 		}
-		
+
 		public Column(string name, Type type, int size)
+			: this(name, type, size, 0)
 		{
-			this._name = name;
-			this._type = type;
-			this._size = size;
 		}
-		
+
 		public Column(string name, Type type, ColumnProperties property)
+			: this(name, type, 0, property)
 		{
-			this._name = name;
-			this._type = type;
-			this._property = property;
 		}
-		
+
 		public Column(string name, Type type, int size, ColumnProperties property)
+			: this(name, type, size, property, null)
 		{
-			this._name = name;
-			this._type = type;
-			this._size = size;
-			this._property = property;
 		}
-		
+
+		public Column(string name, Type type, ColumnProperties property, object defaultValue)
+			: this(name, type, 0, property, null)
+		{
+		}
+
 		public Column(string name, Type type, int size, ColumnProperties property, object defaultValue)
 		{
-			this._name = name;
-			this._type = type;
-			this._size = size;
-			this._property = property;
-			this._defaultValue = defaultValue;
+			_name = name;
+			_type = type;
+			_size = size;
+			_property = property;
+			_defaultValue = defaultValue;
 		}
-		
-		public Column(string name, Type type, ColumnProperties property, object defaultValue)
+
+		private string _name;
+
+		public string Name
 		{
-			this._name = name;
-			this._type = type;
-			this._property = property;
-			this._defaultValue = defaultValue;
-		}
-		
-		public string Name {
-			get {
+			get
+			{
 				return _name;
 			}
-			set {
+			set
+			{
 				_name = value;
 			}
 		}
-		
-		public Type Type {
-			get {
+
+		private Type _type;
+
+		public Type Type
+		{
+			get
+			{
 				return _type;
 			}
-			set {
+			set
+			{
 				_type = value;
 			}
 		}
-		
-		public int Size {
-			get {
+
+		private int _size;
+
+		public int Size
+		{
+			get
+			{
 				return _size;
 			}
-			set {
+			set
+			{
 				_size = value;
 			}
 		}
-		
-		public ColumnProperties ColumnProperty {
-			get {
+
+		private ColumnProperties _property;
+
+		public ColumnProperties ColumnProperty
+		{
+			get
+			{
 				return _property;
 			}
-			set {
+			set
+			{
 				_property = value;
 			}
 		}
-		
-		public object DefaultValue {
-			get {
+
+		private object _defaultValue;
+
+		public object DefaultValue
+		{
+			get
+			{
 				return _defaultValue;
 			}
-			set {
+			set
+			{
 				_defaultValue = value;
 			}
 		}
-				
+
+		private IColumnPropertiesMapper GetAndMapColumnProperties(Column column)
+		{
+			IColumnPropertiesMapper mapper = GetColumnMapper(column);
+			MapColumnProperties(mapper, column);
+			return mapper;
+		}
+
+		private void MapColumnProperties(IColumnPropertiesMapper mapper, Column column)
+		{
+			mapper.Name = column.Name;
+			ColumnProperties properties = column.ColumnProperty;
+			if ((properties & ColumnProperties.NotNull) == ColumnProperties.NotNull)
+			{
+				mapper.NotNull();
+			}
+			if ((properties & ColumnProperties.PrimaryKey) == ColumnProperties.PrimaryKey)
+			{
+				mapper.PrimaryKey();
+			}
+			if ((properties & ColumnProperties.Identity) == ColumnProperties.Identity)
+			{
+				mapper.Identity();
+			}
+			if ((properties & ColumnProperties.Unique) == ColumnProperties.Unique)
+			{
+				mapper.Unique();
+			}
+			if ((properties & ColumnProperties.Indexed) == ColumnProperties.Indexed)
+			{
+				mapper.Indexed();
+			}
+			if ((properties & ColumnProperties.Unsigned) == ColumnProperties.Unsigned)
+			{
+				mapper.Unsigned();
+			}
+			if (column.DefaultValue != null)
+			{
+				if (column.Type == typeof(char) || column.Type == typeof(string))
+				{
+					mapper.Default(String.Format("'{0}'", column.DefaultValue));
+				}
+				if (column.Type == typeof(bool))
+				{
+					mapper.Default(Convert.ToBoolean(column.DefaultValue) ? "1" : "0");
+				}
+				else
+				{
+					mapper.Default(column.DefaultValue.ToString());
+				}
+			}
+		}
+
+		public ITypeToSqlProvider TypeToSqlProvider
+		{
+			get { return new SQLServerTypeToSqlProvider(); }
+		}
+
+		private IColumnPropertiesMapper GetColumnMapper(Column column)
+		{
+			if (column.Type == typeof(char))
+			{
+				if (column.Size <= Convert.ToInt32(byte.MaxValue))
+					return TypeToSqlProvider.Char(Convert.ToByte(column.Size));
+				else if (column.Size <= Convert.ToInt32(ushort.MaxValue))
+					return TypeToSqlProvider.Text;
+				else
+					return TypeToSqlProvider.LongText;
+			}
+
+			if (column.Type == typeof(string))
+			{
+				if (column.Size <= 255)
+					return TypeToSqlProvider.String(Convert.ToUInt16(column.Size));
+				else if (column.Size <= Convert.ToInt32(ushort.MaxValue))
+					return TypeToSqlProvider.Text;
+				else
+					return TypeToSqlProvider.LongText;
+			}
+
+			if (column.Type == typeof(int))
+			{
+				if ((column.ColumnProperty & ColumnProperties.PrimaryKey) == ColumnProperties.PrimaryKey)
+					return TypeToSqlProvider.PrimaryKey;
+				else
+					return TypeToSqlProvider.Integer;
+			}
+			if (column.Type == typeof(long))
+				return TypeToSqlProvider.Long;
+
+			if (column.Type == typeof(float))
+				return TypeToSqlProvider.Float;
+
+			if (column.Type == typeof(double))
+			{
+				if (column.Size == 0)
+					return TypeToSqlProvider.Double;
+				else
+					return TypeToSqlProvider.Decimal(column.Size);
+			}
+
+			if (column.Type == typeof(decimal))
+			{
+				if (typeof(DecimalColumn).IsAssignableFrom(column.GetType()))
+				{
+					return TypeToSqlProvider.Decimal(column.Size, (column as DecimalColumn).Remainder);
+				}
+				else
+				{
+					return TypeToSqlProvider.Decimal(column.Size);
+				}
+			}
+
+			if (column.Type == typeof(bool))
+				return TypeToSqlProvider.Bool;
+
+			if (column.Type == typeof(DateTime))
+				return TypeToSqlProvider.DateTime;
+
+			if (column.Type == typeof(byte[]))
+			{
+				if (column.Size <= Convert.ToInt32(byte.MaxValue))
+					return TypeToSqlProvider.Binary(Convert.ToByte(column.Size));
+				else if (column.Size <= Convert.ToInt32(ushort.MaxValue))
+					return TypeToSqlProvider.Blob;
+				else
+					return TypeToSqlProvider.LongBlob;
+			}
+
+			throw new ArgumentOutOfRangeException("column.Type", "The " + column.Type.ToString() + " type is not supported");
+		}
+
+		public string ColumnSQL()
+		{
+			return GetColumnMapper(this).ColumnSql;
+		}
+
+		public string IndexSQL()
+		{
+			return GetColumnMapper(this).IndexSql;
+		}
 	}
 }

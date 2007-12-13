@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Migrator.Providers.ColumnPropertiesMappers;
+using Migrator.Providers.TypeToSqlProviders;
 using NUnit.Framework;
 using Migrator.Providers;
 using NUnit.Framework.SyntaxHelpers;
 using System.Data;
+using Migrator;
 
 namespace Tipait.DbRefactor.Tests.Core
 {
@@ -55,6 +58,12 @@ namespace Tipait.DbRefactor.Tests.Core
 		//}
 
 		[Test]
+		public void	DesignByContractException()
+		{
+			_provider.AddTable(null);
+		}
+
+		[Test]
 		public void CheckTableExists()
 		{
 			ReaderReturnTrueOnRead();
@@ -68,8 +77,8 @@ namespace Tipait.DbRefactor.Tests.Core
 		{
 			ReaderReturnTrueOnRead();
 			ExpectTableExistsQuery("Table1");
-			ExpectExecuteNonQueryOn("DROP TABLE Table1");
-			_provider.RemoveTable("Table1");
+			ExpectExecuteNonQueryOn("DROP TABLE [Table1]");
+			_provider.DropTable("Table1");
 			mocks.VerifyAllExpectationsHaveBeenMet();
 		}
 
@@ -78,20 +87,77 @@ namespace Tipait.DbRefactor.Tests.Core
 		{
 			ReaderReturnFalseOnRead();
 			ExpectTableExistsQuery("Table1");
-			_provider.RemoveTable("Table1");
+			_provider.DropTable("Table1");
 			mocks.VerifyAllExpectationsHaveBeenMet();
+		}
+
+		[Test]
+		public void RenameColumn()
+		{
+			ExpectExecuteNonQueryOn("EXEC sp_rename '[Table].[OldName]', '[NewName]', 'COLUMN'");
+			_provider.RenameColumn("Table", "OldName", "NewName");
+			mocks.VerifyAllExpectationsHaveBeenMet();
+		}
+
+		[Test]
+		public void RenameTable()
+		{
+			ExpectExecuteNonQueryOn("EXEC sp_rename '[OldName]', '[NewName]', 'OBJECT'");
+			_provider.RenameTable("OldName", "NewName");
+			mocks.VerifyAllExpectationsHaveBeenMet();
+		}
+
+		[Test]
+		public void ColumnExists()
+		{
+			ReaderReturnTrueOnRead();
+			ExpectTableExistsQuery("Table1");
+			ExpectColumnExistsQuery("Table1", "Column1");
+			_provider.ColumnExists("Table1", "Column1");
+			mocks.VerifyAllExpectationsHaveBeenMet();
+		}
+
+		[Test]
+		public void TableExists()
+		{
+			ReaderReturnTrueOnRead();
+			ExpectTableExistsQuery("Table1");
+			_provider.TableExists("Table1");
+			mocks.VerifyAllExpectationsHaveBeenMet();
+		}
+
+		[Test]
+		public void ConstraintExists()
+		{
+			ReaderReturnTrueOnRead();
+			ExpectExecuteQueryOn("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('FK_NAME')");
+			_provider.ConstraintExists("FK_NAME", "TableName");
+			mocks.VerifyAllExpectationsHaveBeenMet();
+		}
+
+		[Test]
+		public void StringColumn()
+		{
+			Column coolumn = new Column("Column1", typeof (string), 10);
+			SQLServerTypeToSqlProvider provider = new SQLServerTypeToSqlProvider();
+			IColumnPropertiesMapper mapper = provider.Char(10);
+			Assert.That(mapper.ColumnSql, Is.EqualTo("nchar(10) NULL"));
 		}
 
 		private void ReaderReturnTrueOnRead()
 		{
-			NMock2.Expect.Once.On(reader)
-				.Method("Read").WithNoArguments().Will(NMock2.Return.Value(true));
+			NMock2.Expect.AtLeast(1).On(reader)
+				.Method("Read")
+				.WithNoArguments()
+				.Will(NMock2.Return.Value(true));
 		}
 
 		private void ReaderReturnFalseOnRead()
 		{
 			NMock2.Expect.Once.On(reader)
-				.Method("Read").WithNoArguments().Will(NMock2.Return.Value(false));
+				.Method("Read")
+				.WithNoArguments()
+				.Will(NMock2.Return.Value(false));
 		}
 
 		private void ExpectExecuteQueryOn(string query)
@@ -114,6 +180,12 @@ namespace Tipait.DbRefactor.Tests.Core
 		{
 			ExpectExecuteQueryOn(
 				String.Format("SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}')", table));
+		}
+
+		private void ExpectColumnExistsQuery(string table, string column)
+		{
+			ExpectExecuteQueryOn(
+				String.Format("SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}') and name='{1}'", table, column));
 		}
 	}
 }
