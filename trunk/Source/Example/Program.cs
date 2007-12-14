@@ -10,14 +10,12 @@ namespace Example
 {
 	class Program
 	{
-		static void Main(string[] args)
+		static void Main()
 		{
 			DbRefactor.Migrator migrator 
 				= new DbRefactor.Migrator(
-					"SqlServer", 
 					ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
-					Assembly.GetExecutingAssembly()
-				);
+					Assembly.GetExecutingAssembly());
 			migrator.Logger = new Logger(true, new ConsoleWriter());
 			migrator.MigrateToLastVersion();
 		}

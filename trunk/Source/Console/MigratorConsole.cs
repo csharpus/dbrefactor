@@ -109,7 +109,7 @@ namespace DbRefactor.Console
 		{
 			CheckArguments();
 			
-			SchemaDumper dumper = new SchemaDumper(_provider, _connectionString);
+			SchemaDumper dumper = new SchemaDumper(_connectionString);
 			
 			dumper.DumpTo(_dumpTo);
 		}
@@ -150,7 +150,7 @@ namespace DbRefactor.Console
 		{
 			Assembly asm = Assembly.LoadFrom(_migrationsAssembly);
 			
-			DbRefactor.Migrator migrator = new DbRefactor.Migrator(_provider, _connectionString, asm, _trace);
+			DbRefactor.Migrator migrator = new DbRefactor.Migrator(_connectionString, asm, _trace);
 			migrator.args = args;
 			return migrator;
 		}

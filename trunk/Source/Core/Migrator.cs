@@ -37,12 +37,12 @@ namespace DbRefactor
 			set { _args = value; }
 		}
 
-		public Migrator(string provider, string connectionString, Assembly migrationAssembly, bool trace)
-			: this(CreateProvider(provider, connectionString), migrationAssembly, trace)
+		public Migrator(string connectionString, Assembly migrationAssembly, bool trace)
+			: this(CreateProvider(connectionString), migrationAssembly, trace)
 		{ }
 
-		public Migrator(string provider, string connectionString, Assembly migrationAssembly)
-			: this(CreateProvider(provider, connectionString), migrationAssembly, false)
+		public Migrator(string connectionString, Assembly migrationAssembly)
+			: this(CreateProvider(connectionString), migrationAssembly, false)
 		{ }
 
 		public Migrator(TransformationProvider provider, Assembly migrationAssembly, bool trace)
@@ -336,9 +336,9 @@ namespace DbRefactor
 
 
 		#region Helper methods
-		private static TransformationProvider CreateProvider(string name, string constr)
+		private static TransformationProvider CreateProvider(string connectionString)
 		{
-			return new ProviderFactory().Create(name, constr);
+			return new ProviderFactory().Create(connectionString);
 		}
 
 		private Migration GetMigration(int version)

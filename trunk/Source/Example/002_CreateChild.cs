@@ -1,0 +1,27 @@
+﻿using DbRefactor;
+using DbRefactor.Columns;
+
+namespace Example
+{
+	[Migration(2)]
+	public class CreateChild : Migration
+	{
+		public override void Up()
+		{
+			CreateTable(
+				"Child",
+				Int("ID", ColumnProperties.PrimaryKeyWithIdentity),
+				String("Name", 50),
+				Int("ParentID", ColumnProperties.NotNull));
+
+			AddForeignKey("FK_Child_Parent", "Child", "ParentID", "Parent", "ID");
+		}
+
+		public override void Down()
+		{
+			DropForeignKey("FK_Child_Parent", "Child");
+
+			DropTable("Child");
+		}
+	}
+}

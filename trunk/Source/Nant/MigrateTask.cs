@@ -18,7 +18,7 @@ using NAnt.Core.Util;
 
 using Migrator.NAnt.Loggers;
 
-namespace Migrator.NAnt
+namespace DbRefactor.NAnt
 {
 	/// <summary>
 	/// Runs migrations on a database
@@ -103,7 +103,7 @@ namespace Migrator.NAnt
 		{
 			Assembly asm = Assembly.LoadFrom(_migrationsAssembly.FullName);
 			
-			DbRefactor.Migrator mig = new DbRefactor.Migrator(_provider, _connectionString, asm, _trace);
+			DbRefactor.Migrator mig = new DbRefactor.Migrator(_connectionString, asm, _trace);
 			mig.Logger = new TaskLogger(this);
 			
 			if (_to == -1)

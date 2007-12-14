@@ -15,13 +15,16 @@ namespace DbRefactor.Providers
 {
 	class ProviderFactory
 	{
-		public TransformationProvider Create(string name, string connectionString)
+		public TransformationProvider Create(string connectionString)
 		{
-			string providerName = GuessProviderName(name);
+			return new TransformationProvider(new SqlServerEnvironment(connectionString));
+			//string providerName = GuessProviderName(name);
 
-			return (TransformationProvider)Activator.CreateInstance(
-			                               	Type.GetType(String.Format("Migrator.Providers.{0}TransformationProvider, Migrator", providerName), true),
-			                               	new object[] { connectionString });
+			//return (TransformationProvider)Activator.CreateInstance(
+			//    Type.GetType(
+			//        String.Format("Migrator.Providers.{0}TransformationProvider, Migrator", 
+			//            providerName), true),
+			//    new object[] { connectionString });
 		}
 
 		private string GuessProviderName(string name)

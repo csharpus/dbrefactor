@@ -67,32 +67,32 @@ namespace DbRefactor.Columns
 	public class Column
 	{
 
-		public Column(string name, Type type)
+		internal Column(string name, Type type)
 			: this(name, type, 0)
 		{
 		}
 
-		public Column(string name, Type type, int size)
+		internal Column(string name, Type type, int size)
 			: this(name, type, size, 0)
 		{
 		}
 
-		public Column(string name, Type type, ColumnProperties property)
+		internal Column(string name, Type type, ColumnProperties property)
 			: this(name, type, 0, property)
 		{
 		}
 
-		public Column(string name, Type type, int size, ColumnProperties property)
+		internal Column(string name, Type type, int size, ColumnProperties property)
 			: this(name, type, size, property, null)
 		{
 		}
 
-		public Column(string name, Type type, ColumnProperties property, object defaultValue)
+		internal Column(string name, Type type, ColumnProperties property, object defaultValue)
 			: this(name, type, 0, property, defaultValue)
 		{
 		}
 
-		public Column(string name, Type type, int size, ColumnProperties property, object defaultValue)
+		internal Column(string name, Type type, int size, ColumnProperties property, object defaultValue)
 		{
 			_name = name;
 			_type = type;
@@ -103,7 +103,7 @@ namespace DbRefactor.Columns
 
 		private string _name;
 
-		public string Name
+		internal string Name
 		{
 			get
 			{
@@ -117,7 +117,7 @@ namespace DbRefactor.Columns
 
 		private Type _type;
 
-		public Type Type
+		internal Type Type
 		{
 			get
 			{
@@ -131,7 +131,7 @@ namespace DbRefactor.Columns
 
 		private int _size;
 
-		public int Size
+		internal int Size
 		{
 			get
 			{
@@ -145,7 +145,7 @@ namespace DbRefactor.Columns
 
 		private ColumnProperties _property;
 
-		public ColumnProperties ColumnProperty
+		internal ColumnProperties ColumnProperty
 		{
 			get
 			{
@@ -159,7 +159,7 @@ namespace DbRefactor.Columns
 
 		private object _defaultValue;
 
-		public object DefaultValue
+		internal object DefaultValue
 		{
 			get
 			{
@@ -171,7 +171,7 @@ namespace DbRefactor.Columns
 			}
 		}
 
-		private void MapColumnProperties(ColumnPropertiesMapper mapper, Column column)
+		internal void MapColumnProperties(ColumnPropertiesMapper mapper, Column column)
 		{
 			mapper.Name = column.Name;
 			ColumnProperties properties = column.ColumnProperty;
@@ -221,7 +221,7 @@ namespace DbRefactor.Columns
 			get { return new SQLServerTypeToSqlProvider(); }
 		}
 
-		private ColumnPropertiesMapper GetColumnMapper(Column column)
+		internal ColumnPropertiesMapper GetColumnMapper(Column column)
 		{
 			if (column.Type == typeof(char))
 			{
@@ -295,14 +295,14 @@ namespace DbRefactor.Columns
 			throw new ArgumentOutOfRangeException("column", "The " + column.Type + " type is not supported");
 		}
 
-		public string ColumnSQL()
+		internal string ColumnSQL()
 		{
 			ColumnPropertiesMapper mapper =  GetColumnMapper(this);
 			MapColumnProperties(mapper, this);
 			return mapper.ColumnSql;
 		}
 
-		public string IndexSQL()
+		internal string IndexSQL()
 		{
 			ColumnPropertiesMapper mapper = GetColumnMapper(this);
 			MapColumnProperties(mapper, this);

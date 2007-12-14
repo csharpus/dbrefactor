@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using DbRefactor;
 using DbRefactor.Columns;
 
@@ -11,20 +8,19 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Database.AddTable(
+			CreateTable(
 				"Parent",
-				Int("ID", ColumnProperties.PrimaryKey),
+				Int("ID", ColumnProperties.PrimaryKeyWithIdentity),
 				String("Name", 50),
 				Decimal("Price", 6, 2),
 				Boolean("IsSold", false),
 				DateTime("DateAdded", ColumnProperties.NotNull),
-				Text("Description")
-			);
+				Text("Description"));
 		}
 
 		public override void Down()
 		{
-			Database.DropTable("Parent");
+			DropTable("Parent");
 		}
 	}
 }

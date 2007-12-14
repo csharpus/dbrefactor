@@ -19,9 +19,9 @@ namespace DbRefactor.Tools
 	{
 		readonly TransformationProvider _provider;
 
-		public SchemaDumper(string provider, string connectionString)
+		public SchemaDumper(string connectionString)
 		{
-			_provider = new ProviderFactory().Create(provider, connectionString);
+			_provider = new ProviderFactory().Create(connectionString);
 		}
 
 		public string Dump()
