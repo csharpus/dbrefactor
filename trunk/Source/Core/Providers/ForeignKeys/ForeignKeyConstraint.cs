@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Migrator.Providers.ForeignKeys
+namespace DbRefactor.Providers.ForeignKeys
 {
 	public enum ForeignKeyConstraint
 	{

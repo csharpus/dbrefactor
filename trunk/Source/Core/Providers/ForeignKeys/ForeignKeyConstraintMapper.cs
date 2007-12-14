@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Migrator.Providers.ForeignKeys
+namespace DbRefactor.Providers.ForeignKeys
 {
-	public abstract class ForeignKeyConstraintMapper: IForeignKeyConstraintMapper
+	sealed class ForeignKeyConstraintMapper
 	{
-		#region IForeignKeyConstraintMapper Members
-
 		public string Resolve(ForeignKeyConstraint constraint)
 		{
 			switch(constraint)
@@ -25,16 +19,29 @@ namespace Migrator.Providers.ForeignKeys
 			}
 		}
 
-		public abstract string Cascade { get;}
+		public string Cascade
+		{
+			get { return "CASCADE"; }
+		}
 
-		public abstract string SetNull { get;}
+		public string SetNull
+		{
+			get { return "SET NULL"; }
+		}
 
-		public abstract string NoAction { get;}
+		public string NoAction
+		{
+			get { return "NO ACTION"; }
+		}
 
-		public abstract string Restrict { get;}
+		public string Restrict
+		{
+			get { return "RESTRICT"; }
+		}
 
-		public abstract string SetDefault { get;}
-		
-		#endregion
+		public string SetDefault
+		{
+			get { return "SET DEFAULT"; }
+		}
 	}
 }

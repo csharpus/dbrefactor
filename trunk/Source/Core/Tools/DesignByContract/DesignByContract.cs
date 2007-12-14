@@ -25,11 +25,11 @@
 // #endif
 //
 // Alternatively, you can define these in the project properties dialog.
-  
+
 using System;
 using System.Diagnostics;
 
-namespace DesignByContract
+namespace DbRefactor.Tools.DesignByContract
 {
 	/// <summary>
 	/// Design By Contract Checks.
@@ -78,7 +78,7 @@ namespace DesignByContract
 	/// is possible.)
 	/// </remarks>
 	/// 
-	public sealed class Check
+	sealed class Check
 	{
 		#region Interface
 
@@ -86,9 +86,9 @@ namespace DesignByContract
 		/// Precondition check.
 		/// </summary>
 		[Conditional("DBC_CHECK_ALL"), 
-		Conditional("DBC_CHECK_INVARIANT"), 
-		Conditional("DBC_CHECK_POSTCONDITION"), 
-		Conditional("DBC_CHECK_PRECONDITION")]
+		 Conditional("DBC_CHECK_INVARIANT"), 
+		 Conditional("DBC_CHECK_POSTCONDITION"), 
+		 Conditional("DBC_CHECK_PRECONDITION")]
 		public static void Require(bool assertion, string message)
 		{
 			if (UseExceptions) 
@@ -105,9 +105,9 @@ namespace DesignByContract
 		/// Precondition check.
 		/// </summary>
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT"),
-		Conditional("DBC_CHECK_POSTCONDITION"),
-		Conditional("DBC_CHECK_PRECONDITION")]
+		 Conditional("DBC_CHECK_INVARIANT"),
+		 Conditional("DBC_CHECK_POSTCONDITION"),
+		 Conditional("DBC_CHECK_PRECONDITION")]
 		public static void RequireNonEmpty(string value, string paramName)
 		{
 			if (UseExceptions)
@@ -126,9 +126,9 @@ namespace DesignByContract
 		/// Precondition check.
 		/// </summary>
 		[Conditional("DBC_CHECK_ALL"), 
-		Conditional("DBC_CHECK_INVARIANT"), 
-		Conditional("DBC_CHECK_POSTCONDITION"), 
-		Conditional("DBC_CHECK_PRECONDITION")]
+		 Conditional("DBC_CHECK_INVARIANT"), 
+		 Conditional("DBC_CHECK_POSTCONDITION"), 
+		 Conditional("DBC_CHECK_PRECONDITION")]
 		public static void Require(bool assertion, string message, Exception inner)
 		{
 			if (UseExceptions) 
@@ -145,9 +145,9 @@ namespace DesignByContract
 		/// Precondition check.
 		/// </summary>
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT"), 
-		Conditional("DBC_CHECK_POSTCONDITION"), 
-		Conditional("DBC_CHECK_PRECONDITION")]
+		 Conditional("DBC_CHECK_INVARIANT"), 
+		 Conditional("DBC_CHECK_POSTCONDITION"), 
+		 Conditional("DBC_CHECK_PRECONDITION")]
 		public static void Require(bool assertion)
 		{
 			if (UseExceptions) 
@@ -164,8 +164,8 @@ namespace DesignByContract
 		/// Postcondition check.
 		/// </summary>
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT"), 
-		Conditional("DBC_CHECK_POSTCONDITION")] 
+		 Conditional("DBC_CHECK_INVARIANT"), 
+		 Conditional("DBC_CHECK_POSTCONDITION")] 
 		public static void Ensure(bool assertion, string message)
 		{
 			if (UseExceptions) 
@@ -182,8 +182,8 @@ namespace DesignByContract
 		/// Postcondition check.
 		/// </summary>
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT"), 
-		Conditional("DBC_CHECK_POSTCONDITION")] 
+		 Conditional("DBC_CHECK_INVARIANT"), 
+		 Conditional("DBC_CHECK_POSTCONDITION")] 
 		public static void Ensure(bool assertion, string message, Exception inner)
 		{
 			if (UseExceptions) 
@@ -200,8 +200,8 @@ namespace DesignByContract
 		/// Postcondition check.
 		/// </summary>
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT"), 
-		Conditional("DBC_CHECK_POSTCONDITION")] 
+		 Conditional("DBC_CHECK_INVARIANT"), 
+		 Conditional("DBC_CHECK_POSTCONDITION")] 
 		public static void Ensure(bool assertion)
 		{
 			if (UseExceptions) 
@@ -218,7 +218,7 @@ namespace DesignByContract
 		/// Invariant check.
 		/// </summary>
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT")] 
+		 Conditional("DBC_CHECK_INVARIANT")] 
 		public static void Invariant(bool assertion, string message)
 		{
 			if (UseExceptions) 
@@ -235,7 +235,7 @@ namespace DesignByContract
 		/// Invariant check.
 		/// </summary>
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT")] 
+		 Conditional("DBC_CHECK_INVARIANT")] 
 		public static void Invariant(bool assertion, string message, Exception inner)
 		{
 			if (UseExceptions) 
@@ -252,7 +252,7 @@ namespace DesignByContract
 		/// Invariant check.
 		/// </summary>
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT")] 
+		 Conditional("DBC_CHECK_INVARIANT")] 
 		public static void Invariant(bool assertion)
 		{
 			if (UseExceptions) 
@@ -361,9 +361,9 @@ namespace DesignByContract
 		/// </summary>
 		[Obsolete("Set Check.UseAssertions = true and then call Check.Require")]
 		[Conditional("DBC_CHECK_ALL"), 
-		Conditional("DBC_CHECK_INVARIANT"), 
-		Conditional("DBC_CHECK_POSTCONDITION"), 
-		Conditional("DBC_CHECK_PRECONDITION")]
+		 Conditional("DBC_CHECK_INVARIANT"), 
+		 Conditional("DBC_CHECK_POSTCONDITION"), 
+		 Conditional("DBC_CHECK_PRECONDITION")]
 		public static void RequireTrace(bool assertion, string message)
 		{
 			Trace.Assert(assertion, "Precondition: " + message);
@@ -375,9 +375,9 @@ namespace DesignByContract
 		/// </summary>
 		[Obsolete("Set Check.UseAssertions = true and then call Check.Require")]
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT"), 
-		Conditional("DBC_CHECK_POSTCONDITION"), 
-		Conditional("DBC_CHECK_PRECONDITION")]
+		 Conditional("DBC_CHECK_INVARIANT"), 
+		 Conditional("DBC_CHECK_POSTCONDITION"), 
+		 Conditional("DBC_CHECK_PRECONDITION")]
 		public static void RequireTrace(bool assertion)
 		{
 			Trace.Assert(assertion, "Precondition failed.");
@@ -388,8 +388,8 @@ namespace DesignByContract
 		/// </summary>
 		[Obsolete("Set Check.UseAssertions = true and then call Check.Ensure")]
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT"), 
-		Conditional("DBC_CHECK_POSTCONDITION")] 
+		 Conditional("DBC_CHECK_INVARIANT"), 
+		 Conditional("DBC_CHECK_POSTCONDITION")] 
 		public static void EnsureTrace(bool assertion, string message)
 		{
 			Trace.Assert(assertion, "Postcondition: " + message);
@@ -400,8 +400,8 @@ namespace DesignByContract
 		/// </summary>
 		[Obsolete("Set Check.UseAssertions = true and then call Check.Ensure")]
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT"), 
-		Conditional("DBC_CHECK_POSTCONDITION")] 
+		 Conditional("DBC_CHECK_INVARIANT"), 
+		 Conditional("DBC_CHECK_POSTCONDITION")] 
 		public static void EnsureTrace(bool assertion)
 		{
 			Trace.Assert(assertion, "Postcondition failed.");
@@ -412,7 +412,7 @@ namespace DesignByContract
 		/// </summary>
 		[Obsolete("Set Check.UseAssertions = true and then call Check.Invariant")]
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT")] 
+		 Conditional("DBC_CHECK_INVARIANT")] 
 		public static void InvariantTrace(bool assertion, string message)
 		{
 			Trace.Assert(assertion, "Invariant: " + message);
@@ -423,7 +423,7 @@ namespace DesignByContract
 		/// </summary>
 		[Obsolete("Set Check.UseAssertions = true and then call Check.Invariant")]
 		[Conditional("DBC_CHECK_ALL"),
-		Conditional("DBC_CHECK_INVARIANT")] 
+		 Conditional("DBC_CHECK_INVARIANT")] 
 		public static void InvariantTrace(bool assertion)
 		{
 			Trace.Assert(assertion, "Invariant failed.");
@@ -450,9 +450,7 @@ namespace DesignByContract
 		}
 		#endregion // Obsolete
 
-	} // End Check
-
-	#region Exceptions
+	}
 
 	/// <summary>
 	/// Exception raised when a contract is broken.
@@ -485,7 +483,7 @@ namespace DesignByContract
 		/// </summary>
 		public PreconditionException(string message, Exception inner) : base(message, inner) {}
 	}
-	
+
 	/// <summary>
 	/// Exception raised when a postcondition fails.
 	/// </summary>
@@ -542,7 +540,6 @@ namespace DesignByContract
 		/// </summary>
 		public AssertionException(string message, Exception inner) : base(message, inner) {}
 	}
+}
 
-	#endregion // Exception classes
-
-} // End Design By Contract
+// End Design By Contract

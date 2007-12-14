@@ -8,21 +8,22 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
+
 using System;
 
-namespace Migrator.Providers
+namespace DbRefactor.Providers
 {
-	public class ProviderFactory
+	class ProviderFactory
 	{
 		public TransformationProvider Create(string name, string connectionString)
 		{
 			string providerName = GuessProviderName(name);
-			
-			return (TransformationProvider) Activator.CreateInstance(
-				Type.GetType(String.Format("Migrator.Providers.{0}TransformationProvider, Migrator", providerName), true),
-				new object[] { connectionString });
+
+			return (TransformationProvider)Activator.CreateInstance(
+			                               	Type.GetType(String.Format("Migrator.Providers.{0}TransformationProvider, Migrator", providerName), true),
+			                               	new object[] { connectionString });
 		}
-		
+
 		private string GuessProviderName(string name)
 		{
 			if (name == "NHibernate.Driver.MySqlDataDriver")
@@ -42,5 +43,5 @@ namespace Migrator.Providers
 				return name;
 			}
 		}
-    }
+	}
 }

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Data;
 
-namespace Migrator.Providers
+namespace DbRefactor.Providers
 {
 	public interface IDatabaseEnvironment
 	{

@@ -10,7 +10,7 @@
 #endregion
 using System;
 
-namespace Migrator.MigratorConsole
+namespace DbRefactor.Console
 {
 	/// <summary>
 	/// Console application boostrap class.

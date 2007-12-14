@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Migrator;
+using DbRefactor;
+using DbRefactor.Columns;
 
 namespace Example
 {
@@ -23,7 +24,7 @@ namespace Example
 
 		public override void Down()
 		{
-			Database.RemoveTable("Parent");
+			Database.DropTable("Parent");
 		}
 	}
 }

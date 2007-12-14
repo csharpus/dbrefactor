@@ -1,15 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Migrator.Providers.ColumnPropertiesMappers;
+using DbRefactor.Providers.ColumnPropertiesMappers;
 
-namespace Migrator.Providers.TypeToSqlProviders
+namespace DbRefactor.Providers.TypeToSqlProviders
 {
-	public class SQLServerTypeToSqlProvider
+	sealed class SQLServerTypeToSqlProvider
 	{
-
-		#region ITypeToSqlProvider Members
-
 		public ColumnPropertiesMapper PrimaryKey
 		{
 			get { return Integer; }
@@ -94,8 +88,5 @@ namespace Migrator.Providers.TypeToSqlProviders
 		{
 			get { return new ColumnPropertiesMapper("datetime"); }
 		}
-
-		#endregion
-
 	}
 }

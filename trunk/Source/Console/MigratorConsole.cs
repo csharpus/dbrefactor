@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 //The contents of this file are subject to the Mozilla Public License
 //Version 1.1 (the "License"); you may not use this file except in
 //compliance with the License. You may obtain a copy of the License at
@@ -10,10 +10,9 @@
 #endregion
 using System;
 using System.Reflection;
-using System.IO;
-using Migrator.Tools;
+using DbRefactor.Tools;
 
-namespace Migrator.MigratorConsole
+namespace DbRefactor.Console
 {
 	/// <summary>
 	/// Commande line utility to run the migrations
@@ -57,14 +56,14 @@ namespace Migrator.MigratorConsole
 			}
 			catch (ArgumentException aex)
 			{
-				Console.WriteLine("Invalid argument '{0}' : {1}", aex.ParamName, aex.Message);
-				Console.WriteLine();
+				System.Console.WriteLine("Invalid argument '{0}' : {1}", aex.ParamName, aex.Message);
+				System.Console.WriteLine();
 				PrintUsage();
 				return -1;
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex);
+				System.Console.WriteLine(ex);
 				return -1;
 			}
 			return 0;
@@ -77,7 +76,7 @@ namespace Migrator.MigratorConsole
 		{
 			CheckArguments();
 			
-			Migrator mig = GetMigrator();
+			DbRefactor.Migrator mig = GetMigrator();
 			if (_migrateTo == -1)
 				mig.MigrateToLastVersion();
 			else
@@ -91,18 +90,18 @@ namespace Migrator.MigratorConsole
 		{
 			CheckArguments();
 			
-			Migrator mig = GetMigrator();
+			DbRefactor.Migrator mig = GetMigrator();
 			int currentVersion = mig.CurrentVersion;
 			
-			Console.WriteLine("Available migrations:");
+			System.Console.WriteLine("Available migrations:");
 			foreach (Type t in mig.MigrationsTypes)
 			{
-				int v = Migrator.GetMigrationVersion(t);
-				Console.WriteLine("{0} {1} {2}",
+				int v = DbRefactor.Migrator.GetMigrationVersion(t);
+				System.Console.WriteLine("{0} {1} {2}",
 				                  v == currentVersion ? "=>" : "  ",
 				                  v.ToString().PadLeft(3),
-				                  Migrator.ToHumanName(t.Name)
-				                 );
+				                  DbRefactor.Migrator.ToHumanName(t.Name)
+					);
 			}
 		}
 		
@@ -123,19 +122,19 @@ namespace Migrator.MigratorConsole
 			int tab = 17;
 			Version ver = Assembly.GetExecutingAssembly().GetName().Version;
 			
-			Console.WriteLine("Database migrator - v{0}.{1}.{2}", ver.Major, ver.Minor, ver.Revision);
-			Console.WriteLine();
-			Console.WriteLine("usage:\nMigrator.Console.exe provider connectionString migrationsAssembly [options]");
-			Console.WriteLine();
-			Console.WriteLine("\t{0} {1}", "provider".PadRight(tab), "The database provider (SqlServer, MySql, Postgre)");
-			Console.WriteLine("\t{0} {1}", "connectionString".PadRight(tab), "Connection string to the database");
-			Console.WriteLine("\t{0} {1}", "migrationAssembly".PadRight(tab), "Path to the assembly containing the migrations");
-			Console.WriteLine("Options:");
-			Console.WriteLine("\t-{0}{1}", "version NO".PadRight(tab), "To specific version to migrate the database to");
-			Console.WriteLine("\t-{0}{1}", "list".PadRight(tab), "List migrations");
-			Console.WriteLine("\t-{0}{1}", "trace".PadRight(tab), "Show debug informations");
-			Console.WriteLine("\t-{0}{1}", "dump FILE".PadRight(tab), "Dump the database schema as migration code");
-			Console.WriteLine();
+			System.Console.WriteLine("Database migrator - v{0}.{1}.{2}", ver.Major, ver.Minor, ver.Revision);
+			System.Console.WriteLine();
+			System.Console.WriteLine("usage:\nMigrator.Console.exe provider connectionString migrationsAssembly [options]");
+			System.Console.WriteLine();
+			System.Console.WriteLine("\t{0} {1}", "provider".PadRight(tab), "The database provider (SqlServer, MySql, Postgre)");
+			System.Console.WriteLine("\t{0} {1}", "connectionString".PadRight(tab), "Connection string to the database");
+			System.Console.WriteLine("\t{0} {1}", "migrationAssembly".PadRight(tab), "Path to the assembly containing the migrations");
+			System.Console.WriteLine("Options:");
+			System.Console.WriteLine("\t-{0}{1}", "version NO".PadRight(tab), "To specific version to migrate the database to");
+			System.Console.WriteLine("\t-{0}{1}", "list".PadRight(tab), "List migrations");
+			System.Console.WriteLine("\t-{0}{1}", "trace".PadRight(tab), "Show debug informations");
+			System.Console.WriteLine("\t-{0}{1}", "dump FILE".PadRight(tab), "Dump the database schema as migration code");
+			System.Console.WriteLine();
 		}
 		
 		#region Private helper methods
@@ -147,11 +146,11 @@ namespace Migrator.MigratorConsole
 				throw new ArgumentException("Migrations assembly missing", "migrationsAssembly");
 		}
 				
-		private Migrator GetMigrator()
+		private DbRefactor.Migrator GetMigrator()
 		{
 			Assembly asm = Assembly.LoadFrom(_migrationsAssembly);
 			
-			Migrator migrator = new Migrator(_provider, _connectionString, asm, _trace);
+			DbRefactor.Migrator migrator = new DbRefactor.Migrator(_provider, _connectionString, asm, _trace);
 			migrator.args = args;
 			return migrator;
 		}

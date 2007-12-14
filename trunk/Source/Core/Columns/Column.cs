@@ -8,12 +8,13 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
-using System;
-using Migrator.Columns;
-using Migrator.Providers.ColumnPropertiesMappers;
-using Migrator.Providers.TypeToSqlProviders;
 
-namespace Migrator
+using System;
+using DbRefactor.Columns;
+using DbRefactor.Providers.ColumnPropertiesMappers;
+using DbRefactor.Providers.TypeToSqlProviders;
+
+namespace DbRefactor.Columns
 {
 	/// <summary>
 	/// Represents a table column properties.
@@ -87,7 +88,7 @@ namespace Migrator
 		}
 
 		public Column(string name, Type type, ColumnProperties property, object defaultValue)
-			: this(name, type, 0, property, null)
+			: this(name, type, 0, property, defaultValue)
 		{
 		}
 
@@ -170,13 +171,6 @@ namespace Migrator
 			}
 		}
 
-		private ColumnPropertiesMapper GetAndMapColumnProperties(Column column)
-		{
-			ColumnPropertiesMapper mapper = GetColumnMapper(column);
-			MapColumnProperties(mapper, column);
-			return mapper;
-		}
-
 		private void MapColumnProperties(ColumnPropertiesMapper mapper, Column column)
 		{
 			mapper.Name = column.Name;
@@ -222,7 +216,7 @@ namespace Migrator
 			}
 		}
 
-		public SQLServerTypeToSqlProvider TypeToSqlProvider
+		SQLServerTypeToSqlProvider TypeToSqlProvider
 		{
 			get { return new SQLServerTypeToSqlProvider(); }
 		}
@@ -274,7 +268,7 @@ namespace Migrator
 			{
 				if (typeof(DecimalColumn).IsAssignableFrom(column.GetType()))
 				{
-					return TypeToSqlProvider.Decimal(column.Size, (column as DecimalColumn).Remainder);
+					return TypeToSqlProvider.Decimal(column.Size, ((DecimalColumn) column).Remainder);
 				}
 				else
 				{
@@ -298,17 +292,21 @@ namespace Migrator
 					return TypeToSqlProvider.LongBlob;
 			}
 
-			throw new ArgumentOutOfRangeException("column.Type", "The " + column.Type.ToString() + " type is not supported");
+			throw new ArgumentOutOfRangeException("column", "The " + column.Type + " type is not supported");
 		}
 
 		public string ColumnSQL()
 		{
-			return GetColumnMapper(this).ColumnSql;
+			ColumnPropertiesMapper mapper =  GetColumnMapper(this);
+			MapColumnProperties(mapper, this);
+			return mapper.ColumnSql;
 		}
 
 		public string IndexSQL()
 		{
-			return GetColumnMapper(this).IndexSql;
+			ColumnPropertiesMapper mapper = GetColumnMapper(this);
+			MapColumnProperties(mapper, this);
+			return mapper.IndexSql;
 		}
 	}
 }

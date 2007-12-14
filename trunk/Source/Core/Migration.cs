@@ -8,13 +8,13 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
-using Migrator.Providers;
-using Migrator.Loggers;
-using System.Reflection;
+
 using System;
-using System.Collections;
-using Migrator.Columns;
-namespace Migrator
+using DbRefactor.Columns;
+using DbRefactor.Providers;
+using Migrator.Loggers;
+
+namespace DbRefactor
 {
 	/// <summary>
 	/// A migration is a group of transformation applied to the database schema
@@ -100,7 +100,7 @@ namespace Migrator
 		/// </summary>
 		public virtual void InitializeOnce(string[] args)
 		{
-			System.Console.WriteLine("Migration.InitializeOnce()");
+			Console.WriteLine("Migration.InitializeOnce()");
 		}
 
 		/// <summary>

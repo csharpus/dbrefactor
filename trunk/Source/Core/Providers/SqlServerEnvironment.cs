@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Data;
 using System.Data.SqlClient;
+using DbRefactor.Providers;
 
-namespace Migrator.Providers
+namespace DbRefactor.Providers
 {
-	class SqlServerEnvironment : IDatabaseEnvironment
+	sealed class SqlServerEnvironment : IDatabaseEnvironment
 	{
-		private string _connectionString;
-		protected IDbConnection _connection;
+		private readonly string _connectionString;
+		private readonly IDbConnection _connection;
 		private IDbTransaction _transaction;
 
 		public SqlServerEnvironment(string connectionString)
@@ -40,7 +38,7 @@ namespace Migrator.Providers
 			return cmd;
 		}
 
-		System.Data.IDataReader IDatabaseEnvironment.ExecuteQuery(string sql)
+		IDataReader IDatabaseEnvironment.ExecuteQuery(string sql)
 		{
 			IDbCommand cmd = BuildCommand(sql);
 			return cmd.ExecuteReader();
@@ -64,7 +62,7 @@ namespace Migrator.Providers
 			}
 		}
 
-		protected void EnsureHasConnection()
+		private void EnsureHasConnection()
 		{
 			if (_connection.State != ConnectionState.Open)
 			{
@@ -75,7 +73,7 @@ namespace Migrator.Providers
 		/// <summary>
 		/// Rollback the current migration. Called by the migration mediator.
 		/// </summary>
-		public virtual void RollbackTransaction()
+		public void RollbackTransaction()
 		{
 			if (_transaction != null && _connection != null && _connection.State == ConnectionState.Open)
 			{

@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Migrator.Columns
+namespace DbRefactor.Columns
 {
 	public class DecimalColumn: Column
 	{

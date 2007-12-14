@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Configuration;
 using System.Reflection;
+using DbRefactor.Loggers;
 using Migrator.Loggers;
 
 namespace Example
@@ -11,8 +12,8 @@ namespace Example
 	{
 		static void Main(string[] args)
 		{
-			Migrator.Migrator migrator 
-				= new Migrator.Migrator(
+			DbRefactor.Migrator migrator 
+				= new DbRefactor.Migrator(
 					"SqlServer", 
 					ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
 					Assembly.GetExecutingAssembly()

@@ -10,18 +10,16 @@
 #endregion
 
 using System;
-using System.Data;
-using Migrator.Loggers;
-using Migrator.Providers.ForeignKeys;
-using ForeignKeyConstraint = Migrator.Providers.ForeignKeys.ForeignKeyConstraint;
-using Migrator.Providers.TypeToSqlProviders;
 using System.Collections;
-using Migrator.Providers.ColumnPropertiesMappers;
-using Migrator.Columns;
 using System.Collections.Generic;
-using DesignByContract;
+using System.Data;
+using DbRefactor.Columns;
+using DbRefactor.Providers.ForeignKeys;
+using DbRefactor.Tools.DesignByContract;
+using Migrator.Loggers;
+using ForeignKeyConstraint=DbRefactor.Providers.ForeignKeys.ForeignKeyConstraint;
 
-namespace Migrator.Providers
+namespace DbRefactor.Providers
 {
 	/// <summary>
 	/// Base class for every transformation providers.
@@ -65,21 +63,7 @@ namespace Migrator.Providers
 		{
 			Check.RequireNonEmpty(name, "name");
 			Check.Require(columns.Length > 0, "At least one column should be passed");
-			if (TableExists(name))
-			{
-				Logger.Warn("Table {0} already exists", name);
-				return;
-			}
-
-			//List<IColumnPropertiesMapper> columnProviders = new List<IColumnPropertiesMapper>(columns.Length);
-			//foreach (Column column in columns)
-			//{
-			//    IColumnPropertiesMapper mapper = GetAndMapColumnProperties(column);
-			//    columnProviders.Add(mapper);
-			//}
-
-//			IColumnPropertiesMapper[] columnArray = columnProviders.ToArray();
-			string columnsAndIndexes = JoinColumnsAndIndexes(columns);
+			string columnsAndIndexes = ColumnsAndIndexes(columns);
 			AddTable(name, columnsAndIndexes);
 		}
 
@@ -141,7 +125,7 @@ namespace Migrator.Providers
 			Check.RequireNonEmpty(oldName, "oldName");
 			Check.RequireNonEmpty(newName, "newName");
 			ExecuteNonQuery("EXEC sp_rename '[{0}]', '[{1}]', 'OBJECT'",
-				oldName, newName);
+			                oldName, newName);
 		}
 
 		public bool ColumnExists(string table, string column)
@@ -168,7 +152,7 @@ namespace Migrator.Providers
 			Check.RequireNonEmpty(table, "table");
 			using (IDataReader reader =
 				ExecuteQuery("SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}')",
-					table))
+				             table))
 			{
 				return reader.Read();
 			}
@@ -185,7 +169,7 @@ namespace Migrator.Providers
 		{
 			using (IDataReader reader =
 				ExecuteQuery("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')",
-					name))
+				             name))
 			{
 				return reader.Read();
 			}
@@ -242,7 +226,7 @@ namespace Migrator.Providers
 			ExecuteNonQuery("CREATE TABLE [{0}] ({1})", name, columns);
 		}
 
-		private string JoinColumnsAndIndexes(Column[] columns)
+		private string ColumnsAndIndexes(Column[] columns)
 		{
 			string indexes = JoinIndexes(columns);
 			return JoinColumns(columns) + (indexes != null ? "," + indexes : string.Empty);
@@ -282,22 +266,21 @@ namespace Migrator.Providers
 
 		public void AlterColumn(string table, Column column)
 		{
-			if (!ColumnExists(table, column.Name))
-			{
-				Logger.Warn("Column {0}.{1} does not exists", table, column.Name);
-				return;
-			}
+			//if (!ColumnExists(table, column.Name))
+			//{
+			//    Logger.Warn("Column {0}.{1} does not exists", table, column.Name);
+			//    return;
+			//}
 			AlterColumn(table, column.ColumnSQL());
 		}
 
 		public void AddColumn(string table, Column column)
 		{
-			if (ColumnExists(table, column.Name))
-			{
-				Logger.Warn("Column {0}.{1} already exists", table, column.Name);
-				return;
-			}
-
+			//if (ColumnExists(table, column.Name))
+			//{
+			//    Logger.Warn("Column {0}.{1} already exists", table, column.Name);
+			//    return;
+			//}
 			AddColumn(table, column.ColumnSQL());
 		}
 
@@ -370,11 +353,11 @@ namespace Migrator.Providers
 		/// <param name="columns">Primary column names</param>
 		public void AddPrimaryKey(string name, string table, params string[] columns)
 		{
-			if (ConstraintExists(name, table))
-			{
-				Logger.Warn("Primary key {0} already exists", name);
-				return;
-			}
+			//if (ConstraintExists(name, table))
+			//{
+			//    Logger.Warn("Primary key {0} already exists", name);
+			//    return;
+			//}
 			ExecuteNonQuery("ALTER TABLE [{0}] ADD CONSTRAINT {1} PRIMARY KEY ({2}) ", table, name, String.Join(",", columns));
 		}
 
@@ -443,11 +426,11 @@ namespace Migrator.Providers
 		// Not sure how SQL server handles ON UPDATRE & ON DELETE
 		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns, string refTable, string[] refColumns, ForeignKeyConstraint constraint)
 		{
-			if (ConstraintExists(name, primaryTable))
-			{
-				Logger.Warn("The contraint {0} already exists", name);
-				return;
-			}
+			//if (ConstraintExists(name, primaryTable))
+			//{
+			//    Logger.Warn("The contraint {0} already exists", name);
+			//    return;
+			//}
 			ExecuteNonQuery(
 				"ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3} ({4})",
 				primaryTable, name, String.Join(",", primaryColumns),
@@ -468,11 +451,6 @@ namespace Migrator.Providers
 			//{
 			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT {1}", table, name);
 			//}
-		}
-
-		public IForeignKeyConstraintMapper ForeignKeyMapper
-		{
-			get { return new SQLServerForeignKeyConstraintMapper(); }
 		}
 
 		public string[] GetTables()

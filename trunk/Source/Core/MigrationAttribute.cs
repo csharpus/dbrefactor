@@ -8,14 +8,15 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
+
 using System;
 
-namespace Migrator
+namespace DbRefactor
 {
 	/// <summary>
 	/// Describe a migration
 	/// </summary>
-	public class MigrationAttribute : Attribute
+	public sealed class MigrationAttribute : Attribute
 	{
 		private int _version;
 		private bool _ignore = false;

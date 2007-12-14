@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-using DesignByContract;
+using DbRefactor.Tools.DesignByContract;
 
-namespace Migrator.Providers.ColumnPropertiesMappers
+namespace DbRefactor.Providers.ColumnPropertiesMappers
 {
 	/// <summary>
 	/// This is basically a just a helper base class
 	/// per-database implementors may want to override ColumnSql
 	/// </summary>
-	public sealed class ColumnPropertiesMapper
+	sealed class ColumnPropertiesMapper
 	{
 		/// <summary>
 		/// the type of the column

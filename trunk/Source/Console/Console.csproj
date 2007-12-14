@@ -7,8 +7,8 @@
     <ProjectGuid>{FBE3A83A-D0F8-4D72-AF8D-9EF772569A31}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Migrator.Console</RootNamespace>
-    <AssemblyName>Migrator.Console</AssemblyName>
+    <RootNamespace>DbRefactor.Console</RootNamespace>
+    <AssemblyName>DbRefactor.Console</AssemblyName>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Tipait.DbRefactor.snk</AssemblyOriginatorKeyFile>
     <DelaySign>False</DelaySign>

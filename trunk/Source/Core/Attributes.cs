@@ -1,24 +1,24 @@
 ﻿using System;
 
-namespace Migrator
+namespace DbRefactor
 {
-	public class SetUpMigrationAttribute : Attribute
+	public sealed class SetUpMigrationAttribute : Attribute
 	{
 	}
 
-	public class MigrationSetUp : Attribute
+	public sealed class MigrationSetUp : Attribute
 	{
 	}
 
-	public class MigrationTearDown : Attribute
+	public sealed class MigrationTearDown : Attribute
 	{
 	}
 
-	public class MigratorSetUp : Attribute
+	public sealed class MigratorSetUp : Attribute
 	{
 	}
 
-	public class MigratorTearDown : Attribute
+	public sealed class MigratorTearDown : Attribute
 	{
 	}
 }

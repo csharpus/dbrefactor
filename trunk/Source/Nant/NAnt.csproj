@@ -7,8 +7,8 @@
     <ProjectGuid>{CDD39DB7-C9C0-4ECA-AD36-1B4D0BF59101}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Migrator.NAnt</RootNamespace>
-    <AssemblyName>Migrator.NAnt</AssemblyName>
+    <RootNamespace>DbRefactor.NAnt</RootNamespace>
+    <AssemblyName>DbRefactor.NAnt</AssemblyName>
     <SignAssembly>False</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\migrator_2005.snk</AssemblyOriginatorKeyFile>
     <DelaySign>False</DelaySign>

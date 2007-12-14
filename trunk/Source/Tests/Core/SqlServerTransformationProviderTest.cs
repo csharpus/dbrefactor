@@ -1,63 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Migrator.Providers.ColumnPropertiesMappers;
-using Migrator.Providers.TypeToSqlProviders;
+using DbRefactor.Columns;
+using DbRefactor.Providers;
 using NUnit.Framework;
-using Migrator.Providers;
-using NUnit.Framework.SyntaxHelpers;
 using System.Data;
-using Migrator;
+using NMock2;
+using NIs = NMock2.Is;
+using Is = NUnit.Framework.SyntaxHelpers.Is;
 
-namespace Tipait.DbRefactor.Tests.Core
+
+namespace DbRefactor.Tests.Core
 {
 	[TestFixture]
 	public class SqlServerTransformationProviderTest
 	{
 		private TransformationProvider _provider;
-		private DatabaseEnvironmentStub _databaseEnvironmentStub;
 		private IDatabaseEnvironment environment;
 		private IDataReader reader;
-		private NMock2.Mockery mocks;
-
-		public SqlServerTransformationProviderTest()
-		{
-		}
+		private Mockery mocks;
 
 		[SetUp]
 		public void SetUp()
 		{
-			mocks = new NMock2.Mockery();
+			mocks = new Mockery();
 			environment = mocks.NewMock<IDatabaseEnvironment>();
-			_databaseEnvironmentStub = new DatabaseEnvironmentStub();
 			_provider = new TransformationProvider(environment);
 			reader = mocks.NewMock<IDataReader>();
-			NMock2.Expect.AtLeast(0).On(reader).Method("Dispose").WithNoArguments();
+			Expect.AtLeast(0).On(reader).Method("Dispose").WithNoArguments();
 		}
 
 		[Test]
-		public void Creation()
-		{
-			TransformationProvider provider
-				= new TransformationProvider(new DatabaseEnvironmentStub());
-		}
-
-		public void CheckExecuteNonQuery()
-		{
-			
-		}
-
-		//[Test]
-		//public void CheckAddForeignKey()
-		//{
-		//    _provider.AddForeignKey("FK_Name", "PrimaryTable", "PrimaryColumn", "RefTable", "RefColumn");
-		//    Assert.That(_databaseEnvironmentStub.LattestSql, 
-		//        Is.EqualTo(
-		//            "ALTER TABLE PrimaryTable ADD CONSTRAINT FK_Name " +
-		//            "FOREIGN KEY (PrimaryColumn) REFERENCES RefTable (RefColumn)"));
-		//}
-
-		[Test]
+		[ExpectedException(typeof(ArgumentNullException))]
 		public void	DesignByContractException()
 		{
 			_provider.AddTable(null);
@@ -138,42 +110,61 @@ namespace Tipait.DbRefactor.Tests.Core
 		[Test]
 		public void StringColumn()
 		{
-			Column coolumn = new Column("Column1", typeof (string), 10);
-			SQLServerTypeToSqlProvider provider = new SQLServerTypeToSqlProvider();
-			ColumnPropertiesMapper mapper = provider.Char(10);
-			Assert.That(mapper.ColumnSql, Is.EqualTo("nchar(10) NULL"));
+			Column column = new Column("Column1", typeof (string), 10);
+			Assert.That(column.ColumnSQL(), Is.EqualTo("Column1 nvarchar(10) NULL"));
+		}
+
+		[Test]
+		public void IntNotNullColumn()
+		{
+			Column column = new Column("Column1", typeof(int), ColumnProperties.NotNull);
+			Assert.That(column.ColumnSQL(), Is.EqualTo("Column1 int NOT NULL"));
+		}
+
+		[Test]
+		public void BooleanColumnWithDefaultValue()
+		{
+			Column column = new Column("Column1", typeof(bool), ColumnProperties.NotNull, true);
+			Assert.That(column.ColumnSQL(), Is.EqualTo("Column1 bit NOT NULL DEFAULT 1"));
+		}
+
+		[Test]
+		public void PrimaryKeyColumn()
+		{
+			Column column = new Column("ID", typeof(int), ColumnProperties.PrimaryKeyWithIdentity);
+			Assert.That(column.ColumnSQL(), Is.EqualTo("ID int NOT NULL IDENTITY PRIMARY KEY"));
 		}
 
 		private void ReaderReturnTrueOnRead()
 		{
-			NMock2.Expect.AtLeast(1).On(reader)
+			Expect.AtLeast(1).On(reader)
 				.Method("Read")
 				.WithNoArguments()
-				.Will(NMock2.Return.Value(true));
+				.Will(Return.Value(true));
 		}
 
 		private void ReaderReturnFalseOnRead()
 		{
-			NMock2.Expect.Once.On(reader)
+			Expect.Once.On(reader)
 				.Method("Read")
 				.WithNoArguments()
-				.Will(NMock2.Return.Value(false));
+				.Will(Return.Value(false));
 		}
 
 		private void ExpectExecuteQueryOn(string query)
 		{
-			NMock2.Expect.Once.On(environment)
+			Expect.Once.On(environment)
 				.Method("ExecuteQuery")
 				.With(query)
-				.Will(NMock2.Return.Value(reader));
+				.Will(Return.Value(reader));
 		}
 
 		private void ExpectExecuteNonQueryOn(string query)
 		{
-			NMock2.Expect.Once.On(environment)
+			Expect.Once.On(environment)
 				.Method("ExecuteNonQuery")
 				.With(query)
-				.Will(NMock2.Return.Value(1));
+				.Will(Return.Value(1));
 		}
 
 		private void ExpectTableExistsQuery(string table)

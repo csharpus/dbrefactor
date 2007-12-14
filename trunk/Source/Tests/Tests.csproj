@@ -7,8 +7,8 @@
     <ProjectGuid>{882B6A93-67B8-45BF-8636-5796B1B1CBF8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Tipait.DbRefactor.Tests</RootNamespace>
-    <AssemblyName>Tipait.DbRefactor.Tests</AssemblyName>
+    <RootNamespace>DbRefactor.Tests</RootNamespace>
+    <AssemblyName>DbRefactor.Tests</AssemblyName>
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>Tipait.DbRefactor.snk</AssemblyOriginatorKeyFile>
     <DelaySign>False</DelaySign>
@@ -52,7 +52,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\DatabaseEnvironmentStub.cs" />
     <Compile Include="Core\SqlServerTransformationProviderTest.cs" />
   </ItemGroup>
   <ItemGroup>

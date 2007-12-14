@@ -8,17 +8,18 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
+
 using System;
 using System.Collections;
 
-namespace Migrator
+namespace DbRefactor
 {
 	/// <summary>
 	/// Comparer of Migration by their version attribute.
 	/// </summary>
-	public class MigrationTypeComparer : IComparer
+	public sealed class MigrationTypeComparer : IComparer
 	{
-		private bool _ascending = true;
+		private readonly bool _ascending = true;
 		
 		public MigrationTypeComparer(bool ascending)
 		{

@@ -8,25 +8,26 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
+
 using System;
-using System.Reflection;
 using System.Collections;
-using System.Text.RegularExpressions;
-
-using Migrator.Providers;
-using Migrator.Loggers;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using DbRefactor.Loggers;
+using DbRefactor.Providers;
+using Migrator.Loggers;
 
-namespace Migrator
-{	
+namespace DbRefactor
+{
 	/// <summary>
 	/// Migrations mediator.
 	/// </summary>
-	public class Migrator
+	public sealed class Migrator
 	{
-		private TransformationProvider _provider;
-		private ArrayList _migrationsTypes = new ArrayList();
-		private bool _trace;  // show trace for debugging
+		private readonly TransformationProvider _provider;
+		private readonly ArrayList _migrationsTypes = new ArrayList();
+		private readonly bool _trace;  // show trace for debugging
 		private ILogger _logger = new Logger(false);
 		private string[] _args;
 
@@ -35,15 +36,15 @@ namespace Migrator
 			get { return _args; }
 			set { _args = value; }
 		}
-	
+
 		public Migrator(string provider, string connectionString, Assembly migrationAssembly, bool trace)
 			: this(CreateProvider(provider, connectionString), migrationAssembly, trace)
-		{}
-		
+		{ }
+
 		public Migrator(string provider, string connectionString, Assembly migrationAssembly)
 			: this(CreateProvider(provider, connectionString), migrationAssembly, false)
-		{}
-		
+		{ }
+
 		public Migrator(TransformationProvider provider, Assembly migrationAssembly, bool trace)
 		{
 			_provider = provider;
@@ -52,7 +53,7 @@ namespace Migrator
 			logger.Attach(new ConsoleWriter());
 			_logger = logger;
 
-			
+
 			_migrationsTypes.AddRange(GetMigrationTypes(Assembly.GetExecutingAssembly()));
 
 			if (migrationAssembly != null)
@@ -60,19 +61,19 @@ namespace Migrator
 				_migrationsTypes.AddRange(GetMigrationTypes(migrationAssembly));
 				_setUpMigration = GetSetUpMigrationType(migrationAssembly);
 			}
-			
+
 			if (_trace)
 			{
 				_logger.Trace("Loaded migrations:");
-				foreach(Type t in _migrationsTypes)
+				foreach (Type t in _migrationsTypes)
 				{
 					_logger.Trace("{0} {1}", GetMigrationVersion(t).ToString().PadLeft(5), ToHumanName(t.Name));
 				}
 			}
-			
+
 			CheckForDuplicatedVersion();
 		}
-		
+
 		/// <summary>
 		/// Migrate the database to a specific version.
 		/// Runs all migration between the actual version and the
@@ -108,16 +109,16 @@ namespace Migrator
 				// When we migrate to an upper version,
 				// tranformations of the current version are
 				// already applied, so we started at the next version.
-				v = CurrentVersion+1;
+				v = CurrentVersion + 1;
 			}
 			else
 			{
 				v = CurrentVersion;
 			}
-			
+
 			_logger.Started(originalVersion, version);
 			RunGlobalSetUp();
-			
+
 			while (true)
 			{
 				migration = GetMigration(v);
@@ -131,9 +132,9 @@ namespace Migrator
 				if (migration != null)
 				{
 					string migrationName = ToHumanName(migration.GetType().Name);
-					
+
 					migration.TransformationProvider = _provider;
-					
+
 					try
 					{
 						RunSetUp();
@@ -152,21 +153,21 @@ namespace Migrator
 					catch (Exception ex)
 					{
 						_logger.Exception(v, migrationName, ex);
-						
+
 						// Oho! error! We rollback changes.
 						_logger.RollingBack(originalVersion);
 						_provider.Rollback();
-						
-						throw ex;
+
+						throw;
 					}
-					
+
 				}
 				else
 				{
 					// The migration number is not found
 					_logger.Skipping(v);
 				}
-				
+
 				if (goingUp)
 				{
 					if (v == version)
@@ -183,10 +184,10 @@ namespace Migrator
 						break;
 				}
 			}
-			
+
 			// Update and commit all changes
 			_provider.CurrentVersion = version;
-			
+
 			_provider.Commit();
 			_logger.Finished(originalVersion, version);
 
@@ -203,7 +204,7 @@ namespace Migrator
 				//throw;
 			}
 		}
-		
+
 		/// <summary>
 		/// Run all migrations up to the latest.
 		/// </summary>
@@ -211,7 +212,7 @@ namespace Migrator
 		{
 			MigrateTo(LastVersion);
 		}
-		
+
 		/// <summary>
 		/// Returns the last version of the migrations.
 		/// </summary>
@@ -220,11 +221,13 @@ namespace Migrator
 			get
 			{
 				if (_migrationsTypes.Count == 0)
+				{
 					return 0;
-				return GetMigrationVersion((Type) _migrationsTypes[_migrationsTypes.Count-1]);
+				}
+				return GetMigrationVersion((Type)_migrationsTypes[_migrationsTypes.Count - 1]);
 			}
 		}
-		
+
 		/// <summary>
 		/// Returns the current version of the database.
 		/// </summary>
@@ -235,7 +238,7 @@ namespace Migrator
 				return _provider.CurrentVersion;
 			}
 		}
-		
+
 		/// <summary>
 		/// Returns registered migration <see cref="System.Type">types</see>.
 		/// </summary>
@@ -246,20 +249,23 @@ namespace Migrator
 				return _migrationsTypes;
 			}
 		}
-		
+
 		/// <summary>
 		/// Get or set the event logger.
 		/// </summary>
-		public ILogger Logger {
-			get {
+		public ILogger Logger
+		{
+			get
+			{
 				return _logger;
 			}
-			set {
+			set
+			{
 				_logger = value;
 			}
 		}
-		
-		
+
+
 		/// <summary>
 		/// Returns the version of the migration
 		/// <see cref="MigrationAttribute">MigrationAttribute</see>.
@@ -268,12 +274,11 @@ namespace Migrator
 		/// <returns>Version number sepcified in the attribute</returns>
 		public static int GetMigrationVersion(Type t)
 		{
-			MigrationAttribute attrib = (MigrationAttribute) 
-					Attribute.GetCustomAttribute(t, typeof(MigrationAttribute));
-			
+			MigrationAttribute attrib = (MigrationAttribute)Attribute
+				.GetCustomAttribute(t, typeof(MigrationAttribute));
 			return attrib.Version;
 		}
-		
+
 		/// <summary>
 		/// Check for duplicated version in migrations.
 		/// </summary>
@@ -281,18 +286,18 @@ namespace Migrator
 		public void CheckForDuplicatedVersion()
 		{
 			ArrayList versions = new ArrayList();
-			
+
 			foreach (Type t in _migrationsTypes)
 			{
 				int version = GetMigrationVersion(t);
-				
+
 				if (versions.Contains(version))
 					throw new DuplicatedVersionException(version);
-				
+
 				versions.Add(version);
 			}
 		}
-						
+
 		/// <summary>
 		/// Collect migrations in one <c>Assembly</c>.
 		/// </summary>
@@ -301,25 +306,22 @@ namespace Migrator
 		public ArrayList GetMigrationTypes(Assembly asm)
 		{
 			ArrayList migrations = new ArrayList();
-			
+
 			foreach (Type t in asm.GetTypes())
 			{
-				MigrationAttribute attrib = (MigrationAttribute) 
-					Attribute.GetCustomAttribute(t, typeof(MigrationAttribute));
-				if (attrib != null && typeof(Migration).IsAssignableFrom(t))
-			    {
-					if (!attrib.Ignore)
-					{
-						migrations.Add(t);
-					}
-			    }
+				MigrationAttribute attrib = (MigrationAttribute)
+											Attribute.GetCustomAttribute(t, typeof(MigrationAttribute));
+				if (attrib != null && typeof(Migration).IsAssignableFrom(t) && !attrib.Ignore)
+				{
+					migrations.Add(t);
+				}
 			}
-			
+
 			migrations.Sort(new MigrationTypeComparer(true));
-			
+
 			return migrations;
 		}
-		
+
 		/// <summary>
 		/// Convert a classname to something more readable.
 		/// ex.: CreateATable => Create a table
@@ -331,14 +333,14 @@ namespace Migrator
 			string name = Regex.Replace(className, "([A-Z])", " $1").Substring(1);
 			return name.Substring(0, 1).ToUpper() + name.Substring(1).ToLower();
 		}
-		
-		
+
+
 		#region Helper methods
 		private static TransformationProvider CreateProvider(string name, string constr)
 		{
 			return new ProviderFactory().Create(name, constr);
 		}
-				
+
 		private Migration GetMigration(int version)
 		{
 			foreach (Type t in _migrationsTypes)
@@ -350,17 +352,17 @@ namespace Migrator
 			}
 			throw new Exception(String.Format("Migration {0} was not found", version));
 		}
-		
+
 		#endregion
 
-		private Type GetSetUpMigrationType(Assembly asm)
+		private static Type GetSetUpMigrationType(Assembly asm)
 		{
 			List<Type> setupList = new List<Type>();
 
 			foreach (Type t in asm.GetTypes())
 			{
 				SetUpMigrationAttribute attrib = (SetUpMigrationAttribute)
-					Attribute.GetCustomAttribute(t, typeof(SetUpMigrationAttribute));
+												 Attribute.GetCustomAttribute(t, typeof(SetUpMigrationAttribute));
 				if (attrib != null)
 				{
 					setupList.Add(t);
@@ -380,7 +382,7 @@ namespace Migrator
 			return setupList[0];
 		}
 
-		private Type _setUpMigration;
+		private readonly Type _setUpMigration;
 
 		public void RunGlobalSetUp()
 		{
