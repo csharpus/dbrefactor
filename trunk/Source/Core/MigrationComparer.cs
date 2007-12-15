@@ -17,19 +17,19 @@ namespace DbRefactor
 	/// <summary>
 	/// Comparer of Migration by their version attribute.
 	/// </summary>
-	public sealed class MigrationTypeComparer : IComparer
+	sealed class MigrationTypeComparer : IComparer
 	{
 		private readonly bool _ascending = true;
-		
+
 		public MigrationTypeComparer(bool ascending)
 		{
 			_ascending = ascending;
 		}
-				
+
 		public int Compare(object x, object y)
 		{
-			MigrationAttribute attribOfX = (MigrationAttribute) Attribute.GetCustomAttribute((Type) x, typeof(MigrationAttribute));
-			MigrationAttribute attribOfY = (MigrationAttribute) Attribute.GetCustomAttribute((Type) y, typeof(MigrationAttribute));
+			MigrationAttribute attribOfX = (MigrationAttribute)Attribute.GetCustomAttribute((Type)x, typeof(MigrationAttribute));
+			MigrationAttribute attribOfY = (MigrationAttribute)Attribute.GetCustomAttribute((Type)y, typeof(MigrationAttribute));
 
 			if (_ascending)
 			{

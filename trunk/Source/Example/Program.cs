@@ -4,6 +4,7 @@ using System.Text;
 using System.Configuration;
 using System.Reflection;
 using DbRefactor.Tools.Loggers;
+using DbRefactor;
 
 namespace Example
 {
@@ -11,10 +12,9 @@ namespace Example
 	{
 		static void Main()
 		{
-			DbRefactor.Migrator migrator 
-				= new DbRefactor.Migrator(
-					ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
-					Assembly.GetExecutingAssembly());
+			Migrator migrator = new Migrator(
+				ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
+				Assembly.GetExecutingAssembly());
 			migrator.Logger = new Logger(true, new ConsoleWriter());
 			migrator.MigrateToLastVersion();
 		}

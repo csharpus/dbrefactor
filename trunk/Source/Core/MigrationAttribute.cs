@@ -18,9 +18,6 @@ namespace DbRefactor
 	/// </summary>
 	public sealed class MigrationAttribute : Attribute
 	{
-		private int _version;
-		private bool _ignore = false;
-
 		/// <summary>
 		/// Describe the migration
 		/// </summary>
@@ -29,6 +26,8 @@ namespace DbRefactor
 		{
 			_version = version;
 		}
+
+		private int _version;
 
 		/// <summary>
 		/// The version reflected by the migration
@@ -44,6 +43,8 @@ namespace DbRefactor
 				_version = value;
 			}
 		}
+
+		private bool _ignore = false;
 
 		/// <summary>
 		/// Set to <c>true</c> to ignore this migration.

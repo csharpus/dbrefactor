@@ -31,7 +31,7 @@ namespace DbRefactor.Providers
 
 		private readonly IDatabaseEnvironment _environment;
 
-		public TransformationProvider(IDatabaseEnvironment environment)
+		internal TransformationProvider(IDatabaseEnvironment environment)
 		{
 			_environment = environment;
 		}

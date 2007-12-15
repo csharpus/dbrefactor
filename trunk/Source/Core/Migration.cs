@@ -173,7 +173,8 @@ namespace DbRefactor
 
 		protected Column Text(string name, int defaultValue)
 		{
-			return new Column(name, typeof(string), defaultTextLength, ColumnProperties.Null, defaultValue);
+			return new Column(name, typeof(string), defaultTextLength, 
+				ColumnProperties.Null, defaultValue);
 		}
 
 		protected Column Text(string name, ColumnProperties properties, int defaultValue)
@@ -236,7 +237,8 @@ namespace DbRefactor
 
 		protected Column Decimal(string name, int defaultValue)
 		{
-			return new DecimalColumn(name, defaultWhole, defaultWhole, ColumnProperties.Null, defaultValue);
+			return new DecimalColumn(name, defaultWhole, defaultWhole, 
+				ColumnProperties.Null, defaultValue);
 		}
 
 		protected Column Decimal(string name, ColumnProperties properties, int defaultValue)
@@ -259,7 +261,8 @@ namespace DbRefactor
 			return new DecimalColumn(name, whole, remainder, ColumnProperties.Null, defaultValue);
 		}
 
-		protected Column Decimal(string name, int whole, int remainder, ColumnProperties properties, int defaultValue)
+		protected Column Decimal(string name, int whole, int remainder, 
+			ColumnProperties properties, int defaultValue)
 		{
 			return new DecimalColumn(name, whole, remainder, properties, defaultValue);
 		}
@@ -284,7 +287,8 @@ namespace DbRefactor
 			return new Column(name, typeof(bool), properties, defaultValue);
 		}
 
-		protected void AddString(string table, string name, int size, ColumnProperties properties, string defaultValue)
+		protected void AddString(string table, string name, int size, ColumnProperties properties, 
+			string defaultValue)
 		{
 			Database.AddColumn(table, new Column(name, typeof(string), size, properties, defaultValue));
 		}
@@ -301,12 +305,14 @@ namespace DbRefactor
 
 		protected void AddText(string table, string name, int defaultValue)
 		{
-			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength, ColumnProperties.Null, defaultValue));
+			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength, 
+				ColumnProperties.Null, defaultValue));
 		}
 
 		protected void AddText(string table, string name, ColumnProperties properties, int defaultValue)
 		{
-			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength, properties, defaultValue));
+			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength, 
+				properties, defaultValue));
 		}
 
 		protected void AddInt(string table, string name)
@@ -341,10 +347,12 @@ namespace DbRefactor
 
 		protected void AddDateTime(string table, string name, int defaultValue)
 		{
-			Database.AddColumn(table, new Column(name, typeof(DateTime), ColumnProperties.Null, defaultValue));
+			Database.AddColumn(table, new Column(name, typeof(DateTime), 
+				ColumnProperties.Null, defaultValue));
 		}
 
-		protected void AddDateTime(string table, string name, ColumnProperties properties, int defaultValue)
+		protected void AddDateTime(string table, string name, ColumnProperties properties, 
+			int defaultValue)
 		{
 			Database.AddColumn(table, new Column(name, typeof(DateTime), properties, defaultValue));
 		}
@@ -361,12 +369,15 @@ namespace DbRefactor
 
 		protected void AddDecimal(string table, string name, int defaultValue)
 		{
-			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole, ColumnProperties.Null, defaultValue));
+			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole, 
+				ColumnProperties.Null, defaultValue));
 		}
 
-		protected void AddDecimal(string table, string name, ColumnProperties properties, int defaultValue)
+		protected void AddDecimal(string table, string name, ColumnProperties properties, 
+			int defaultValue)
 		{
-			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole, properties, defaultValue));
+			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole, 
+				properties, defaultValue));
 		}
 
 		protected void AddDecimal(string table, string name, int whole, int remainder)
@@ -374,19 +385,23 @@ namespace DbRefactor
 			Database.AddColumn(table, new DecimalColumn(name, whole, remainder));
 		}
 
-		protected void AddDecimal(string table, string name, int whole, int remainder, ColumnProperties properties)
+		protected void AddDecimal(string table, string name, int whole, int remainder, 
+			ColumnProperties properties)
 		{
 			Database.AddColumn(table, new DecimalColumn(name, whole, remainder, properties));
 		}
 
 		protected void AddDecimal(string table, string name, int whole, int remainder, int defaultValue)
 		{
-			Database.AddColumn(table, new DecimalColumn(name, whole, remainder, ColumnProperties.Null, defaultValue));
+			Database.AddColumn(table, new DecimalColumn(name, whole, remainder, 
+				ColumnProperties.Null, defaultValue));
 		}
 
-		protected void AddDecimal(string table, string name, int whole, int remainder, ColumnProperties properties, int defaultValue)
+		protected void AddDecimal(string table, string name, int whole, int remainder, 
+			ColumnProperties properties, int defaultValue)
 		{
-			Database.AddColumn(table, new DecimalColumn(name, whole, remainder, properties, defaultValue));
+			Database.AddColumn(table, new DecimalColumn(name, whole, remainder, 
+				properties, defaultValue));
 		}
 
 		protected void AddBoolean(string table, string name)
@@ -401,10 +416,12 @@ namespace DbRefactor
 
 		protected void AddBoolean(string table, string name, bool defaultValue)
 		{
-			Database.AddColumn(table, new Column(name, typeof(bool), ColumnProperties.Null, defaultValue));
+			Database.AddColumn(table, new Column(name, typeof(bool), ColumnProperties.Null, 
+				defaultValue));
 		}
 
-		protected void AddBoolean(string table, string name, ColumnProperties properties, bool defaultValue)
+		protected void AddBoolean(string table, string name, ColumnProperties properties, 
+			bool defaultValue)
 		{
 			Database.AddColumn(table, new Column(name, typeof(bool), properties, defaultValue));
 		}
@@ -414,9 +431,11 @@ namespace DbRefactor
 			Database.AddTable(name, columns);
 		}
 
-		protected void AddForeignKey(string name, string foreignKeyTable, string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)
+		protected void AddForeignKey(string name, string foreignKeyTable, 
+			string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)
 		{
-			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, primaryKeyTable, primaryKeyColumn);
+			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, 
+				primaryKeyTable, primaryKeyColumn);
 		}
 		
 		protected void DropTable(string name)

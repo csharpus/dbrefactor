@@ -141,9 +141,9 @@ namespace DbRefactor.Console
 		private void CheckArguments()
 		{
 			if (_connectionString == null)
-				throw new ArgumentException("Connection string missing", "connectionString");
+				throw new ArgumentException("Connection string is missing", "connectionString");
 			if (_migrationsAssembly == null)
-				throw new ArgumentException("Migrations assembly missing", "migrationsAssembly");
+				throw new ArgumentException("Migrations assembly is missing", "migrationsAssembly");
 		}
 				
 		private DbRefactor.Migrator GetMigrator()

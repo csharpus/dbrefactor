@@ -309,7 +309,7 @@ namespace DbRefactor
 			foreach (Type t in asm.GetTypes())
 			{
 				MigrationAttribute attrib = (MigrationAttribute)
-											Attribute.GetCustomAttribute(t, typeof(MigrationAttribute));
+					Attribute.GetCustomAttribute(t, typeof(MigrationAttribute));
 				if (attrib != null && typeof(Migration).IsAssignableFrom(t) && !attrib.Ignore)
 				{
 					migrations.Add(t);
@@ -361,7 +361,7 @@ namespace DbRefactor
 			foreach (Type t in asm.GetTypes())
 			{
 				SetUpMigrationAttribute attrib = (SetUpMigrationAttribute)
-												 Attribute.GetCustomAttribute(t, typeof(SetUpMigrationAttribute));
+					Attribute.GetCustomAttribute(t, typeof(SetUpMigrationAttribute));
 				if (attrib != null)
 				{
 					setupList.Add(t);

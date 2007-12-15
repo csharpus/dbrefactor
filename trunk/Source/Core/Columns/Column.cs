@@ -23,11 +23,11 @@ namespace DbRefactor.Columns
 	public enum ColumnProperties
 	{
 		/// <summary>
-		/// Null is allowable
+		/// Null is allowed
 		/// </summary>
 		Null = 1,
 		/// <summary>
-		/// Null is not allowable
+		/// Null is not allowed
 		/// </summary>
 		NotNull = 2,
 		/// <summary>

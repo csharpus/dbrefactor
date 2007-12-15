@@ -1,3 +1,5 @@
+using System;
+
 namespace DbRefactor.Providers.ForeignKeys
 {
 	sealed class ForeignKeyConstraintMapper
@@ -8,14 +10,14 @@ namespace DbRefactor.Providers.ForeignKeys
 			{
 				case ForeignKeyConstraint.Cascade:
 					return Cascade;
-				case ForeignKeyConstraint.Restrict:
-					return Restrict;
 				case ForeignKeyConstraint.SetDefault:
 					return SetDefault;
 				case ForeignKeyConstraint.SetNull:
 					return SetNull;
-				default:
+				case ForeignKeyConstraint.NoAction:
 					return NoAction;
+				default:
+					throw new ArgumentOutOfRangeException("constraint");
 			}
 		}
 
@@ -32,11 +34,6 @@ namespace DbRefactor.Providers.ForeignKeys
 		public string NoAction
 		{
 			get { return "NO ACTION"; }
-		}
-
-		public string Restrict
-		{
-			get { return "RESTRICT"; }
 		}
 
 		public string SetDefault
