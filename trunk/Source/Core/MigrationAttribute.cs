@@ -20,7 +20,7 @@ namespace DbRefactor
 	{
 		private int _version;
 		private bool _ignore = false;
-		
+
 		/// <summary>
 		/// Describe the migration
 		/// </summary>
@@ -29,31 +29,36 @@ namespace DbRefactor
 		{
 			_version = version;
 		}
-		
+
 		/// <summary>
 		/// The version reflected by the migration
 		/// </summary>
 		public int Version
 		{
-			get {
+			get
+			{
 				return _version;
 			}
-			set {
+			set
+			{
 				_version = value;
 			}
 		}
-		
+
 		/// <summary>
 		/// Set to <c>true</c> to ignore this migration.
 		/// </summary>
-		public bool Ignore {
-			get {
+		public bool Ignore
+		{
+			get
+			{
 				return _ignore;
 			}
-			set {
+			set
+			{
 				_ignore = value;
 			}
 		}
-		
+
 	}
 }
