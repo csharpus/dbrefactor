@@ -2,7 +2,7 @@ using System.Data;
 
 namespace DbRefactor.Providers
 {
-	interface IDatabaseEnvironment
+	public interface IDatabaseEnvironment
 	{
 		int ExecuteNonQuery(string sql);
 

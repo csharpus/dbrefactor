@@ -234,7 +234,7 @@ namespace DbRefactor.Providers
 
 		private string JoinIndexes(Column[] columns)
 		{
-			ArrayList indexes = new ArrayList(columns.Length);
+			List<string> indexes = new List<string>(columns.Length);
 			foreach (Column column in columns)
 			{
 				string indexSql = column.IndexSQL();
@@ -249,7 +249,7 @@ namespace DbRefactor.Providers
 				return null;
 			}
 
-			return String.Join(", ", (string[])indexes.ToArray(typeof(string)));
+			return String.Join(", ", indexes.ToArray());
 		}
 
 

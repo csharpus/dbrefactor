@@ -25,7 +25,7 @@ namespace DbRefactor
 	public sealed class Migrator
 	{
 		private readonly TransformationProvider _provider;
-		private readonly ArrayList _migrationsTypes = new ArrayList();
+		private readonly List<Type> _migrationsTypes = new List<Type>();
 		private readonly bool _trace;  // show trace for debugging
 		private ILogger _logger = new Logger(false);
 		private string[] _args;
@@ -241,7 +241,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Returns registered migration <see cref="System.Type">types</see>.
 		/// </summary>
-		public ArrayList MigrationsTypes
+		public List<Type> MigrationsTypes
 		{
 			get
 			{
@@ -282,9 +282,9 @@ namespace DbRefactor
 		/// Check for duplicated version in migrations.
 		/// </summary>
 		/// <exception cref="CheckForDuplicatedVersion">CheckForDuplicatedVersion</exception>
-		public void CheckForDuplicatedVersion()
+		private void CheckForDuplicatedVersion()
 		{
-			ArrayList versions = new ArrayList();
+			List<int> versions = new List<int>();
 
 			foreach (Type t in _migrationsTypes)
 			{
@@ -302,9 +302,9 @@ namespace DbRefactor
 		/// </summary>
 		/// <param name="asm">The <c>Assembly</c> to browse.</param>
 		/// <returns>The migrations collection</returns>
-		public ArrayList GetMigrationTypes(Assembly asm)
+		private List<Type> GetMigrationTypes(Assembly asm)
 		{
-			ArrayList migrations = new ArrayList();
+			List<Type> migrations = new List<Type>();
 
 			foreach (Type t in asm.GetTypes())
 			{
@@ -327,7 +327,7 @@ namespace DbRefactor
 		/// </summary>
 		/// <param name="className"></param>
 		/// <returns></returns>
-		public static string ToHumanName(string className)
+		internal static string ToHumanName(string className)
 		{
 			string name = Regex.Replace(className, "([A-Z])", " $1").Substring(1);
 			return name.Substring(0, 1).ToUpper() + name.Substring(1).ToLower();
@@ -383,22 +383,22 @@ namespace DbRefactor
 
 		private readonly Type _setUpMigration;
 
-		public void RunGlobalSetUp()
+		private void RunGlobalSetUp()
 		{
 			ExecuteSetupMethodWith(typeof(MigratorSetUp));
 		}
 
-		public void RunSetUp()
+		private void RunSetUp()
 		{
 			ExecuteSetupMethodWith(typeof(MigrationSetUp));
 		}
 
-		public void RunGlobalTearDown()
+		private void RunGlobalTearDown()
 		{
 			ExecuteSetupMethodWith(typeof(MigratorTearDown));
 		}
 
-		public void RunTearDown()
+		private void RunTearDown()
 		{
 			ExecuteSetupMethodWith(typeof(MigrationTearDown));
 		}

@@ -135,6 +135,25 @@ namespace DbRefactor.Tests.Core
 			Assert.That(column.ColumnSQL(), Is.EqualTo("ID int NOT NULL IDENTITY PRIMARY KEY"));
 		}
 
+		[Test]
+		public void CreateTableWithOneColumn()
+		{
+			ExpectExecuteNonQueryOn("CREATE TABLE [Table1] (ID int NULL)");
+			_provider.AddTable("Table1",
+				new Column("ID", typeof(int)));
+			mocks.VerifyAllExpectationsHaveBeenMet();
+		}
+
+		[Test]
+		public void CreateTableWithTwoColumns()
+		{
+			ExpectExecuteNonQueryOn("CREATE TABLE [Table1] (ID int NULL, Name nvarchar(10) NULL)");
+			_provider.AddTable("Table1",
+				new Column("ID", typeof(int)),
+				new Column("Name", typeof(string), 10));
+			mocks.VerifyAllExpectationsHaveBeenMet();
+		}
+
 		private void ReaderReturnTrueOnRead()
 		{
 			Expect.AtLeast(1).On(reader)

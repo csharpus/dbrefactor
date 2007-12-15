@@ -11,13 +11,14 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace DbRefactor
 {
 	/// <summary>
 	/// Comparer of Migration by their version attribute.
 	/// </summary>
-	sealed class MigrationTypeComparer : IComparer
+	sealed class MigrationTypeComparer : IComparer<Type>
 	{
 		private readonly bool _ascending = true;
 
@@ -26,10 +27,10 @@ namespace DbRefactor
 			_ascending = ascending;
 		}
 
-		public int Compare(object x, object y)
+		public int Compare(System.Type x, System.Type y)
 		{
-			MigrationAttribute attribOfX = (MigrationAttribute)Attribute.GetCustomAttribute((Type)x, typeof(MigrationAttribute));
-			MigrationAttribute attribOfY = (MigrationAttribute)Attribute.GetCustomAttribute((Type)y, typeof(MigrationAttribute));
+			MigrationAttribute attribOfX = (MigrationAttribute)Attribute.GetCustomAttribute(x, typeof(MigrationAttribute));
+			MigrationAttribute attribOfY = (MigrationAttribute)Attribute.GetCustomAttribute(y, typeof(MigrationAttribute));
 
 			if (_ascending)
 			{

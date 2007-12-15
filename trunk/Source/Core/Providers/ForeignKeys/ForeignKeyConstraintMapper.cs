@@ -9,36 +9,16 @@ namespace DbRefactor.Providers.ForeignKeys
 			switch(constraint)
 			{
 				case ForeignKeyConstraint.Cascade:
-					return Cascade;
+					return "CASCADE";
 				case ForeignKeyConstraint.SetDefault:
-					return SetDefault;
+					return "SET DEFAULT";
 				case ForeignKeyConstraint.SetNull:
-					return SetNull;
+					return "SET NULL";
 				case ForeignKeyConstraint.NoAction:
-					return NoAction;
+					return "NO ACTION";
 				default:
 					throw new ArgumentOutOfRangeException("constraint");
 			}
-		}
-
-		public string Cascade
-		{
-			get { return "CASCADE"; }
-		}
-
-		public string SetNull
-		{
-			get { return "SET NULL"; }
-		}
-
-		public string NoAction
-		{
-			get { return "NO ACTION"; }
-		}
-
-		public string SetDefault
-		{
-			get { return "SET DEFAULT"; }
 		}
 	}
 }

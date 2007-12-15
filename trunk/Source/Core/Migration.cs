@@ -13,6 +13,7 @@ using System;
 using DbRefactor.Columns;
 using DbRefactor.Providers;
 using DbRefactor.Tools.Loggers;
+using System.Data;
 
 namespace DbRefactor
 {
@@ -173,7 +174,7 @@ namespace DbRefactor
 
 		protected Column Text(string name, int defaultValue)
 		{
-			return new Column(name, typeof(string), defaultTextLength, 
+			return new Column(name, typeof(string), defaultTextLength,
 				ColumnProperties.Null, defaultValue);
 		}
 
@@ -237,7 +238,7 @@ namespace DbRefactor
 
 		protected Column Decimal(string name, int defaultValue)
 		{
-			return new DecimalColumn(name, defaultWhole, defaultWhole, 
+			return new DecimalColumn(name, defaultWhole, defaultWhole,
 				ColumnProperties.Null, defaultValue);
 		}
 
@@ -261,7 +262,7 @@ namespace DbRefactor
 			return new DecimalColumn(name, whole, remainder, ColumnProperties.Null, defaultValue);
 		}
 
-		protected Column Decimal(string name, int whole, int remainder, 
+		protected Column Decimal(string name, int whole, int remainder,
 			ColumnProperties properties, int defaultValue)
 		{
 			return new DecimalColumn(name, whole, remainder, properties, defaultValue);
@@ -287,7 +288,7 @@ namespace DbRefactor
 			return new Column(name, typeof(bool), properties, defaultValue);
 		}
 
-		protected void AddString(string table, string name, int size, ColumnProperties properties, 
+		protected void AddString(string table, string name, int size, ColumnProperties properties,
 			string defaultValue)
 		{
 			Database.AddColumn(table, new Column(name, typeof(string), size, properties, defaultValue));
@@ -305,13 +306,13 @@ namespace DbRefactor
 
 		protected void AddText(string table, string name, int defaultValue)
 		{
-			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength, 
+			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength,
 				ColumnProperties.Null, defaultValue));
 		}
 
 		protected void AddText(string table, string name, ColumnProperties properties, int defaultValue)
 		{
-			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength, 
+			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength,
 				properties, defaultValue));
 		}
 
@@ -347,11 +348,11 @@ namespace DbRefactor
 
 		protected void AddDateTime(string table, string name, int defaultValue)
 		{
-			Database.AddColumn(table, new Column(name, typeof(DateTime), 
+			Database.AddColumn(table, new Column(name, typeof(DateTime),
 				ColumnProperties.Null, defaultValue));
 		}
 
-		protected void AddDateTime(string table, string name, ColumnProperties properties, 
+		protected void AddDateTime(string table, string name, ColumnProperties properties,
 			int defaultValue)
 		{
 			Database.AddColumn(table, new Column(name, typeof(DateTime), properties, defaultValue));
@@ -369,14 +370,14 @@ namespace DbRefactor
 
 		protected void AddDecimal(string table, string name, int defaultValue)
 		{
-			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole, 
+			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole,
 				ColumnProperties.Null, defaultValue));
 		}
 
-		protected void AddDecimal(string table, string name, ColumnProperties properties, 
+		protected void AddDecimal(string table, string name, ColumnProperties properties,
 			int defaultValue)
 		{
-			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole, 
+			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole,
 				properties, defaultValue));
 		}
 
@@ -385,7 +386,7 @@ namespace DbRefactor
 			Database.AddColumn(table, new DecimalColumn(name, whole, remainder));
 		}
 
-		protected void AddDecimal(string table, string name, int whole, int remainder, 
+		protected void AddDecimal(string table, string name, int whole, int remainder,
 			ColumnProperties properties)
 		{
 			Database.AddColumn(table, new DecimalColumn(name, whole, remainder, properties));
@@ -393,14 +394,14 @@ namespace DbRefactor
 
 		protected void AddDecimal(string table, string name, int whole, int remainder, int defaultValue)
 		{
-			Database.AddColumn(table, new DecimalColumn(name, whole, remainder, 
+			Database.AddColumn(table, new DecimalColumn(name, whole, remainder,
 				ColumnProperties.Null, defaultValue));
 		}
 
-		protected void AddDecimal(string table, string name, int whole, int remainder, 
+		protected void AddDecimal(string table, string name, int whole, int remainder,
 			ColumnProperties properties, int defaultValue)
 		{
-			Database.AddColumn(table, new DecimalColumn(name, whole, remainder, 
+			Database.AddColumn(table, new DecimalColumn(name, whole, remainder,
 				properties, defaultValue));
 		}
 
@@ -416,11 +417,11 @@ namespace DbRefactor
 
 		protected void AddBoolean(string table, string name, bool defaultValue)
 		{
-			Database.AddColumn(table, new Column(name, typeof(bool), ColumnProperties.Null, 
+			Database.AddColumn(table, new Column(name, typeof(bool), ColumnProperties.Null,
 				defaultValue));
 		}
 
-		protected void AddBoolean(string table, string name, ColumnProperties properties, 
+		protected void AddBoolean(string table, string name, ColumnProperties properties,
 			bool defaultValue)
 		{
 			Database.AddColumn(table, new Column(name, typeof(bool), properties, defaultValue));
@@ -431,13 +432,13 @@ namespace DbRefactor
 			Database.AddTable(name, columns);
 		}
 
-		protected void AddForeignKey(string name, string foreignKeyTable, 
+		protected void AddForeignKey(string name, string foreignKeyTable,
 			string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)
 		{
-			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, 
+			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn,
 				primaryKeyTable, primaryKeyColumn);
 		}
-		
+
 		protected void DropTable(string name)
 		{
 			Database.DropTable(name);
@@ -451,6 +452,21 @@ namespace DbRefactor
 		protected void DropColumn(string table, string column)
 		{
 			Database.DropColumn(table, column);
+		}
+
+		protected void ExecuteNonQuery(string sql, params string[] values)
+		{
+			Database.ExecuteNonQuery(sql, values);
+		}
+
+		protected IDataReader ExecuteQuery(string sql, params string[] values)
+		{
+			return Database.ExecuteQuery(sql, values);
+		}
+
+		protected object ExecuteScalar(string sql, params string[] values)
+		{
+			return Database.ExecuteScalar(sql, values);
 		}
 	}
 }
