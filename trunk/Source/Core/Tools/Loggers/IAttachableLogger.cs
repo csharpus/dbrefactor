@@ -10,7 +10,7 @@
 #endregion
 using System;
 
-namespace Migrator.Loggers
+namespace DbRefactor.Tools.Loggers
 {
 	/// <summary>
 	/// ILogger interface. 

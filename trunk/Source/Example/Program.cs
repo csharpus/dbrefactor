@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Configuration;
 using System.Reflection;
-using DbRefactor.Loggers;
-using Migrator.Loggers;
+using DbRefactor.Tools.Loggers;
 
 namespace Example
 {

@@ -16,8 +16,8 @@ using System.Data;
 using DbRefactor.Columns;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Tools.DesignByContract;
-using Migrator.Loggers;
-using ForeignKeyConstraint=DbRefactor.Providers.ForeignKeys.ForeignKeyConstraint;
+using DbRefactor.Tools.Loggers;
+using ForeignKeyConstraint = DbRefactor.Providers.ForeignKeys.ForeignKeyConstraint;
 
 namespace DbRefactor.Providers
 {

@@ -12,7 +12,7 @@ using System;
 
 using NAnt.Core;
 
-using Migrator.Loggers;
+using DbRefactor.Tools.Loggers;
 
 namespace Migrator.NAnt.Loggers
 {

@@ -12,7 +12,7 @@
 using System;
 using DbRefactor.Columns;
 using DbRefactor.Providers;
-using Migrator.Loggers;
+using DbRefactor.Tools.Loggers;
 
 namespace DbRefactor
 {

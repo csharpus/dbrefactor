@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Migrator.Loggers
+namespace DbRefactor.Tools.Loggers
 {
 	public interface ILogger
 	{

@@ -42,11 +42,6 @@
     <Compile Include="Columns\DecimalColumn.cs" />
     <Compile Include="DuplicatedVersionException.cs" />
     <Compile Include="IrreversibleMigrationException.cs" />
-    <Compile Include="Tools\Loggers\ConsoleWriter.cs" />
-    <Compile Include="Tools\Loggers\IAttachableLogger.cs" />
-    <Compile Include="Tools\Loggers\ILogger.cs" />
-    <Compile Include="Tools\Loggers\ILogWriter.cs" />
-    <Compile Include="Tools\Loggers\Logger.cs" />
     <Compile Include="Migration.cs" />
     <Compile Include="MigrationAttribute.cs" />
     <Compile Include="MigrationComparer.cs" />
@@ -62,6 +57,11 @@
     <Compile Include="Providers\TypeToSqlProviders\SQLServerTypeToSqlProvider.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Tools\DesignByContract\DesignByContract.cs" />
+    <Compile Include="Tools\Loggers\ConsoleWriter.cs" />
+    <Compile Include="Tools\Loggers\IAttachableLogger.cs" />
+    <Compile Include="Tools\Loggers\ILogger.cs" />
+    <Compile Include="Tools\Loggers\ILogWriter.cs" />
+    <Compile Include="Tools\Loggers\Logger.cs" />
     <Compile Include="Tools\SchemaDumper.cs" />
   </ItemGroup>
   <ItemGroup>

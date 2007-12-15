@@ -11,7 +11,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Migrator.Loggers
+namespace DbRefactor.Tools.Loggers
 {
 	/// <summary>
 	/// Text logger for the migration mediator

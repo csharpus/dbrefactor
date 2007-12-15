@@ -14,9 +14,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using DbRefactor.Loggers;
+using DbRefactor.Tools.Loggers;
 using DbRefactor.Providers;
-using Migrator.Loggers;
 
 namespace DbRefactor
 {
