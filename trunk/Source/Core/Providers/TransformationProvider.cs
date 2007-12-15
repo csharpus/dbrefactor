@@ -125,7 +125,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(oldName, "oldName");
 			Check.RequireNonEmpty(newName, "newName");
 			ExecuteNonQuery("EXEC sp_rename '[{0}]', '[{1}]', 'OBJECT'",
-			                oldName, newName);
+				oldName, newName);
 		}
 
 		public bool ColumnExists(string table, string column)
@@ -217,7 +217,7 @@ namespace DbRefactor.Providers
 			// Can't share the connection so two phase modif
 			foreach (string constraint in constraints)
 			{
-				RemoveForeignKey(constraint, table);
+				RemoveForeignKey(table, constraint);
 			}
 		}
 
@@ -358,7 +358,8 @@ namespace DbRefactor.Providers
 			//    Logger.Warn("Primary key {0} already exists", name);
 			//    return;
 			//}
-			ExecuteNonQuery("ALTER TABLE [{0}] ADD CONSTRAINT {1} PRIMARY KEY ({2}) ", table, name, String.Join(",", columns));
+			ExecuteNonQuery("ALTER TABLE [{0}] ADD CONSTRAINT {1} PRIMARY KEY ({2}) ", 
+				table, name, String.Join(",", columns));
 		}
 
 		/// <summary>
@@ -441,15 +442,15 @@ namespace DbRefactor.Providers
 		/// <summary>
 		/// Removes a constraint.
 		/// </summary>
-		/// <param name="name">Constraint name</param>
 		/// <param name="table">Table owning the constraint</param>
-		public void RemoveForeignKey(string name, string table)
+		/// <param name="name">Constraint name</param>
+		public void RemoveForeignKey(string table, string key)
 		{
-			Check.RequireNonEmpty(name, "name");
+			Check.RequireNonEmpty(key, "key");
 			Check.RequireNonEmpty(table, "table");
 			//if (TableExists(table) && ConstraintExists(name, table))
 			//{
-			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT {1}", table, name);
+			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT {1}", table, key);
 			//}
 		}
 
@@ -472,7 +473,7 @@ namespace DbRefactor.Providers
 		{
 			List<Column> columns = new List<Column>();
 
-			using (IDataReader reader = ExecuteQuery(String.Format("select COLUMN_NAME from information_schema.columns where table_name = '{0}';", table)))
+			using (IDataReader reader = ExecuteQuery("select COLUMN_NAME from information_schema.columns where table_name = '{0}';", table))
 			{
 				while (reader.Read())
 				{

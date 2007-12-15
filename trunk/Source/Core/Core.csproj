@@ -10,7 +10,7 @@
     <RootNamespace>DbRefactor</RootNamespace>
     <AssemblyName>DbRefactor</AssemblyName>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Tipait.DbRefactor.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>DbRefactor.snk</AssemblyOriginatorKeyFile>
     <DelaySign>False</DelaySign>
     <AssemblyOriginatorKeyMode>File</AssemblyOriginatorKeyMode>
   </PropertyGroup>
@@ -65,7 +65,7 @@
     <Compile Include="Tools\SchemaDumper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Tipait.DbRefactor.snk" />
+    <None Include="DbRefactor.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

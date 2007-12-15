@@ -10,7 +10,7 @@
     <RootNamespace>DbRefactor.Tests</RootNamespace>
     <AssemblyName>DbRefactor.Tests</AssemblyName>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Tipait.DbRefactor.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>DbRefactor.snk</AssemblyOriginatorKeyFile>
     <DelaySign>False</DelaySign>
     <AssemblyOriginatorKeyMode>File</AssemblyOriginatorKeyMode>
   </PropertyGroup>
@@ -55,7 +55,7 @@
     <Compile Include="Core\SqlServerTransformationProviderTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Tipait.DbRefactor.snk" />
+    <None Include="DbRefactor.snk" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Providers\" />

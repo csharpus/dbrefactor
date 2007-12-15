@@ -19,7 +19,7 @@ namespace Example
 
 		public override void Down()
 		{
-			DropForeignKey("FK_Child_Parent", "Child");
+			DropForeignKey("Child", "FK_Child_Parent");
 
 			DropTable("Child");
 		}

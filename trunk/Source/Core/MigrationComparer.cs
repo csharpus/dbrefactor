@@ -30,11 +30,15 @@ namespace DbRefactor
 		{
 			MigrationAttribute attribOfX = (MigrationAttribute) Attribute.GetCustomAttribute((Type) x, typeof(MigrationAttribute));
 			MigrationAttribute attribOfY = (MigrationAttribute) Attribute.GetCustomAttribute((Type) y, typeof(MigrationAttribute));
-			
+
 			if (_ascending)
+			{
 				return attribOfX.Version - attribOfY.Version;
+			}
 			else
+			{
 				return attribOfY.Version - attribOfX.Version;
+			}
 		}
 	}
 }

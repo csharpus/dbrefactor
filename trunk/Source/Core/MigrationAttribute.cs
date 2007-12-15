@@ -59,6 +59,5 @@ namespace DbRefactor
 				_ignore = value;
 			}
 		}
-
 	}
 }

@@ -414,19 +414,19 @@ namespace DbRefactor
 			Database.AddTable(name, columns);
 		}
 
+		protected void AddForeignKey(string name, string foreignKeyTable, string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)
+		{
+			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, primaryKeyTable, primaryKeyColumn);
+		}
+		
 		protected void DropTable(string name)
 		{
 			Database.DropTable(name);
 		}
 
-		protected void AddForeignKey(string name, string foreignKeyTable, string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)
+		protected void DropForeignKey(string table, string key)
 		{
-			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, primaryKeyTable, primaryKeyColumn);
-		}
-
-		protected void DropForeignKey(string name, string table)
-		{
-			Database.RemoveForeignKey(name, table);
+			Database.RemoveForeignKey(table, key);
 		}
 
 		protected void DropColumn(string table, string column)
