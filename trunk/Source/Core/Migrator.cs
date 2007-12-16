@@ -44,7 +44,7 @@ namespace DbRefactor
 			: this(CreateProvider(connectionString), migrationAssembly, false)
 		{ }
 
-		public Migrator(TransformationProvider provider, Assembly migrationAssembly, bool trace)
+		internal Migrator(TransformationProvider provider, Assembly migrationAssembly, bool trace)
 		{
 			_provider = provider;
 			_trace = trace;
@@ -69,7 +69,6 @@ namespace DbRefactor
 					_logger.Trace("{0} {1}", GetMigrationVersion(t).ToString().PadLeft(5), ToHumanName(t.Name));
 				}
 			}
-
 			CheckForDuplicatedVersion();
 		}
 

@@ -24,7 +24,7 @@ namespace DbRefactor.Providers
 	/// Base class for every transformation providers.
 	/// A 'tranformation' is an operation that modifies the database.
 	/// </summary>
-	public sealed class TransformationProvider
+	internal sealed class TransformationProvider
 	{
 		private ILogger _logger = new Logger(false);
 
@@ -446,11 +446,11 @@ namespace DbRefactor.Providers
 			//    return;
 			//}
 			ExecuteNonQuery(
-				"ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3} ({4})",
+				"ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5}",
 				primaryTable, name, String.Join(",", primaryColumns),
-				refTable, String.Join(",", refColumns));
+				refTable, String.Join(",", refColumns),
+				new ForeignKeyConstraintMapper().Resolve(constraint));
 		}
-
 
 		/// <summary>
 		/// Removes a constraint.

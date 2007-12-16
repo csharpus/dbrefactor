@@ -1,5 +1,6 @@
 ﻿using DbRefactor;
 using DbRefactor.Columns;
+using DbRefactor.Providers.ForeignKeys;
 
 namespace Example
 {
@@ -14,7 +15,7 @@ namespace Example
 				String("Name", 50),
 				Int("ParentID", ColumnProperties.NotNull));
 
-			AddForeignKey("FK_Child_Parent", "Child", "ParentID", "Parent", "ID");
+			AddForeignKey("FK_Child_Parent", "Child", "ParentID", "Parent", "ID", OnDelete.Cascade);
 		}
 
 		public override void Down()

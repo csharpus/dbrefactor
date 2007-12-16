@@ -14,6 +14,7 @@ using DbRefactor.Columns;
 using DbRefactor.Providers;
 using DbRefactor.Tools.Loggers;
 using System.Data;
+using DbRefactor.Providers.ForeignKeys;
 
 namespace DbRefactor
 {
@@ -55,16 +56,16 @@ namespace DbRefactor
 	/// [Migration(3)]
 	/// public class AddCustomerTable : Migration
 	/// {
-	/// 	public override void Up()
-	/// 	{
-	/// 		Database.AddTable("Customer",
-	///		                  new Column("Name", typeof(string), 50),
-	///		                  new Column("Address", typeof(string), 100)
-	///		                 );
+	///		public override void Up()
+	///		{
+	///			CreateTable("Customer",
+	///				String("Name", 50),
+	///				String("Address", 100));
 	/// 	}
+	/// 
 	/// 	public override void Down()
 	/// 	{
-	/// 		Database.RemoveTable("Customer");
+	/// 		DropTable("Customer");
 	/// 	}
 	/// }
 	/// </code>
@@ -72,6 +73,27 @@ namespace DbRefactor
 	public abstract class Migration
 	{
 		private TransformationProvider _transformationProvider;
+
+		internal TransformationProvider TransformationProvider
+		{
+			get
+			{
+				return _transformationProvider;
+			}
+
+			set
+			{
+				_transformationProvider = value;
+			}
+		}
+
+		private TransformationProvider Database
+		{
+			get
+			{
+				return TransformationProvider;
+			}
+		}
 
 		/// <summary>
 		/// Defines tranformations to port the database to the current version.
@@ -84,39 +106,11 @@ namespace DbRefactor
 		public abstract void Down();
 
 		/// <summary>
-		/// Represents the database.
-		/// <see cref="TransformationProvider"></see>.
-		/// </summary>
-		/// <seealso cref="Migration.Transformations">Migration.Transformations</seealso>
-		public TransformationProvider Database
-		{
-			get
-			{
-				return _transformationProvider;
-			}
-		}
-
-		/// <summary>
 		/// This gets called once on the first migration object.
 		/// </summary>
 		public virtual void InitializeOnce(string[] args)
 		{
 			Console.WriteLine("Migration.InitializeOnce()");
-		}
-
-		/// <summary>
-		/// Alias to the <c>Database</c> property.
-		/// </summary>
-		public TransformationProvider TransformationProvider
-		{
-			get
-			{
-				return _transformationProvider;
-			}
-			set
-			{
-				_transformationProvider = value;
-			}
 		}
 
 		/// <summary>
@@ -439,6 +433,12 @@ namespace DbRefactor
 				primaryKeyTable, primaryKeyColumn);
 		}
 
+		protected void AddForeignKey(string name, string foreignKeyTable,
+			string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn, OnDelete ondelete)
+		{
+			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, primaryKeyTable, primaryKeyColumn, ondelete);
+		}
+
 		protected void DropTable(string name)
 		{
 			Database.DropTable(name);
@@ -467,6 +467,23 @@ namespace DbRefactor
 		protected object ExecuteScalar(string sql, params string[] values)
 		{
 			return Database.ExecuteScalar(sql, values);
+		}
+
+		/// <summary>
+		/// <code>Insert("Table", "column1='value1'", "column2=10");</code>
+		/// </summary>
+		/// <example><code>Insert("Table", "column1='value1'", "column2=10");</code></example>
+		/// <param name="table"></param>
+		/// <param name="columnValues"></param>
+		/// <returns></returns>
+		protected int Insert(string table, params string[] columnValues)
+		{
+			return Database.Insert(table, columnValues);
+		}
+
+		protected int Update(string table, params string[] columnValues) 
+		{
+			return Database.Update(table, columnValues);
 		}
 	}
 }
