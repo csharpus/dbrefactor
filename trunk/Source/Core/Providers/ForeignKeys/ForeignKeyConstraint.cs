@@ -3,7 +3,7 @@ namespace DbRefactor.Providers.ForeignKeys
 	/// <summary>
 	/// Controls what actions are taken when you try to delete a row to which existing foreign keys point
 	/// </summary>
-	public enum ForeignKeyConstraint
+	public enum OnDelete
 	{
 		/// <summary>
 		/// Specifies that all the rows with foreign keys pointing to the deleted row are also deleted

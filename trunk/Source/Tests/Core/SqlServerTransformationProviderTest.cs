@@ -195,7 +195,8 @@ namespace DbRefactor.Tests.Core
 		private void ExpectColumnExistsQuery(string table, string column)
 		{
 			ExpectExecuteQueryOn(
-				String.Format("SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}') and name='{1}'", table, column));
+				String.Format("SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}') AND name='{1}'",
+				table, column));
 		}
 	}
 }

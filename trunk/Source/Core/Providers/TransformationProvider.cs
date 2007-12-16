@@ -17,7 +17,6 @@ using DbRefactor.Columns;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Tools.DesignByContract;
 using DbRefactor.Tools.Loggers;
-using ForeignKeyConstraint = DbRefactor.Providers.ForeignKeys.ForeignKeyConstraint;
 
 namespace DbRefactor.Providers
 {
@@ -139,7 +138,7 @@ namespace DbRefactor.Providers
 			}
 			using (IDataReader reader =
 				ExecuteQuery(
-					"SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}') and name='{1}'",
+					"SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}') AND name='{1}'",
 					table,
 					column))
 			{
@@ -365,35 +364,43 @@ namespace DbRefactor.Providers
 		/// <summary>
 		/// Guesses the name of the foreign key and add it
 		/// </summary>
-		public void GenerateForeignKey(string primaryTable, string primaryColumn, string refTable, string refColumn)
+		public void GenerateForeignKey(string primaryTable, string primaryColumn, string refTable, 
+			string refColumn)
 		{
-			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumn, refTable, refColumn);
+			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumn, 
+				refTable, refColumn);
 		}
 
 		/// <summary>
 		/// Guesses the name of the foreign key and add it
 		/// </see>
 		/// </summary>
-		public void GenerateForeignKey(string primaryTable, string[] primaryColumns, string refTable, string[] refColumns)
+		public void GenerateForeignKey(string primaryTable, string[] primaryColumns, 
+			string refTable, string[] refColumns)
 		{
-			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumns, refTable, refColumns);
+			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumns, 
+				refTable, refColumns);
 		}
 
 		/// <summary>
 		/// Guesses the name of the foreign key and add it
 		/// </summary>
-		public void GenerateForeignKey(string primaryTable, string primaryColumn, string refTable, string refColumn, ForeignKeyConstraint constraint)
+		public void GenerateForeignKey(string primaryTable, string primaryColumn, string refTable, 
+			string refColumn, OnDelete ondelete)
 		{
-			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumn, refTable, refColumn, constraint);
+			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumn,
+				refTable, refColumn, ondelete);
 		}
 
 		/// <summary>
 		/// Guesses the name of the foreign key and add it
 		/// </see>
 		/// </summary>
-		public void GenerateForeignKey(string primaryTable, string[] primaryColumns, string refTable, string[] refColumns, ForeignKeyConstraint constraint)
+		public void GenerateForeignKey(string primaryTable, string[] primaryColumns,
+			string refTable, string[] refColumns, OnDelete ondelete)
 		{
-			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumns, refTable, refColumns, constraint);
+			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumns,
+				refTable, refColumns, ondelete);
 		}
 
 		/// <summary>
@@ -405,27 +412,33 @@ namespace DbRefactor.Providers
 		/// <param name="primaryColumn">Primary key column name</param>
 		/// <param name="refTable">Foreign table name</param>
 		/// <param name="refColumn">Foreign column name</param>
-		public void AddForeignKey(string name, string primaryTable, string primaryColumn, string refTable, string refColumn)
+		public void AddForeignKey(string name, string primaryTable, string primaryColumn, 
+			string refTable, string refColumn)
 		{
-			AddForeignKey(name, primaryTable, new string[] { primaryColumn }, refTable, new string[] { refColumn });
+			AddForeignKey(name, primaryTable, new string[] { primaryColumn }, refTable, 
+				new string[] { refColumn });
 		}
 		/// <summary>
 		/// <see cref="TransformationProvider.AddForeignKey(string, string, string, string, string)">
 		/// AddForeignKey(string, string, string, string, string)
 		/// </see>
 		/// </summary>
-		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns, string refTable, string[] refColumns)
+		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns, 
+			string refTable, string[] refColumns)
 		{
-			AddForeignKey(name, primaryTable, primaryColumns, refTable, refColumns, ForeignKeyConstraint.NoAction);
+			AddForeignKey(name, primaryTable, primaryColumns, refTable, refColumns,
+				OnDelete.NoAction);
 		}
 
-		public void AddForeignKey(string name, string primaryTable, string primaryColumn, string refTable, string refColumn, ForeignKeyConstraint constraint)
+		public void AddForeignKey(string name, string primaryTable, string primaryColumn, string refTable, string refColumn, OnDelete ondelete)
 		{
-			AddForeignKey(name, primaryTable, new string[] { primaryColumn }, refTable, new string[] { refColumn }, constraint);
+			AddForeignKey(name, primaryTable, new string[] { primaryColumn }, refTable,
+				new string[] { refColumn }, ondelete);
 		}
 
 		// Not sure how SQL server handles ON UPDATRE & ON DELETE
-		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns, string refTable, string[] refColumns, ForeignKeyConstraint constraint)
+		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns, 
+			string refTable, string[] refColumns, OnDelete constraint)
 		{
 			//if (ConstraintExists(name, primaryTable))
 			//{
@@ -473,7 +486,7 @@ namespace DbRefactor.Providers
 		{
 			List<Column> columns = new List<Column>();
 
-			using (IDataReader reader = ExecuteQuery("select COLUMN_NAME from information_schema.columns where table_name = '{0}';", table))
+			using (IDataReader reader = ExecuteQuery("SELECT COLUMN_NAME FROM information_schema.columns WHERE table_name = '{0}';", table))
 			{
 				while (reader.Read())
 				{
@@ -615,20 +628,6 @@ namespace DbRefactor.Providers
 					new Column("Version", typeof(int), ColumnProperties.PrimaryKey));
 			}
 		}
-
-		#region ITransformationProvider Members
-
-		public void GenerateForeignKey(string primaryTable, string refTable)
-		{
-			GenerateForeignKey(primaryTable, refTable, ForeignKeyConstraint.NoAction);
-		}
-
-		public void GenerateForeignKey(string primaryTable, string refTable, ForeignKeyConstraint constraint)
-		{
-			GenerateForeignKey(primaryTable, refTable, refTable, "Id");
-		}
-
-		#endregion
 
 		#region Obsolete
 		[Obsolete("Use DropTable instead")]

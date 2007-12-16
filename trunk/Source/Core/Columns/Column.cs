@@ -43,17 +43,9 @@ namespace DbRefactor.Columns
 		/// </summary>
 		Indexed = 16,
 		/// <summary>
-		/// Unsigned Column
-		/// </summary>
-		Unsigned = 32,
-		/// <summary>
-		/// Foreign Key
-		/// </summary>
-		ForeignKey = Unsigned | Null,
-		/// <summary>
 		/// Primary Key
 		/// </summary>
-		PrimaryKey = 64 | Unsigned | NotNull,
+		PrimaryKey = 64 | NotNull,
 		/// <summary>
 		/// Primary key. Make the column a PrimaryKey and unsigned
 		/// </summary>
@@ -194,10 +186,6 @@ namespace DbRefactor.Columns
 			if ((properties & ColumnProperties.Indexed) == ColumnProperties.Indexed)
 			{
 				mapper.Indexed();
-			}
-			if ((properties & ColumnProperties.Unsigned) == ColumnProperties.Unsigned)
-			{
-				mapper.Unsigned();
 			}
 			if (column.DefaultValue != null)
 			{

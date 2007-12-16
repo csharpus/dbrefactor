@@ -4,17 +4,17 @@ namespace DbRefactor.Providers.ForeignKeys
 {
 	sealed class ForeignKeyConstraintMapper
 	{
-		public string Resolve(ForeignKeyConstraint constraint)
+		public string Resolve(OnDelete constraint)
 		{
 			switch(constraint)
 			{
-				case ForeignKeyConstraint.Cascade:
+				case OnDelete.Cascade:
 					return "CASCADE";
-				case ForeignKeyConstraint.SetDefault:
+				case OnDelete.SetDefault:
 					return "SET DEFAULT";
-				case ForeignKeyConstraint.SetNull:
+				case OnDelete.SetNull:
 					return "SET NULL";
-				case ForeignKeyConstraint.NoAction:
+				case OnDelete.NoAction:
 					return "NO ACTION";
 				default:
 					throw new ArgumentOutOfRangeException("constraint");

@@ -42,11 +42,6 @@ namespace DbRefactor.Providers.ColumnPropertiesMappers
 		private bool indexed = false;
 
 		/// <summary>
-		/// Sql if This column is Unsigned
-		/// </summary>
-		private string sqlUnsigned;
-
-		/// <summary>
 		/// Sql if This column is an Identity Colu,m
 		/// </summary>
 		private string sqlIdentity;
@@ -70,7 +65,7 @@ namespace DbRefactor.Providers.ColumnPropertiesMappers
 		{
 			get
 			{
-				return IgnoreEmptyJoin(" ", new string[] { name, type, sqlUnsigned, sqlNull, sqlIdentity, sqlUnique, sqlPrimaryKey, sqlDefault });
+				return IgnoreEmptyJoin(" ", new string[] { name, type, sqlNull, sqlIdentity, sqlUnique, sqlPrimaryKey, sqlDefault });
 			}
 		}
 
@@ -120,11 +115,6 @@ namespace DbRefactor.Providers.ColumnPropertiesMappers
 		public void Unique()
 		{
 			sqlUnique = "UNIQUE";
-		}
-
-		public void Unsigned()
-		{
-			sqlUnsigned = "";
 		}
 
 		public void Identity()

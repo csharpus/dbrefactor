@@ -78,9 +78,7 @@ namespace DbRefactor.Providers.TypeToSqlProviders
 		{
 			get
 			{
-				ColumnPropertiesMapper mapper = new ColumnPropertiesMapper("bit");
-				mapper.Default("0");
-				return mapper;
+				return new ColumnPropertiesMapper("bit");
 			}
 		}
 
