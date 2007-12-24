@@ -122,7 +122,7 @@ namespace DbRefactor.Console
 			int tab = 17;
 			Version ver = Assembly.GetExecutingAssembly().GetName().Version;
 			
-			System.Console.WriteLine("Database migrator - v{0}.{1}.{2}", ver.Major, ver.Minor, ver.Revision);
+			System.Console.WriteLine("Database Refactor - v{0}.{1}.{2}", ver.Major, ver.Minor, ver.Revision);
 			System.Console.WriteLine();
 			System.Console.WriteLine("usage:\nMigrator.Console.exe provider connectionString migrationsAssembly [options]");
 			System.Console.WriteLine();
