@@ -28,7 +28,7 @@ namespace DbRefactor.Console
 		private string _dumpTo;
 		private int _migrateTo = -1;
 		private string[] args;
-		
+
 		/// <summary>
 		/// Builds a new console
 		/// </summary>
@@ -38,7 +38,7 @@ namespace DbRefactor.Console
 			args = argv;
 			ParseArguments(argv);
 		}
-		
+
 		/// <summary>
 		/// Run the migrator's console
 		/// </summary>
@@ -68,52 +68,52 @@ namespace DbRefactor.Console
 			}
 			return 0;
 		}
-		
+
 		/// <summary>
 		/// Runs the migrations.
 		/// </summary>
 		public void Migrate()
 		{
 			CheckArguments();
-			
+
 			DbRefactor.Migrator mig = GetMigrator();
 			if (_migrateTo == -1)
 				mig.MigrateToLastVersion();
 			else
 				mig.MigrateTo(_migrateTo);
 		}
-		
+
 		/// <summary>
 		/// List migrations.
 		/// </summary>
 		public void List()
 		{
 			CheckArguments();
-			
+
 			DbRefactor.Migrator mig = GetMigrator();
 			int currentVersion = mig.CurrentVersion;
-			
+
 			System.Console.WriteLine("Available migrations:");
 			foreach (Type t in mig.MigrationsTypes)
 			{
 				int v = DbRefactor.Migrator.GetMigrationVersion(t);
 				System.Console.WriteLine("{0} {1} {2}",
-				                  v == currentVersion ? "=>" : "  ",
-				                  v.ToString().PadLeft(3),
-				                  DbRefactor.Migrator.ToHumanName(t.Name)
+								  v == currentVersion ? "=>" : "  ",
+								  v.ToString().PadLeft(3),
+								  DbRefactor.Migrator.ToHumanName(t.Name)
 					);
 			}
 		}
-		
+
 		public void Dump()
 		{
 			CheckArguments();
-			
+
 			SchemaDumper dumper = new SchemaDumper(_connectionString);
-			
+
 			dumper.DumpTo(_dumpTo);
 		}
-		
+
 		/// <summary>
 		/// Show usage information and help.
 		/// </summary>
@@ -121,7 +121,7 @@ namespace DbRefactor.Console
 		{
 			int tab = 17;
 			Version ver = Assembly.GetExecutingAssembly().GetName().Version;
-			
+
 			System.Console.WriteLine("Database Refactor - v{0}.{1}.{2}", ver.Major, ver.Minor, ver.Revision);
 			System.Console.WriteLine();
 			System.Console.WriteLine("usage:\nMigrator.Console.exe provider connectionString migrationsAssembly [options]");
@@ -136,7 +136,7 @@ namespace DbRefactor.Console
 			System.Console.WriteLine("\t-{0}{1}", "dump FILE".PadRight(tab), "Dump the database schema as migration code");
 			System.Console.WriteLine();
 		}
-		
+
 		#region Private helper methods
 		private void CheckArguments()
 		{
@@ -145,16 +145,16 @@ namespace DbRefactor.Console
 			if (_migrationsAssembly == null)
 				throw new ArgumentException("Migrations assembly is missing", "migrationsAssembly");
 		}
-				
+
 		private DbRefactor.Migrator GetMigrator()
 		{
 			Assembly asm = Assembly.LoadFrom(_migrationsAssembly);
-			
+
 			DbRefactor.Migrator migrator = new DbRefactor.Migrator(_connectionString, asm, _trace);
 			migrator.args = args;
 			return migrator;
 		}
-				
+
 		private void ParseArguments(string[] argv)
 		{
 			for (int i = 0; i < argv.Length; i++)
@@ -169,12 +169,12 @@ namespace DbRefactor.Console
 				}
 				else if (argv[i].Equals("-version"))
 				{
-					_migrateTo = int.Parse(argv[i+1]);
+					_migrateTo = int.Parse(argv[i + 1]);
 					i++;
 				}
 				else if (argv[i].Equals("-dump"))
 				{
-					_dumpTo = argv[i+1];
+					_dumpTo = argv[i + 1];
 					i++;
 				}
 				else

@@ -9,6 +9,8 @@
 //under the License.
 #endregion
 using System;
+using NConsoler;
+using System.Reflection;
 
 namespace DbRefactor.Console
 {
@@ -18,10 +20,37 @@ namespace DbRefactor.Console
 	public class Boot
 	{
 		[STAThread]
-		public static int Main(string[] argv)
+		public static void Main(string[] argv)
 		{
-			MigratorConsole con = new MigratorConsole(argv);
-			return con.Run();
+			Consolery.Run(typeof(Boot), argv);
+			//MigratorConsole con = new MigratorConsole(argv);
+			//return con.Run();
+		}
+
+		[Action]
+		public static void Migrate(
+			[Required(Description = "The database provider (SqlServer)")]
+			string provider,
+			[Required(Description = "Connection string to the database")]
+			string connectionString,
+			[Required(Description = "Path to the assembly containing the migrations")]
+			string migrationAssembly,
+			[Optional(-1, Description = "To specific version to migrate the database to")]
+			int versionNumber,
+			[Optional(false, Description = "Show debug informations")]
+			bool trace)
+		{
+			Assembly asm = Assembly.LoadFrom(migrationAssembly);
+
+			DbRefactor.Migrator migrator = new DbRefactor.Migrator(connectionString, asm, trace);
+			if (versionNumber == -1)
+			{
+				migrator.MigrateToLastVersion();
+			}
+			else
+			{
+				migrator.MigrateTo(versionNumber);
+			}
 		}
 	}
 }
