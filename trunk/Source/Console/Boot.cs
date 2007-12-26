@@ -36,20 +36,20 @@ namespace DbRefactor.Console
 			[Required(Description = "Path to the assembly containing the migrations")]
 			string migrationAssembly,
 			[Optional(-1, Description = "To specific version to migrate the database to")]
-			int versionNumber,
+			int version,
 			[Optional(false, Description = "Show debug informations")]
 			bool trace)
 		{
 			Assembly asm = Assembly.LoadFrom(migrationAssembly);
 
 			Migrator migrator = new Migrator(connectionString, asm, trace);
-			if (versionNumber == -1)
+			if (version == -1)
 			{
 				migrator.MigrateToLastVersion();
 			}
 			else
 			{
-				migrator.MigrateTo(versionNumber);
+				migrator.MigrateTo(version);
 			}
 		}
 	}
