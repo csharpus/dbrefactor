@@ -24,10 +24,10 @@ namespace NConsoler
 			}
 		}
 
-		private Type _targetType;
-		private string[] _args;
-		private List<MethodInfo> _actionMethods = new List<MethodInfo>();
-		private IMessenger _messenger;
+		private readonly Type _targetType;
+		private readonly string[] _args;
+		private readonly List<MethodInfo> _actionMethods = new List<MethodInfo>();
+		private readonly IMessenger _messenger;
 
 		private Consolery(Type targetType, string[] args, IMessenger messenger)
 		{
@@ -49,30 +49,30 @@ namespace NConsoler
 			}
 		}
 
-		private bool IsRequired(ParameterInfo info)
+		private static bool IsRequired(ICustomAttributeProvider info)
 		{
 			object[] attributes = info.GetCustomAttributes(typeof(ParameterAttribute), false);
 			return attributes.Length == 0 || attributes[0].GetType() == typeof(RequiredAttribute);
 		}
 
-		private bool IsOptional(ParameterInfo info)
+		private static bool IsOptional(ICustomAttributeProvider info)
 		{
 			return !IsRequired(info);
 		}
 
-		private OptionalAttribute GetOptional(ParameterInfo info)
+		private static OptionalAttribute GetOptional(ICustomAttributeProvider info)
 		{
 			object[] attributes = info.GetCustomAttributes(typeof(OptionalAttribute), false);
 			return attributes[0] as OptionalAttribute;
 		}
 
-		private RequiredAttribute GetRequired(ParameterInfo info)
+		private RequiredAttribute GetRequired(ICustomAttributeProvider info)
 		{
 			object[] attributes = info.GetCustomAttributes(typeof(RequiredAttribute), false);
 			return attributes[0] as RequiredAttribute;
 		}
 
-		object ConvertValue(string value, Type argumentType)
+		static object ConvertValue(string value, Type argumentType)
 		{
 			if (argumentType == typeof(int))
 			{
@@ -143,8 +143,8 @@ namespace NConsoler
 		private struct ParameterData
 		{
 			public string primaryName;
-			public int position;
-			public Type type;
+			public readonly int position;
+			public readonly Type type;
 
 			public ParameterData(int position, Type type, string primaryName)
 			{
@@ -194,7 +194,6 @@ namespace NConsoler
 				}
 				argumentIndex++;
 			}
-			Dictionary<string, string> values = new Dictionary<string, string>();
 			for (int i = RequiredParameterCount(method); i < _args.Length; i++)
 			{
 				string name = ParameterName(_args[i]);
@@ -204,7 +203,7 @@ namespace NConsoler
 			return parameterValues.ToArray();
 		}
 
-		private int RequiredParameterCount(MethodInfo method)
+		private static int RequiredParameterCount(MethodInfo method)
 		{
 			int requiredParameterCount = 0;
 			foreach (ParameterInfo parameter in method.GetParameters())
@@ -584,7 +583,7 @@ namespace NConsoler
 			}
 		}
 
-		private object _defaultValue;
+		private readonly object _defaultValue;
 
 		public object Default
 		{

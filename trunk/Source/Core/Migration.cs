@@ -197,6 +197,26 @@ namespace DbRefactor
 			return new Column(name, typeof(int), properties, defaultValue);
 		}
 
+		protected Column Long(string name)
+		{
+			return new Column(name, typeof(long));
+		}
+
+		protected Column Long(string name, ColumnProperties properties)
+		{
+			return new Column(name, typeof(long), properties);
+		}
+
+		protected Column Long(string name, int defaultValue)
+		{
+			return new Column(name, typeof(long), ColumnProperties.Null, defaultValue);
+		}
+
+		protected Column Long(string name, ColumnProperties properties, int defaultValue)
+		{
+			return new Column(name, typeof(long), properties, defaultValue);
+		}
+
 		protected Column DateTime(string name)
 		{
 			return new Column(name, typeof(DateTime));
