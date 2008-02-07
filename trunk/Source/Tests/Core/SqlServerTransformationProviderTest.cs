@@ -1,5 +1,4 @@
 ﻿using System;
-using DbRefactor.Columns;
 using DbRefactor.Providers;
 using NUnit.Framework;
 using System.Data;

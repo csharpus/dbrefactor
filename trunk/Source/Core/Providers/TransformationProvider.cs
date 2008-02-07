@@ -13,7 +13,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using DbRefactor.Columns;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Tools.DesignByContract;
 using DbRefactor.Tools.Loggers;

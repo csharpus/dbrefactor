@@ -1,5 +1,4 @@
 using DbRefactor;
-using DbRefactor.Columns;
 
 namespace Example
 {

@@ -1,4 +1,4 @@
-namespace DbRefactor.Columns
+namespace DbRefactor
 {
 	public class DecimalColumn: Column
 	{

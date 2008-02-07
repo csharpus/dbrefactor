@@ -10,11 +10,10 @@
 #endregion
 
 using System;
-using DbRefactor.Columns;
 using DbRefactor.Providers.ColumnPropertiesMappers;
 using DbRefactor.Providers.TypeToSqlProviders;
 
-namespace DbRefactor.Columns
+namespace DbRefactor
 {
 	/// <summary>
 	/// Represents a table column properties.

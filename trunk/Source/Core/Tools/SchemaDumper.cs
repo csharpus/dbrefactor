@@ -10,7 +10,6 @@
 #endregion
 
 using System.IO;
-using DbRefactor.Columns;
 using DbRefactor.Providers;
 
 namespace DbRefactor.Tools

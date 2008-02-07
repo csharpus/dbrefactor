@@ -1,6 +1,4 @@
 ﻿using DbRefactor;
-using DbRefactor.Columns;
-using DbRefactor.Providers.ForeignKeys;
 
 namespace Example
 {
