@@ -123,321 +123,526 @@ namespace DbRefactor
 			}
 		}
 
+		/// <summary>
+		/// Creates a string column for "CreateTable" method
+		/// </summary>
 		protected Column String(string name, int size)
 		{
 			return new Column(name, typeof(string), size);
 		}
 
-		protected void AddString(string table, string name, int size)
-		{
-			Database.AddColumn(table, String(name, size));
-		}
-
+		/// <summary>
+		/// Creates a string column for "CreateTable" method
+		/// </summary>
 		protected Column String(string name, int size, ColumnProperties properties)
 		{
 			return new Column(name, typeof(string), size, properties);
 		}
 
-		protected void AddString(string table, string name, int size, ColumnProperties properties)
-		{
-			Database.AddColumn(table, String(name, size, properties));
-		}
-
+		/// <summary>
+		/// Creates a string column for "CreateTable" method
+		/// </summary>
 		protected Column String(string name, int size, string defaultValue)
 		{
 			return new Column(name, typeof(string), size, ColumnProperties.Null, defaultValue);
 		}
 
+		/// <summary>
+		/// Creates a string column for "CreateTable" method
+		/// </summary>
 		protected Column String(string name, int size, ColumnProperties properties, string defaultValue)
 		{
 			return new Column(name, typeof(string), size, properties, defaultValue);
 		}
 
+		/// <summary>
+		/// Adds a string column to the specified table
+		/// </summary>
+		protected void AddString(string table, string name, int size, ColumnProperties properties)
+		{
+			Database.AddColumn(table, String(name, size, properties));
+		}
+
+		/// <summary>
+		/// Adds a string column to the specified table
+		/// </summary>
+		protected void AddString(string table, string name, int size)
+		{
+			Database.AddColumn(table, String(name, size));
+		}
+
+		/// <summary>
+		/// Adds a string column to the specified table
+		/// </summary>
+		protected void AddString(string table, string name, int size, ColumnProperties properties,
+			string defaultValue)
+		{
+			Database.AddColumn(table, String(name, size, properties, defaultValue));
+		}
+
 		private const int defaultTextLength = 1024;
 
+		/// <summary>
+		/// Creates a text column for "CreateTable" method
+		/// </summary>
 		protected Column Text(string name)
 		{
 			return new Column(name, typeof(string), defaultTextLength);
 		}
 
+		/// <summary>
+		/// Creates a text column for "CreateTable" method
+		/// </summary>
 		protected Column Text(string name, ColumnProperties properties)
 		{
 			return new Column(name, typeof(string), defaultTextLength, properties);
 		}
 
-		protected Column Text(string name, int defaultValue)
+		/// <summary>
+		/// Creates a text column for "CreateTable" method
+		/// </summary>
+		protected Column Text(string name, string defaultValue)
 		{
 			return new Column(name, typeof(string), defaultTextLength,
 				ColumnProperties.Null, defaultValue);
 		}
 
-		protected Column Text(string name, ColumnProperties properties, int defaultValue)
+		/// <summary>
+		/// Creates a text column for "CreateTable" method
+		/// </summary>
+		protected Column Text(string name, ColumnProperties properties, string defaultValue)
 		{
 			return new Column(name, typeof(string), defaultTextLength, properties, defaultValue);
 		}
 
+		/// <summary>
+		/// Adds a string column to the specified table
+		/// </summary>
+		protected void AddText(string table, string name)
+		{
+			Database.AddColumn(table, Text(name));
+		}
+
+		/// <summary>
+		/// Adds a string column to the specified table
+		/// </summary>
+		protected void AddText(string table, string name, ColumnProperties properties)
+		{
+			Database.AddColumn(table, Text(name, properties));
+		}
+
+		/// <summary>
+		/// Adds a string column to the specified table
+		/// </summary>
+		protected void AddText(string table, string name, string defaultValue)
+		{
+			Database.AddColumn(table, Text(name, ColumnProperties.Null, defaultValue));
+		}
+
+		/// <summary>
+		/// Adds a string column to the specified table
+		/// </summary>
+		protected void AddText(string table, string name, ColumnProperties properties, string defaultValue)
+		{
+			Database.AddColumn(table, Text(name, properties, defaultValue));
+		}
+
+		/// <summary>
+		/// Creates an integer column for "CreateTable" method
+		/// </summary>
 		protected Column Int(string name)
 		{
 			return new Column(name, typeof(int));
 		}
 
+		/// <summary>
+		/// Creates an integer column for "CreateTable" method
+		/// </summary>
 		protected Column Int(string name, ColumnProperties properties)
 		{
 			return new Column(name, typeof(int), properties);
 		}
 
+		/// <summary>
+		/// Creates an integer column for "CreateTable" method
+		/// </summary>
 		protected Column Int(string name, int defaultValue)
 		{
 			return new Column(name, typeof(int), ColumnProperties.Null, defaultValue);
 		}
 
+		/// <summary>
+		/// Creates an integer column for "CreateTable" method
+		/// </summary>
 		protected Column Int(string name, ColumnProperties properties, int defaultValue)
 		{
 			return new Column(name, typeof(int), properties, defaultValue);
 		}
 
+		/// <summary>
+		/// Adds an integer column to the specified table
+		/// </summary>
+		protected void AddInt(string table, string name)
+		{
+			Database.AddColumn(table, Int(name));
+		}
+
+		/// <summary>
+		/// Adds an integer column to the specified table
+		/// </summary>
+		protected void AddInt(string table, string name, ColumnProperties properties)
+		{
+			Database.AddColumn(table, Int(name, properties));
+		}
+
+		/// <summary>
+		/// Adds an integer column to the specified table
+		/// </summary>
+		protected void AddInt(string table, string name, int defaultValue)
+		{
+			Database.AddColumn(table, Int(name, ColumnProperties.Null, defaultValue));
+		}
+
+		/// <summary>
+		/// Adds an integer column to the specified table
+		/// </summary>
+		protected void AddInt(string table, string name, ColumnProperties properties, int defaultValue)
+		{
+			Database.AddColumn(table, Int(name, properties, defaultValue));
+		}
+
+		/// <summary>
+		/// Creates a long column for "CreateTable" method
+		/// </summary>
 		protected Column Long(string name)
 		{
 			return new Column(name, typeof(long));
 		}
 
+		/// <summary>
+		/// Creates a long column for "CreateTable" method
+		/// </summary>
 		protected Column Long(string name, ColumnProperties properties)
 		{
 			return new Column(name, typeof(long), properties);
 		}
 
-		protected Column Long(string name, int defaultValue)
+		/// <summary>
+		/// Creates a long column for "CreateTable" method
+		/// </summary>
+		protected Column Long(string name, long defaultValue)
 		{
 			return new Column(name, typeof(long), ColumnProperties.Null, defaultValue);
 		}
 
-		protected Column Long(string name, ColumnProperties properties, int defaultValue)
+		/// <summary>
+		/// Creates a long column for "CreateTable" method
+		/// </summary>
+		protected Column Long(string name, ColumnProperties properties, long defaultValue)
 		{
 			return new Column(name, typeof(long), properties, defaultValue);
 		}
 
+		/// <summary>
+		/// Adds a long column to the specified table
+		/// </summary>
+		protected void AddLong(string table, string name)
+		{
+			Database.AddColumn(table, Long(name));
+		}
+
+		/// <summary>
+		/// Adds a long column to the specified table
+		/// </summary>
+		protected void AddLong(string table, string name, ColumnProperties properties)
+		{
+			Database.AddColumn(table, Long(name, properties));
+		}
+
+		/// <summary>
+		/// Adds a long column to the specified table
+		/// </summary>
+		protected void AddLong(string table, string name, long defaultValue)
+		{
+			Database.AddColumn(table, Long(name, defaultValue));
+		}
+
+		/// <summary>
+		/// Adds a long column to the specified table
+		/// </summary>
+		protected void AddLong(string table, string name, ColumnProperties properties, long defaultValue)
+		{
+			Database.AddColumn(table, Long(name, properties, defaultValue));
+		}
+
+		/// <summary>
+		/// Creates a date/time column for "CreateTable" method
+		/// </summary>
 		protected Column DateTime(string name)
 		{
 			return new Column(name, typeof(DateTime));
 		}
 
+		/// <summary>
+		/// Creates a date/time column for "CreateTable" method
+		/// </summary>
 		protected Column DateTime(string name, ColumnProperties properties)
 		{
 			return new Column(name, typeof(DateTime), properties);
 		}
 
-		protected Column DateTime(string name, int defaultValue)
+		/// <summary>
+		/// Creates a date/time column for "CreateTable" method
+		/// </summary>
+		protected Column DateTime(string name, DateTime defaultValue)
 		{
 			return new Column(name, typeof(DateTime), ColumnProperties.Null, defaultValue);
 		}
 
-		protected Column DateTime(string name, ColumnProperties properties, int defaultValue)
+		/// <summary>
+		/// Creates a date/time column for "CreateTable" method
+		/// </summary>
+		protected Column DateTime(string name, ColumnProperties properties, DateTime defaultValue)
 		{
 			return new Column(name, typeof(DateTime), properties, defaultValue);
+		}
+
+		/// <summary>
+		/// Adds a date/time column to the specified table
+		/// </summary>
+		protected void AddDateTime(string table, string name)
+		{
+			Database.AddColumn(table, DateTime(name));
+		}
+
+		/// <summary>
+		/// Adds a date/time column to the specified table
+		/// </summary>
+		protected void AddDateTime(string table, string name, ColumnProperties properties)
+		{
+			Database.AddColumn(table, DateTime(name, properties));
+		}
+
+		/// <summary>
+		/// Adds a date/time column to the specified table
+		/// </summary>
+		protected void AddDateTime(string table, string name, DateTime defaultValue)
+		{
+			Database.AddColumn(table, DateTime(name, defaultValue));
+		}
+
+		/// <summary>
+		/// Adds a date/time column to the specified table
+		/// </summary>
+		protected void AddDateTime(string table, string name, ColumnProperties properties,
+			DateTime defaultValue)
+		{
+			Database.AddColumn(table, DateTime(name, properties, defaultValue));
 		}
 
 		private const int defaultWhole = 18;
 		private const int defaultRemainder = 0;
 
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
 		protected Column Decimal(string name)
 		{
-			return new DecimalColumn(name, defaultWhole, defaultWhole);
+			return new DecimalColumn(name, defaultWhole, defaultRemainder);
 		}
 
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
 		protected Column Decimal(string name, ColumnProperties properties)
 		{
-			return new DecimalColumn(name, defaultWhole, defaultWhole, properties);
+			return new DecimalColumn(name, defaultWhole, defaultRemainder, properties);
 		}
 
-		protected Column Decimal(string name, int defaultValue)
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
+		protected Column Decimal(string name, decimal defaultValue)
 		{
-			return new DecimalColumn(name, defaultWhole, defaultWhole,
+			return new DecimalColumn(name, defaultWhole, defaultRemainder,
 				ColumnProperties.Null, defaultValue);
 		}
 
-		protected Column Decimal(string name, ColumnProperties properties, int defaultValue)
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
+		protected Column Decimal(string name, ColumnProperties properties, decimal defaultValue)
 		{
-			return new DecimalColumn(name, defaultWhole, defaultWhole, properties, defaultValue);
+			return new DecimalColumn(name, defaultWhole, defaultRemainder, properties, defaultValue);
 		}
 
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
 		protected Column Decimal(string name, int whole, int remainder)
 		{
 			return new DecimalColumn(name, whole, remainder);
 		}
 
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
 		protected Column Decimal(string name, int whole, int remainder, ColumnProperties properties)
 		{
 			return new DecimalColumn(name, whole, remainder, properties);
 		}
 
-		protected Column Decimal(string name, int whole, int remainder, int defaultValue)
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
+		protected Column Decimal(string name, int whole, int remainder, decimal defaultValue)
 		{
 			return new DecimalColumn(name, whole, remainder, ColumnProperties.Null, defaultValue);
 		}
 
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
 		protected Column Decimal(string name, int whole, int remainder,
-			ColumnProperties properties, int defaultValue)
+			ColumnProperties properties, decimal defaultValue)
 		{
 			return new DecimalColumn(name, whole, remainder, properties, defaultValue);
 		}
 
+		/// <summary>
+		/// Adds a decimal column to the specified table
+		/// </summary>
+		protected void AddDecimal(string table, string name)
+		{
+			Database.AddColumn(table, Decimal(name, defaultWhole, defaultRemainder));
+		}
+
+		/// <summary>
+		/// Adds a decimal column to the specified table
+		/// </summary>
+		protected void AddDecimal(string table, string name, ColumnProperties properties)
+		{
+			Database.AddColumn(table, Decimal(name, defaultWhole, defaultRemainder, properties));
+		}
+
+		/// <summary>
+		/// Adds a decimal column to the specified table
+		/// </summary>
+		protected void AddDecimal(string table, string name, decimal defaultValue)
+		{
+			Database.AddColumn(table, Decimal(name, defaultWhole, defaultRemainder,
+				ColumnProperties.Null, defaultValue));
+		}
+
+		/// <summary>
+		/// Adds a decimal column to the specified table
+		/// </summary>
+		protected void AddDecimal(string table, string name, ColumnProperties properties,
+			decimal defaultValue)
+		{
+			Database.AddColumn(table, Decimal(name, defaultWhole, defaultRemainder,
+				properties, defaultValue));
+		}
+
+		/// <summary>
+		/// Adds a decimal column to the specified table
+		/// </summary>
+		protected void AddDecimal(string table, string name, int whole, int remainder)
+		{
+			Database.AddColumn(table, Decimal(name, whole, remainder));
+		}
+
+		/// <summary>
+		/// Adds a decimal column to the specified table
+		/// </summary>
+		protected void AddDecimal(string table, string name, int whole, int remainder,
+			ColumnProperties properties)
+		{
+			Database.AddColumn(table, Decimal(name, whole, remainder, properties));
+		}
+
+		/// <summary>
+		/// Adds a decimal column to the specified table
+		/// </summary>
+		protected void AddDecimal(string table, string name, int whole, int remainder, decimal defaultValue)
+		{
+			Database.AddColumn(table, Decimal(name, whole, remainder,
+				ColumnProperties.Null, defaultValue));
+		}
+
+		/// <summary>
+		/// Adds a decimal column to the specified table
+		/// </summary>
+		protected void AddDecimal(string table, string name, int whole, int remainder,
+			ColumnProperties properties, decimal defaultValue)
+		{
+			Database.AddColumn(table, Decimal(name, whole, remainder,
+				properties, defaultValue));
+		}
+
+		/// <summary>
+		/// Creates a boolean column for "CreateTable" method
+		/// </summary>
 		protected Column Boolean(string name)
 		{
 			return new Column(name, typeof(bool));
 		}
 
+		/// <summary>
+		/// Creates a boolean column for "CreateTable" method
+		/// </summary>
 		protected Column Boolean(string name, ColumnProperties properties)
 		{
 			return new Column(name, typeof(bool), properties);
 		}
 
+		/// <summary>
+		/// Creates a boolean column for "CreateTable" method
+		/// </summary>
 		protected Column Boolean(string name, bool defaultValue)
 		{
 			return new Column(name, typeof(bool), ColumnProperties.Null, defaultValue);
 		}
 
+		/// <summary>
+		/// Creates a boolean column for "CreateTable" method
+		/// </summary>
 		protected Column Boolean(string name, ColumnProperties properties, bool defaultValue)
 		{
 			return new Column(name, typeof(bool), properties, defaultValue);
 		}
 
-		protected void AddString(string table, string name, int size, ColumnProperties properties,
-			string defaultValue)
-		{
-			Database.AddColumn(table, new Column(name, typeof(string), size, properties, defaultValue));
-		}
-
-		protected void AddText(string table, string name)
-		{
-			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength));
-		}
-
-		protected void AddText(string table, string name, ColumnProperties properties)
-		{
-			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength, properties));
-		}
-
-		protected void AddText(string table, string name, int defaultValue)
-		{
-			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength,
-				ColumnProperties.Null, defaultValue));
-		}
-
-		protected void AddText(string table, string name, ColumnProperties properties, int defaultValue)
-		{
-			Database.AddColumn(table, new Column(name, typeof(string), defaultTextLength,
-				properties, defaultValue));
-		}
-
-		protected void AddInt(string table, string name)
-		{
-			Database.AddColumn(table, new Column(name, typeof(int)));
-		}
-
-		protected void AddInt(string table, string name, ColumnProperties properties)
-		{
-			Database.AddColumn(table, new Column(name, typeof(int), properties));
-		}
-
-		protected void AddInt(string table, string name, int defaultValue)
-		{
-			Database.AddColumn(table, new Column(name, typeof(int), ColumnProperties.Null, defaultValue));
-		}
-
-		protected void AddInt(string table, string name, ColumnProperties properties, int defaultValue)
-		{
-			Database.AddColumn(table, new Column(name, typeof(int), properties, defaultValue));
-		}
-
-		protected void AddDateTime(string table, string name)
-		{
-			Database.AddColumn(table, new Column(name, typeof(DateTime)));
-		}
-
-		protected void AddDateTime(string table, string name, ColumnProperties properties)
-		{
-			Database.AddColumn(table, new Column(name, typeof(DateTime), properties));
-		}
-
-		protected void AddDateTime(string table, string name, int defaultValue)
-		{
-			Database.AddColumn(table, new Column(name, typeof(DateTime),
-				ColumnProperties.Null, defaultValue));
-		}
-
-		protected void AddDateTime(string table, string name, ColumnProperties properties,
-			int defaultValue)
-		{
-			Database.AddColumn(table, new Column(name, typeof(DateTime), properties, defaultValue));
-		}
-
-		protected void AddDecimal(string table, string name)
-		{
-			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole));
-		}
-
-		protected void AddDecimal(string table, string name, ColumnProperties properties)
-		{
-			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole, properties));
-		}
-
-		protected void AddDecimal(string table, string name, int defaultValue)
-		{
-			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole,
-				ColumnProperties.Null, defaultValue));
-		}
-
-		protected void AddDecimal(string table, string name, ColumnProperties properties,
-			int defaultValue)
-		{
-			Database.AddColumn(table, new DecimalColumn(name, defaultWhole, defaultWhole,
-				properties, defaultValue));
-		}
-
-		protected void AddDecimal(string table, string name, int whole, int remainder)
-		{
-			Database.AddColumn(table, new DecimalColumn(name, whole, remainder));
-		}
-
-		protected void AddDecimal(string table, string name, int whole, int remainder,
-			ColumnProperties properties)
-		{
-			Database.AddColumn(table, new DecimalColumn(name, whole, remainder, properties));
-		}
-
-		protected void AddDecimal(string table, string name, int whole, int remainder, int defaultValue)
-		{
-			Database.AddColumn(table, new DecimalColumn(name, whole, remainder,
-				ColumnProperties.Null, defaultValue));
-		}
-
-		protected void AddDecimal(string table, string name, int whole, int remainder,
-			ColumnProperties properties, int defaultValue)
-		{
-			Database.AddColumn(table, new DecimalColumn(name, whole, remainder,
-				properties, defaultValue));
-		}
-
+		/// <summary>
+		/// Adds a boolean column to the specified table
+		/// </summary>
 		protected void AddBoolean(string table, string name)
 		{
-			Database.AddColumn(table, new Column(name, typeof(bool)));
+			Database.AddColumn(table, Boolean(name));
 		}
 
+		/// <summary>
+		/// Adds a boolean column to the specified table
+		/// </summary>
 		protected void AddBoolean(string table, string name, ColumnProperties properties)
 		{
-			Database.AddColumn(table, new Column(name, typeof(bool), properties));
+			Database.AddColumn(table, Boolean(name, properties));
 		}
 
+		/// <summary>
+		/// Adds a boolean column to the specified table
+		/// </summary>
 		protected void AddBoolean(string table, string name, bool defaultValue)
 		{
-			Database.AddColumn(table, new Column(name, typeof(bool), ColumnProperties.Null,
-				defaultValue));
+			Database.AddColumn(table, Boolean(name, ColumnProperties.Null, defaultValue));
 		}
 
+		/// <summary>
+		/// Adds a boolean column to the specified table
+		/// </summary>
 		protected void AddBoolean(string table, string name, ColumnProperties properties,
 			bool defaultValue)
 		{
-			Database.AddColumn(table, new Column(name, typeof(bool), properties, defaultValue));
+			Database.AddColumn(table, Boolean(name, properties, defaultValue));
 		}
 
 		protected void CreateTable(string name, params Column[] columns)
@@ -489,17 +694,22 @@ namespace DbRefactor
 		}
 
 		/// <summary>
+		/// Example:
 		/// <code>Insert("Table", "column1='value1'", "column2=10");</code>
 		/// </summary>
 		/// <example><code>Insert("Table", "column1='value1'", "column2=10");</code></example>
-		/// <param name="table"></param>
-		/// <param name="columnValues"></param>
-		/// <returns></returns>
+		/// <returns>Number of rows inserted</returns>
 		protected int Insert(string table, params string[] columnValues)
 		{
 			return Database.Insert(table, columnValues);
 		}
 
+		/// <summary>
+		/// Example:
+		/// <code>Update("Table", "column1='value1'");</code> - updates all rows in the table,
+		/// sets value of the column1 to 'value1'
+		/// </summary>
+		/// <returns>Number of rows updated</returns>
 		protected int Update(string table, params string[] columnValues) 
 		{
 			return Database.Update(table, columnValues);
