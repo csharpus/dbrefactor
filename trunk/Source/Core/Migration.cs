@@ -13,7 +13,6 @@ using System;
 using DbRefactor.Providers;
 using DbRefactor.Tools.Loggers;
 using System.Data;
-using DbRefactor.Providers.ForeignKeys;
 
 namespace DbRefactor
 {
