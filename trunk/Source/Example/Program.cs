@@ -15,7 +15,6 @@ namespace Example
 			Migrator migrator = new Migrator(
 				ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
 				Assembly.GetExecutingAssembly());
-			migrator.Logger = new Logger(true, new ConsoleWriter());
 			migrator.MigrateToLastVersion();
 		}
 	}

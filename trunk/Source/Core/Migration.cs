@@ -108,7 +108,7 @@ namespace DbRefactor
 		/// </summary>
 		public virtual void InitializeOnce(string[] args)
 		{
-			Console.WriteLine("Migration.InitializeOnce()");
+			// Console.WriteLine("Migration.InitializeOnce()");
 		}
 
 		/// <summary>

@@ -61,13 +61,10 @@ namespace DbRefactor
 				_setUpMigration = GetSetUpMigrationType(migrationAssembly);
 			}
 
-			if (_trace)
+			_logger.Trace("Loaded migrations:");
+			foreach (Type t in _migrationsTypes)
 			{
-				_logger.Trace("Loaded migrations:");
-				foreach (Type t in _migrationsTypes)
-				{
-					_logger.Trace("{0} {1}", GetMigrationVersion(t).ToString().PadLeft(5), ToHumanName(t.Name));
-				}
+				_logger.Trace("{0} {1}", GetMigrationVersion(t).ToString().PadLeft(5), ToHumanName(t.Name));
 			}
 			CheckForDuplicatedVersion();
 		}

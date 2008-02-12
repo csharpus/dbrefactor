@@ -70,21 +70,18 @@ namespace DbRefactor.Tools.Loggers
 
 		public void Exception(int version, string migrationName, Exception ex)
 		{
-			WriteLine("{0} Error in migration {1} : {2}", "".PadLeft(_widthFirstColumn), version, ex.Message);
-			if (_trace)
+			UntracedWriteLine("{0} Error in migration {1} : {2}", "".PadLeft(_widthFirstColumn), version, ex.Message);
+			UntracedWriteLine("========= Error detail =========");
+			UntracedWriteLine(ex.ToString());
+			UntracedWriteLine(ex.StackTrace);
+			Exception iex = ex.InnerException;
+			while (ex.InnerException != null)
 			{
-				WriteLine("========= Error detail =========");
-				WriteLine(ex.ToString());
-				WriteLine(ex.StackTrace);
-				Exception iex = ex.InnerException;
-				while (ex.InnerException != null)
-				{
-					WriteLine("Caused by: {0}", ex.InnerException);
-					WriteLine(ex.InnerException.StackTrace);
-					iex = iex.InnerException;
-				}
-				WriteLine("======================================");
+				UntracedWriteLine("Caused by: {0}", ex.InnerException);
+				UntracedWriteLine(ex.InnerException.StackTrace);
+				iex = iex.InnerException;
 			}
+			UntracedWriteLine("======================================");
 		}
 
 		public void Finished(int originalVersion, int currentVersion)
@@ -106,13 +103,10 @@ namespace DbRefactor.Tools.Loggers
 
 		public void Trace(string format, params object[] args)
 		{
-			if (_trace)
-			{
-				Log(format, args);
-			}
+			Log(format, args);
 		}
 
-		private void Write(string message, params object[] args)
+		private void UntracedWrite(string message, params object[] args)
 		{
 			foreach (ILogWriter writer in _writers)
 			{
@@ -120,12 +114,24 @@ namespace DbRefactor.Tools.Loggers
 			}
 		}
 
-		private void WriteLine(string message, params object[] args)
+		private void UntracedWriteLine(string message, params object[] args)
 		{
 			foreach (ILogWriter writer in _writers)
 			{
 				writer.WriteLine(message, args);
 			}
+		}
+
+		private void Write(string message, params object[] args)
+		{
+			if (!_trace) return;
+			UntracedWrite(message, args);
+		}
+
+		private void WriteLine(string message, params object[] args)
+		{
+			if (!_trace) return;
+			UntracedWriteLine(message, args);
 		}
 
 		#region Static Logger Helpers
