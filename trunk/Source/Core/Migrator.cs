@@ -36,11 +36,11 @@ namespace DbRefactor
 			set { _args = value; }
 		}
 
-		public Migrator(string connectionString, Assembly migrationAssembly, bool trace)
+		public Migrator(string providerName, string connectionString, Assembly migrationAssembly, bool trace)
 			: this(CreateProvider(connectionString), migrationAssembly, trace)
 		{ }
 
-		public Migrator(string connectionString, Assembly migrationAssembly)
+		public Migrator(string providerName, string connectionString, Assembly migrationAssembly)
 			: this(CreateProvider(connectionString), migrationAssembly, false)
 		{ }
 

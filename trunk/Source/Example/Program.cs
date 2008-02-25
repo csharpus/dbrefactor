@@ -13,6 +13,7 @@ namespace Example
 		static void Main()
 		{
 			Migrator migrator = new Migrator(
+				"SqlServer",
 				ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
 				Assembly.GetExecutingAssembly());
 			migrator.MigrateToLastVersion();

@@ -42,7 +42,7 @@ namespace DbRefactor.Console
 		{
 			Assembly asm = Assembly.LoadFrom(migrationAssembly);
 
-			Migrator migrator = new Migrator(connectionString, asm, trace);
+			Migrator migrator = new Migrator(provider, connectionString, asm, trace);
 			if (version == -1)
 			{
 				migrator.MigrateToLastVersion();
