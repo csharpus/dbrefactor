@@ -41,6 +41,7 @@
     <Compile Include="001_CreateParent.cs" />
     <Compile Include="002_CreateChild.cs" />
     <Compile Include="003_AddTypeToChild.cs" />
+    <Compile Include="004_AddStringFieldToChild.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

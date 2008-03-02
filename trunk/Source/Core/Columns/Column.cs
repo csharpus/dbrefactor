@@ -192,7 +192,7 @@ namespace DbRefactor
 				{
 					mapper.Default(String.Format("'{0}'", column.DefaultValue));
 				}
-				if (column.Type == typeof(bool))
+				else if (column.Type == typeof(bool))
 				{
 					mapper.Default(Convert.ToBoolean(column.DefaultValue) ? "1" : "0");
 				}
