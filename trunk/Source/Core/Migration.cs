@@ -667,9 +667,9 @@ namespace DbRefactor
 			Database.DropTable(name);
 		}
 
-		protected void DropForeignKey(string table, string key)
+		protected void DropForeignKey(string foreignKeyTable, string name)
 		{
-			Database.RemoveForeignKey(table, key);
+			Database.RemoveForeignKey(foreignKeyTable, name);
 		}
 
 		protected void DropColumn(string table, string column)
@@ -712,6 +712,11 @@ namespace DbRefactor
 		protected int Update(string table, params string[] columnValues) 
 		{
 			return Database.Update(table, columnValues);
+		}
+
+		protected void AlterColumn(string table, Column column)
+		{
+			Database.AlterColumn(table, column);
 		}
 	}
 }
