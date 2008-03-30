@@ -718,5 +718,10 @@ namespace DbRefactor
 		{
 			Database.AlterColumn(table, column);
 		}
+
+		protected void RemoveColumnConstraints(string table, string column)
+		{
+			Database.DeleteColumnConstraints(table, column);
+		}
 	}
 }

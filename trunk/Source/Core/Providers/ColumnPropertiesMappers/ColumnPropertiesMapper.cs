@@ -65,7 +65,7 @@ namespace DbRefactor.Providers.ColumnPropertiesMappers
 		{
 			get
 			{
-				return IgnoreEmptyJoin(" ", new string[] { name, type, sqlNull, sqlIdentity, sqlUnique, sqlPrimaryKey, sqlDefault });
+				return IgnoreEmptyJoin(" ", new string[] { "[" + name + "]", type, sqlNull, sqlIdentity, sqlUnique, sqlPrimaryKey, sqlDefault });
 			}
 		}
 

@@ -180,7 +180,7 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("ALTER TABLE {0} ALTER COLUMN {1}", table, sqlColumn);
 		}
 
-		private void DeleteColumnConstraints(string table, string column)
+		public void DeleteColumnConstraints(string table, string column)
 		{
 			string sqlContrainte =
 				String.Format(
@@ -444,7 +444,7 @@ namespace DbRefactor.Providers
 			//    return;
 			//}
 			ExecuteNonQuery(
-				"ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5}",
+				"ALTER TABLE [{0}] ADD CONSTRAINT [{1}] FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5}",
 				primaryTable, name, String.Join(",", primaryColumns),
 				refTable, String.Join(",", refColumns),
 				new ForeignKeyConstraintMapper().Resolve(constraint));
@@ -461,7 +461,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(table, "table");
 			//if (TableExists(table) && ConstraintExists(name, table))
 			//{
-			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT {1}", table, key);
+			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT [{1}]", table, key);
 			//}
 		}
 
@@ -536,7 +536,7 @@ namespace DbRefactor.Providers
 
 		public int Update(string table, params string[] columnValues)
 		{
-			return ExecuteNonQuery("UPDATE {0} SET {1}", table, String.Join(", ", columnValues));
+			return ExecuteNonQuery("UPDATE [{0}] SET {1}", table, String.Join(", ", columnValues));
 		}
 
 		public int Insert(string table, params string[] columnValues)
@@ -553,7 +553,7 @@ namespace DbRefactor.Providers
 			}
 
 			return ExecuteNonQuery(
-				"INSERT INTO {0} ({1}) VALUES ({2})", 
+				"INSERT INTO [{0}] ({1}) VALUES ({2})", 
 				table, 
 				String.Join(", ", columns), 
 				String.Join(", ", values)); 
