@@ -723,5 +723,15 @@ namespace DbRefactor
 		{
 			Database.DeleteColumnConstraints(table, column);
 		}
+
+        protected void RenameTable(string oldName, string newName)
+        {
+            Database.RenameTable(oldName, newName);
+        }
+
+        protected void RenameColumn(string table, string oldName, string newName)
+        {
+            Database.RenameColumn(table, oldName, newName);
+        }
 	}
 }
