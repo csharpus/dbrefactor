@@ -122,7 +122,7 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(oldName, "oldName");
 			Check.RequireNonEmpty(newName, "newName");
-			ExecuteNonQuery("EXEC sp_rename '[{0}]', '[{1}]', 'OBJECT'",
+			ExecuteNonQuery("EXEC sp_rename '{0}', '{1}', 'OBJECT'",
 				oldName, newName);
 		}
 
