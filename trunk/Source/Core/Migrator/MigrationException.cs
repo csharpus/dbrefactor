@@ -8,23 +8,16 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
-
 using System;
-using DbRefactor.Compatibility;
 
-namespace DbRefactor
+namespace Migrator
 {
 	/// <summary>
-	/// Describe a migration
+	/// Base class for migration errors.
 	/// </summary>
-	public sealed class MigrationAttribute : BaseMigrationAttribute
+	public class MigrationException : Exception
 	{
-		/// <summary>
-		/// Describe the migration
-		/// </summary>
-		/// <param name="version">The unique version of the migration.</param>	
-		public MigrationAttribute(int version) : base(version)
-		{
-		}
+		public MigrationException(string migration, int version, Exception innerException)
+			: base(string.Format("Exception in migration {0} (#{1})", migration, version), innerException) {}
 	}
 }

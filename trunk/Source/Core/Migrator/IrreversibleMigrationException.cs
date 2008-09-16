@@ -8,22 +8,17 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
-
 using System;
-using DbRefactor.Compatibility;
 
-namespace DbRefactor
+namespace Migrator
 {
 	/// <summary>
-	/// Describe a migration
+	/// Exception thrown in a migration <c>Down()</c> method
+	/// when changes can't be undone.
 	/// </summary>
-	public sealed class MigrationAttribute : BaseMigrationAttribute
+	public class IrreversibleMigrationException : Exception
 	{
-		/// <summary>
-		/// Describe the migration
-		/// </summary>
-		/// <param name="version">The unique version of the migration.</param>	
-		public MigrationAttribute(int version) : base(version)
+		public IrreversibleMigrationException() : base("Irreversible migration")
 		{
 		}
 	}

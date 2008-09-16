@@ -34,6 +34,14 @@ namespace DbRefactor.Providers
 			_environment = environment;
 		}
 
+		internal IDatabaseEnvironment Environment
+		{
+			get
+			{
+				return _environment;
+			}
+		}
+
 		/// <summary>
 		/// Returns the event logger
 		/// </summary>

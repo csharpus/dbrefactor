@@ -8,22 +8,17 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
-
 using System;
-using DbRefactor.Compatibility;
 
-namespace DbRefactor
+namespace Migrator
 {
 	/// <summary>
-	/// Describe a migration
+	/// Exception thrown when a migration number is not unique.
 	/// </summary>
-	public sealed class MigrationAttribute : BaseMigrationAttribute
+	public class DuplicatedVersionException : Exception
 	{
-		/// <summary>
-		/// Describe the migration
-		/// </summary>
-		/// <param name="version">The unique version of the migration.</param>	
-		public MigrationAttribute(int version) : base(version)
+		public DuplicatedVersionException(int version)
+			: base(string.Format("Migration version #{0} is duplicated", version))
 		{
 		}
 	}

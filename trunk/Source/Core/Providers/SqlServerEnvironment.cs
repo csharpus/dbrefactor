@@ -18,6 +18,14 @@ namespace DbRefactor.Providers
 			_connection.Open();
 		}
 
+		internal IDbConnection Connection
+		{
+			get
+			{
+				return _connection;
+			}
+		}
+
 		#region IDatabaseEnvironment Members
 
 		int IDatabaseEnvironment.ExecuteNonQuery(string sql)
@@ -59,6 +67,14 @@ namespace DbRefactor.Providers
 			{
 				EnsureHasConnection();
 				_transaction = _connection.BeginTransaction(IsolationLevel.ReadCommitted);
+			}
+		}
+
+		internal IDbTransaction Transaction
+		{
+			get
+			{
+				return _transaction;
 			}
 		}
 

@@ -13,6 +13,7 @@ using System;
 using DbRefactor.Providers;
 using DbRefactor.Tools.Loggers;
 using System.Data;
+using DbRefactor.Compatibility;
 
 namespace DbRefactor
 {
@@ -68,7 +69,7 @@ namespace DbRefactor
 	/// }
 	/// </code>
 	/// </example>
-	public abstract class Migration
+	public abstract class Migration : BaseMigration
 	{
 		private TransformationProvider _transformationProvider;
 
@@ -92,16 +93,6 @@ namespace DbRefactor
 				return TransformationProvider;
 			}
 		}
-
-		/// <summary>
-		/// Defines tranformations to port the database to the current version.
-		/// </summary>
-		public abstract void Up();
-
-		/// <summary>
-		/// Defines transformations to revert things done in <c>Up</c>.
-		/// </summary>
-		public abstract void Down();
 
 		/// <summary>
 		/// This gets called once on the first migration object.

@@ -12,7 +12,7 @@ namespace Example
 	{
 		static void Main()
 		{
-			Migrator migrator = new Migrator(
+			DbRefactor.Migrator migrator = new DbRefactor.Migrator(
 				"SqlServer",
 				ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
 				Assembly.GetExecutingAssembly());
