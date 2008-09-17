@@ -37,6 +37,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ColumnsCollection.cs" />
     <Compile Include="Compatibility\BaseMigration.cs" />
     <Compile Include="Compatibility\BaseMigrationAttribute.cs" />
     <Compile Include="MigrationHelper.cs" />

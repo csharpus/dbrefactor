@@ -116,7 +116,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a string column for "CreateTable" method
 		/// </summary>
-		protected Column String(string name, int size)
+		private Column String(string name, int size)
 		{
 			return new Column(name, typeof(string), size);
 		}
@@ -124,7 +124,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a string column for "CreateTable" method
 		/// </summary>
-		protected Column String(string name, int size, ColumnProperties properties)
+		private Column String(string name, int size, ColumnProperties properties)
 		{
 			return new Column(name, typeof(string), size, properties);
 		}
@@ -132,7 +132,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a string column for "CreateTable" method
 		/// </summary>
-		protected Column String(string name, int size, string defaultValue)
+		private Column String(string name, int size, string defaultValue)
 		{
 			return new Column(name, typeof(string), size, ColumnProperties.Null, defaultValue);
 		}
@@ -140,7 +140,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a string column for "CreateTable" method
 		/// </summary>
-		protected Column String(string name, int size, ColumnProperties properties, string defaultValue)
+		private Column String(string name, int size, ColumnProperties properties, string defaultValue)
 		{
 			return new Column(name, typeof(string), size, properties, defaultValue);
 		}
@@ -175,7 +175,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a text column for "CreateTable" method
 		/// </summary>
-		protected Column Text(string name)
+		private Column Text(string name)
 		{
 			return new Column(name, typeof(string), defaultTextLength);
 		}
@@ -183,7 +183,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a text column for "CreateTable" method
 		/// </summary>
-		protected Column Text(string name, ColumnProperties properties)
+		private Column Text(string name, ColumnProperties properties)
 		{
 			return new Column(name, typeof(string), defaultTextLength, properties);
 		}
@@ -191,7 +191,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a text column for "CreateTable" method
 		/// </summary>
-		protected Column Text(string name, string defaultValue)
+		private Column Text(string name, string defaultValue)
 		{
 			return new Column(name, typeof(string), defaultTextLength,
 				ColumnProperties.Null, defaultValue);
@@ -200,7 +200,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a text column for "CreateTable" method
 		/// </summary>
-		protected Column Text(string name, ColumnProperties properties, string defaultValue)
+		private Column Text(string name, ColumnProperties properties, string defaultValue)
 		{
 			return new Column(name, typeof(string), defaultTextLength, properties, defaultValue);
 		}
@@ -240,7 +240,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates an integer column for "CreateTable" method
 		/// </summary>
-		protected Column Int(string name)
+		private Column Int(string name)
 		{
 			return new Column(name, typeof(int));
 		}
@@ -248,7 +248,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates an integer column for "CreateTable" method
 		/// </summary>
-		protected Column Int(string name, ColumnProperties properties)
+		private Column Int(string name, ColumnProperties properties)
 		{
 			return new Column(name, typeof(int), properties);
 		}
@@ -256,7 +256,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates an integer column for "CreateTable" method
 		/// </summary>
-		protected Column Int(string name, int defaultValue)
+		private Column Int(string name, int defaultValue)
 		{
 			return new Column(name, typeof(int), ColumnProperties.Null, defaultValue);
 		}
@@ -264,7 +264,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates an integer column for "CreateTable" method
 		/// </summary>
-		protected Column Int(string name, ColumnProperties properties, int defaultValue)
+		private Column Int(string name, ColumnProperties properties, int defaultValue)
 		{
 			return new Column(name, typeof(int), properties, defaultValue);
 		}
@@ -304,7 +304,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a long column for "CreateTable" method
 		/// </summary>
-		protected Column Long(string name)
+		private Column Long(string name)
 		{
 			return new Column(name, typeof(long));
 		}
@@ -312,7 +312,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a long column for "CreateTable" method
 		/// </summary>
-		protected Column Long(string name, ColumnProperties properties)
+		private Column Long(string name, ColumnProperties properties)
 		{
 			return new Column(name, typeof(long), properties);
 		}
@@ -320,7 +320,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a long column for "CreateTable" method
 		/// </summary>
-		protected Column Long(string name, long defaultValue)
+		private Column Long(string name, long defaultValue)
 		{
 			return new Column(name, typeof(long), ColumnProperties.Null, defaultValue);
 		}
@@ -328,7 +328,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a long column for "CreateTable" method
 		/// </summary>
-		protected Column Long(string name, ColumnProperties properties, long defaultValue)
+		private Column Long(string name, ColumnProperties properties, long defaultValue)
 		{
 			return new Column(name, typeof(long), properties, defaultValue);
 		}
@@ -376,7 +376,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a date/time column for "CreateTable" method
 		/// </summary>
-		protected Column DateTime(string name, ColumnProperties properties)
+		private Column DateTime(string name, ColumnProperties properties)
 		{
 			return new Column(name, typeof(DateTime), properties);
 		}
@@ -384,7 +384,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a date/time column for "CreateTable" method
 		/// </summary>
-		protected Column DateTime(string name, DateTime defaultValue)
+		private Column DateTime(string name, DateTime defaultValue)
 		{
 			return new Column(name, typeof(DateTime), ColumnProperties.Null, defaultValue);
 		}
@@ -392,7 +392,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a date/time column for "CreateTable" method
 		/// </summary>
-		protected Column DateTime(string name, ColumnProperties properties, DateTime defaultValue)
+		private Column DateTime(string name, ColumnProperties properties, DateTime defaultValue)
 		{
 			return new Column(name, typeof(DateTime), properties, defaultValue);
 		}
@@ -436,7 +436,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a decimal column for "CreateTable" method
 		/// </summary>
-		protected Column Decimal(string name)
+		private Column Decimal(string name)
 		{
 			return new DecimalColumn(name, defaultWhole, defaultRemainder);
 		}
@@ -444,7 +444,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a decimal column for "CreateTable" method
 		/// </summary>
-		protected Column Decimal(string name, ColumnProperties properties)
+		private Column Decimal(string name, ColumnProperties properties)
 		{
 			return new DecimalColumn(name, defaultWhole, defaultRemainder, properties);
 		}
@@ -452,7 +452,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a decimal column for "CreateTable" method
 		/// </summary>
-		protected Column Decimal(string name, decimal defaultValue)
+		private Column Decimal(string name, decimal defaultValue)
 		{
 			return new DecimalColumn(name, defaultWhole, defaultRemainder,
 				ColumnProperties.Null, defaultValue);
@@ -461,7 +461,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a decimal column for "CreateTable" method
 		/// </summary>
-		protected Column Decimal(string name, ColumnProperties properties, decimal defaultValue)
+		private Column Decimal(string name, ColumnProperties properties, decimal defaultValue)
 		{
 			return new DecimalColumn(name, defaultWhole, defaultRemainder, properties, defaultValue);
 		}
@@ -469,7 +469,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a decimal column for "CreateTable" method
 		/// </summary>
-		protected Column Decimal(string name, int whole, int remainder)
+		private Column Decimal(string name, int whole, int remainder)
 		{
 			return new DecimalColumn(name, whole, remainder);
 		}
@@ -477,7 +477,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a decimal column for "CreateTable" method
 		/// </summary>
-		protected Column Decimal(string name, int whole, int remainder, ColumnProperties properties)
+		private Column Decimal(string name, int whole, int remainder, ColumnProperties properties)
 		{
 			return new DecimalColumn(name, whole, remainder, properties);
 		}
@@ -485,7 +485,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a decimal column for "CreateTable" method
 		/// </summary>
-		protected Column Decimal(string name, int whole, int remainder, decimal defaultValue)
+		private Column Decimal(string name, int whole, int remainder, decimal defaultValue)
 		{
 			return new DecimalColumn(name, whole, remainder, ColumnProperties.Null, defaultValue);
 		}
@@ -493,7 +493,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a decimal column for "CreateTable" method
 		/// </summary>
-		protected Column Decimal(string name, int whole, int remainder,
+		private Column Decimal(string name, int whole, int remainder,
 			ColumnProperties properties, decimal defaultValue)
 		{
 			return new DecimalColumn(name, whole, remainder, properties, defaultValue);
@@ -573,7 +573,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a boolean column for "CreateTable" method
 		/// </summary>
-		protected Column Boolean(string name)
+		private Column Boolean(string name)
 		{
 			return new Column(name, typeof(bool));
 		}
@@ -581,7 +581,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a boolean column for "CreateTable" method
 		/// </summary>
-		protected Column Boolean(string name, ColumnProperties properties)
+		private Column Boolean(string name, ColumnProperties properties)
 		{
 			return new Column(name, typeof(bool), properties);
 		}
@@ -589,7 +589,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a boolean column for "CreateTable" method
 		/// </summary>
-		protected Column Boolean(string name, bool defaultValue)
+		private Column Boolean(string name, bool defaultValue)
 		{
 			return new Column(name, typeof(bool), ColumnProperties.Null, defaultValue);
 		}
@@ -597,7 +597,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Creates a boolean column for "CreateTable" method
 		/// </summary>
-		protected Column Boolean(string name, ColumnProperties properties, bool defaultValue)
+		private Column Boolean(string name, ColumnProperties properties, bool defaultValue)
 		{
 			return new Column(name, typeof(bool), properties, defaultValue);
 		}
@@ -635,9 +635,17 @@ namespace DbRefactor
 			Database.AddColumn(table, Boolean(name, properties, defaultValue));
 		}
 
-		protected void CreateTable(string name, params Column[] columns)
+		protected void CreateTable(string name, ColumnsCollection columns)
 		{
-			Database.AddTable(name, columns);
+			Database.AddTable(name, columns.ToArray());
+		}
+
+		protected static ColumnsCollection Columns
+		{
+			get
+			{
+				return ColumnsCollection.Create();
+			}
 		}
 
 		protected void AddForeignKey(string name, string foreignKeyTable,

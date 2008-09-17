@@ -8,13 +8,13 @@ namespace Example
 		public override void Up()
 		{
 			CreateTable(
-				"Parent",
-				Int("ID", ColumnProperties.PrimaryKeyWithIdentity),
-				String("Name", 50),
-				Decimal("Price", 6, 2),
-				Boolean("IsSold", false),
-				DateTime("DateAdded", ColumnProperties.NotNull),
-				Text("Description"));
+				"Parent", Columns
+				.Int("ID").PrimaryKeyWithIdentity()
+				.String("Name", 50)
+				.Decimal("Price", 6, 2)
+				.Boolean("IsSold", false)
+				.DateTime("DateAdded").NotNull()
+				.Text("Description"));
 		}
 
 		public override void Down()
