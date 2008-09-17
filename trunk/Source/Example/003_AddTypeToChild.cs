@@ -7,7 +7,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			AddInt("Child", "Type", 0);
+			AddTo("Child", Column.Int("Type", 0));
 		}
 
 		public override void Down()

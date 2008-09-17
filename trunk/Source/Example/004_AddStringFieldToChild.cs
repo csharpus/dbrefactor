@@ -1,4 +1,5 @@
-﻿using DbRefactor;
+﻿using System;
+using DbRefactor;
 
 namespace Example
 {
@@ -7,7 +8,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			AddString("Child", "StringField", 300, ColumnProperties.NotNull, string.Empty);
+			AddTo("Child", Column.String("StringField", 300, ColumnProperties.NotNull, String.Empty));
 		}
 
 		public override void Down()

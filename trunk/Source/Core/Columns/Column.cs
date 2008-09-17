@@ -190,7 +190,7 @@ namespace DbRefactor
 			{
 				if (column.Type == typeof(char) || column.Type == typeof(string))
 				{
-					mapper.Default(String.Format("'{0}'", column.DefaultValue));
+					mapper.Default(string.Format("'{0}'", column.DefaultValue));
 				}
 				else if (column.Type == typeof(bool))
 				{
@@ -294,6 +294,361 @@ namespace DbRefactor
 			ColumnPropertiesMapper mapper = GetColumnMapper(this);
 			MapColumnProperties(mapper, this);
 			return mapper.IndexSql;
+		}
+
+		/// <summary>
+		/// Creates a string column for "CreateTable" method
+		/// </summary>
+		public static Column String(string name, int size)
+		{
+			return new Column(name, typeof(string), size);
+		}
+
+		/// <summary>
+		/// Creates a string column for "CreateTable" method
+		/// </summary>
+		public static Column String(string name, int size, ColumnProperties properties)
+		{
+			return new Column(name, typeof(string), size, properties);
+		}
+
+		/// <summary>
+		/// Creates a string column for "CreateTable" method
+		/// </summary>
+		public static Column String(string name, int size, string defaultValue)
+		{
+			return new Column(name, typeof(string), size, ColumnProperties.Null, defaultValue);
+		}
+
+		/// <summary>
+		/// Creates a string column for "CreateTable" method
+		/// </summary>
+		public static Column String(string name, int size, ColumnProperties properties, string defaultValue)
+		{
+			return new Column(name, typeof(string), size, properties, defaultValue);
+		}
+
+		private const int defaultTextLength = 1024;
+
+		/// <summary>
+		/// Creates a text column for "CreateTable" method
+		/// </summary>
+		public static Column Text(string name)
+		{
+			return new Column(name, typeof(string), defaultTextLength);
+			
+		}
+
+		/// <summary>
+		/// Creates a text column for "CreateTable" method
+		/// </summary>
+		public static Column Text(string name, ColumnProperties properties)
+		{
+			return new Column(name, typeof(string), defaultTextLength, properties);
+			
+		}
+
+		/// <summary>
+		/// Creates a text column for "CreateTable" method
+		/// </summary>
+		public static Column Text(string name, string defaultValue)
+		{
+			return new Column(name, typeof(string), defaultTextLength,
+				ColumnProperties.Null, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates a text column for "CreateTable" method
+		/// </summary>
+		public static Column Text(string name, ColumnProperties properties, string defaultValue)
+		{
+			return new Column(name, typeof(string), defaultTextLength, properties, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates an integer column for "CreateTable" method
+		/// </summary>
+		public static Column Int(string name)
+		{
+			return new Column(name, typeof(int));
+			
+		}
+
+		/// <summary>
+		/// Creates an integer column for "CreateTable" method
+		/// </summary>
+		public static Column Int(string name, ColumnProperties properties)
+		{
+			return new Column(name, typeof(int), properties);
+			
+		}
+
+		/// <summary>
+		/// Creates an integer column for "CreateTable" method
+		/// </summary>
+		public static Column Int(string name, int defaultValue)
+		{
+			return new Column(name, typeof(int), ColumnProperties.Null, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates an integer column for "CreateTable" method
+		/// </summary>
+		public static Column Int(string name, ColumnProperties properties, int defaultValue)
+		{
+			return new Column(name, typeof(int), properties, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates a long column for "CreateTable" method
+		/// </summary>
+		public static Column Long(string name)
+		{
+			return new Column(name, typeof(long));
+			
+		}
+
+		/// <summary>
+		/// Creates a long column for "CreateTable" method
+		/// </summary>
+		public static Column Long(string name, ColumnProperties properties)
+		{
+			return new Column(name, typeof(long), properties);
+			
+		}
+
+		/// <summary>
+		/// Creates a long column for "CreateTable" method
+		/// </summary>
+		public static Column Long(string name, long defaultValue)
+		{
+			return new Column(name, typeof(long), ColumnProperties.Null, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates a long column for "CreateTable" method
+		/// </summary>
+		public static Column Long(string name, ColumnProperties properties, long defaultValue)
+		{
+			return new Column(name, typeof(long), properties, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates a date/time column for "CreateTable" method
+		/// </summary>
+		public static Column DateTime(string name)
+		{
+			return new Column(name, typeof(DateTime));
+			
+		}
+
+		/// <summary>
+		/// Creates a date/time column for "CreateTable" method
+		/// </summary>
+		public static Column DateTime(string name, ColumnProperties properties)
+		{
+			return new Column(name, typeof(DateTime), properties);
+			
+		}
+
+		/// <summary>
+		/// Creates a date/time column for "CreateTable" method
+		/// </summary>
+		public static Column DateTime(string name, DateTime defaultValue)
+		{
+			return new Column(name, typeof(DateTime), ColumnProperties.Null, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates a date/time column for "CreateTable" method
+		/// </summary>
+		public static Column DateTime(string name, ColumnProperties properties, DateTime defaultValue)
+		{
+			return new Column(name, typeof(DateTime), properties, defaultValue);
+			
+		}
+
+		private const int defaultWhole = 18;
+		private const int defaultRemainder = 0;
+
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
+		public static Column Decimal(string name)
+		{
+			return new DecimalColumn(name, defaultWhole, defaultRemainder);
+			
+		}
+
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
+		public static Column Decimal(string name, ColumnProperties properties)
+		{
+			return new DecimalColumn(name, defaultWhole, defaultRemainder, properties);
+			
+		}
+
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
+		public static Column Decimal(string name, decimal defaultValue)
+		{
+			return new DecimalColumn(name, defaultWhole, defaultRemainder,
+				ColumnProperties.Null, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
+		public static Column Decimal(string name, ColumnProperties properties, decimal defaultValue)
+		{
+			return new DecimalColumn(name, defaultWhole, defaultRemainder, properties, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
+		public static Column Decimal(string name, int whole, int remainder)
+		{
+			return new DecimalColumn(name, whole, remainder);
+			
+		}
+
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
+		public static Column Decimal(string name, int whole, int remainder, ColumnProperties properties)
+		{
+			return new DecimalColumn(name, whole, remainder, properties);
+			
+		}
+
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
+		public static Column Decimal(string name, int whole, int remainder, decimal defaultValue)
+		{
+			return new DecimalColumn(name, whole, remainder, ColumnProperties.Null, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates a decimal column for "CreateTable" method
+		/// </summary>
+		public static Column Decimal(string name, int whole, int remainder,
+			ColumnProperties properties, decimal defaultValue)
+		{
+			return new DecimalColumn(name, whole, remainder, properties, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates a boolean column for "CreateTable" method
+		/// </summary>
+		public static Column Boolean(string name)
+		{
+			return new Column(name, typeof(bool));
+			
+		}
+
+		/// <summary>
+		/// Creates a boolean column for "CreateTable" method
+		/// </summary>
+		public static Column Boolean(string name, ColumnProperties properties)
+		{
+			return new Column(name, typeof(bool), properties);
+			
+		}
+
+		/// <summary>
+		/// Creates a boolean column for "CreateTable" method
+		/// </summary>
+		public static Column Boolean(string name, bool defaultValue)
+		{
+			return new Column(name, typeof(bool), ColumnProperties.Null, defaultValue);
+			
+		}
+
+		/// <summary>
+		/// Creates a boolean column for "CreateTable" method
+		/// </summary>
+		public static Column Boolean(string name, ColumnProperties properties, bool defaultValue)
+		{
+			return new Column(name, typeof(bool), properties, defaultValue);
+			
+		}
+
+		private void AddProperty(ColumnProperties property)
+		{
+			ColumnProperty = property | ColumnProperty;
+		}
+
+		/// <summary>
+		/// Null is allowed
+		/// </summary>
+		public Column Null()
+		{
+			AddProperty(ColumnProperties.Null);
+			return this;
+		}
+
+		/// <summary>
+		/// Null is not allowed
+		/// </summary>
+		public Column NotNull()
+		{
+			AddProperty(ColumnProperties.NotNull);
+			return this;
+		}
+		/// <summary>
+		/// Identity column, autoinc
+		/// </summary>
+		public Column Identity()
+		{
+			AddProperty(ColumnProperties.Identity);
+			return this;
+		}
+		/// <summary>
+		/// Unique Column
+		/// </summary>
+		public Column Unique()
+		{
+			AddProperty(ColumnProperties.Unique);
+			return this;
+		}
+		/// <summary>
+		/// Indexed Column
+		/// </summary>
+		public Column Indexed()
+		{
+			AddProperty(ColumnProperties.Indexed);
+			return this;
+		}
+		/// <summary>
+		/// Primary Key
+		/// </summary>
+		public Column PrimaryKey()
+		{
+			AddProperty(ColumnProperties.PrimaryKey);
+			return this;
+		}
+		/// <summary>
+		/// Primary key. Make the column a PrimaryKey and unsigned
+		/// </summary>
+		public Column PrimaryKeyWithIdentity()
+		{
+			AddProperty(ColumnProperties.PrimaryKeyWithIdentity);
+			return this;
 		}
 	}
 }
