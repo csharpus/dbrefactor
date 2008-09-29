@@ -27,7 +27,7 @@ namespace DbRefactor.Tools
 		{
 			StringWriter writer = new StringWriter();
 
-			writer.WriteLine("using Migrator;\n");
+			writer.WriteLine("using DbRefactor;\n");
 			writer.WriteLine("[Migration(1)]");
 			writer.WriteLine("public class SchemaDump : Migration");
 			writer.WriteLine("{");
@@ -63,8 +63,13 @@ namespace DbRefactor.Tools
 		{
 			using (StreamWriter writer = new StreamWriter(file))
 			{
-				writer.Write(Dump());
+				DumpTo(writer);
 			}
+		}
+
+		public void DumpTo(StreamWriter writer)
+		{
+			writer.Write(Dump());
 		}
 	}
 }

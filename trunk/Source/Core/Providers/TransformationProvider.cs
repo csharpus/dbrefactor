@@ -10,12 +10,12 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Tools.DesignByContract;
 using DbRefactor.Tools.Loggers;
+using System.IO;
 
 namespace DbRefactor.Providers
 {
@@ -231,13 +231,13 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("CREATE TABLE [{0}] ({1})", name, columns);
 		}
 
-		private string ColumnsAndIndexes(Column[] columns)
+		private static string ColumnsAndIndexes(Column[] columns)
 		{
 			string indexes = JoinIndexes(columns);
 			return JoinColumns(columns) + (indexes != null ? "," + indexes : string.Empty);
 		}
 
-		private string JoinIndexes(Column[] columns)
+		private static string JoinIndexes(Column[] columns)
 		{
 			List<string> indexes = new List<string>(columns.Length);
 			foreach (Column column in columns)
@@ -258,7 +258,7 @@ namespace DbRefactor.Providers
 		}
 
 
-		private string JoinColumns(Column[] columns)
+		private static string JoinColumns(Column[] columns)
 		{
 			string[] columnStrings = new string[columns.Length];
 			int i = 0;
@@ -462,7 +462,7 @@ namespace DbRefactor.Providers
 		/// Removes a constraint.
 		/// </summary>
 		/// <param name="table">Table owning the constraint</param>
-		/// <param name="name">Constraint name</param>
+		/// <param name="key">Constraint name</param>
 		public void RemoveForeignKey(string table, string key)
 		{
 			Check.RequireNonEmpty(key, "key");
@@ -492,11 +492,12 @@ namespace DbRefactor.Providers
 		{
 			List<Column> columns = new List<Column>();
 
-			using (IDataReader reader = ExecuteQuery("SELECT COLUMN_NAME FROM information_schema.columns WHERE table_name = '{0}';", table))
+			using (IDataReader reader = ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME FROM information_schema.columns WHERE table_name = '{0}';", table))
 			{
 				while (reader.Read())
 				{
-					columns.Add(new Column(reader[0].ToString(), typeof(string)));
+					Type t = reader["DATA_TYPE"].ToString() == "datetime" ? typeof (DateTime) : typeof (string);
+					columns.Add(new Column(reader["COLUMN_NAME"].ToString(), t));
 				}
 			}
 			return columns.ToArray();
@@ -511,6 +512,7 @@ namespace DbRefactor.Providers
 		/// Execute an SQL query returning results.
 		/// </summary>
 		/// <param name="sql">The SQL command.</param>
+		/// <param name="values">Replacements for {d} pattern.</param>
 		/// <returns>A data iterator, <see cref="System.Data.IDataReader">IDataReader</see>.</returns>
 		public IDataReader ExecuteQuery(string sql, params string[] values)
 		{
@@ -632,6 +634,20 @@ namespace DbRefactor.Providers
 			{
 				AddTable("SchemaInfo",
 					new Column("Version", typeof(int), ColumnProperties.PrimaryKey));
+			}
+		}
+
+		public bool TableHasIdentity(string table)
+		{
+			return Convert.ToInt32(ExecuteScalar("SELECT OBJECTPROPERTY(object_id('{0}'), 'TableHasIdentity')", table)) == 1;
+		}
+
+		public void ExecuteFile(string fileName)
+		{
+			using(StreamReader reader = File.OpenText(fileName))
+			{
+				string content = reader.ReadToEnd();
+				ExecuteNonQuery(content);
 			}
 		}
 
