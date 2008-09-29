@@ -188,6 +188,93 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("ALTER TABLE {0} ALTER COLUMN {1}", table, sqlColumn);
 		}
 
+		private class Relation
+		{
+			public Relation(string parent, string child)
+			{
+				_parent = parent;
+				_child = child;
+			}
+
+			private string _parent;
+
+			public string Parent
+			{
+				get
+				{
+					return _parent;
+				}
+
+				set
+				{
+					_parent = value;
+				}
+			}
+
+			private string _child;
+
+			public string Child
+			{
+				get
+				{
+					return _child;
+				}
+
+				set
+				{
+					_child = value;
+				}
+			}
+		}
+
+		private List<string> SortTablesByDependency(List<string> tables)
+		{
+			string query = @"
+				SELECT f.name AS ForeignKey,
+				   OBJECT_NAME(f.parent_object_id) AS TableName,
+				   COL_NAME(fc.parent_object_id, 
+				   fc.parent_column_id) AS ColumnName,
+				   OBJECT_NAME (f.referenced_object_id) AS ReferenceTableName,
+				   COL_NAME(fc.referenced_object_id, 
+				   fc.referenced_column_id) AS ReferenceColumnName
+				FROM sys.foreign_keys AS f
+				INNER JOIN sys.foreign_key_columns AS fc
+				   ON f.OBJECT_ID = fc.constraint_object_id";
+			List<Relation> relations = new List<Relation>();
+			using (IDataReader reader = ExecuteQuery(query))
+			{
+				while (reader.Read())
+				{
+					relations.Add(
+						new Relation(
+							reader["ReferenceTableName"].ToString(), 
+							reader["TableName"].ToString()));
+				}
+			}
+			CheckCyclicDependencyAbsence(relations);
+			tables.Sort(delegate(string a, string b) { return IsChildParent(a, b, relations) ? 1 : -1;});
+			List<Relation> sortedRelations = new List<Relation>();
+			List<string> sortedTables = new List<string>();
+			return sortedTables;
+		}
+
+		private bool IsChildParent(string table1, string table2, List<Relation> relations)
+		{
+			foreach (Relation r in relations)
+			{
+				if (r.Child == table1 && r.Parent == table2)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		private void CheckCyclicDependencyAbsence(List<Relation> relations)
+		{
+			//TODO: implement
+		}
+
 		public void DeleteColumnConstraints(string table, string column)
 		{
 			string sqlContrainte =
