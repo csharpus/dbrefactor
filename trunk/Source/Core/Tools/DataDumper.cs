@@ -43,18 +43,44 @@ namespace DbRefactor.Tools
 			}
 		}
 
+		private void DisableConstraints(string table)
+		{
+			writer.WriteLine("alter table [{0}] nocheck constraint all", table);
+		}
+
+		private void EnableConstraints(string table)
+		{
+			writer.WriteLine("alter table [{0}] check constraint all", table);
+		}
+
+		private void CheckContraints(string table)
+		{
+			writer.WriteLine("dbcc checkconstraints ('{0}')", table);
+		}
+
+		private void EmptyLine()
+		{
+			writer.WriteLine();
+		}
+
 		/// <param name="delete">Generate delete statement for all tables</param>
 		public string Dump(bool delete)
 		{
 			shouldDelete = delete;
 			writer = new StringWriter();
-			foreach (string table in _provider.GetTablesSortedByDependency())
+			List<string> tables = _provider.GetTablesSortedByDependency();
+			foreach (string table in tables)
+			{
+				DisableConstraints(table);
+				DeleteStatement(table);
+			}
+			tables.Reverse();
+			foreach (string table in tables)
 			{
 				Column[] columns = _provider.GetColumns(table);
 				hasIdentity = _provider.TableHasIdentity(table);
 				using (IDataReader reader = _provider.Select("*", table))
 				{
-					DeleteStatement(table);
 					DisableIdentity(table);
 					while (reader.Read())
 					{
@@ -87,9 +113,15 @@ namespace DbRefactor.Tools
 						writer.WriteLine(");");
 					}
 					EnableIdentity(table);
-					writer.WriteLine();
+					EmptyLine();
 				}
 			}
+			foreach (string table in tables)
+			{
+				EnableConstraints(table);
+				CheckContraints(table);
+			}
+			EmptyLine();
 			return writer.ToString();
 		}
 

@@ -281,7 +281,7 @@ namespace DbRefactor.Providers
 				sortedTables.Sort(delegate(string a, string b)
 				            	{
 									if (a == b) return 0;
-				            		return IsChildParent(a, b, relations) ? 1 : -1;
+				            		return IsChildParent(a, b, relations) ? -1 : 1;
 				            	});
 				return sortedTables;
 			}
@@ -792,7 +792,7 @@ namespace DbRefactor.Providers
 			using(StreamReader reader = File.OpenText(fileName))
 			{
 				string content = reader.ReadToEnd();
-				ExecuteNonQuery(content);
+				_environment.ExecuteNonQuery(content);
 			}
 		}
 

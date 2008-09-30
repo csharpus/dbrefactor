@@ -243,16 +243,16 @@ namespace DbRefactor.Tests.Core
 		public void DependencySorter_should_sort_tables_ascending()
 		{
 			List<string> tables = new List<string>();
-			tables.Add("Child");
 			tables.Add("Parent");
+			tables.Add("Child");
 
 			List<TransformationProvider.Relation> relations 
 				= new List<TransformationProvider.Relation>();
 			relations.Add(new TransformationProvider.Relation("Parent", "Child"));
 
 			List<string> sorted = TransformationProvider.DependencySorter.Run(tables, relations);
-			Assert.That(sorted[0], Is.EqualTo("Parent"));
-			Assert.That(sorted[1], Is.EqualTo("Child"));
+			Assert.That(sorted[0], Is.EqualTo("Child"));
+			Assert.That(sorted[1], Is.EqualTo("Parent"));
 		}
 	}
 }
