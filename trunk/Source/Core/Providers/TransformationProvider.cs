@@ -20,11 +20,15 @@ using System.IO;
 namespace DbRefactor.Providers
 {
 	/// <summary>
-	/// Base class for every transformation providers.
 	/// A 'tranformation' is an operation that modifies the database.
 	/// </summary>
-	internal sealed class TransformationProvider
+	public sealed class TransformationProvider
 	{
+		public static TransformationProvider CreateSqlProvider(string connectionString)
+		{
+			return new TransformationProvider(new SqlServerEnvironment(connectionString));
+		}
+
 		private ILogger _logger = new Logger(false);
 
 		private readonly IDatabaseEnvironment _environment;
@@ -188,7 +192,7 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("ALTER TABLE {0} ALTER COLUMN {1}", table, sqlColumn);
 		}
 
-		private class Relation
+		public class Relation
 		{
 			public Relation(string parent, string child)
 			{
@@ -227,7 +231,7 @@ namespace DbRefactor.Providers
 			}
 		}
 
-		private List<string> SortTablesByDependency(List<string> tables)
+		private List<Relation> GetTablesRelations()
 		{
 			string query = @"
 				SELECT f.name AS ForeignKey,
@@ -247,32 +251,55 @@ namespace DbRefactor.Providers
 				{
 					relations.Add(
 						new Relation(
-							reader["ReferenceTableName"].ToString(), 
+							reader["ReferenceTableName"].ToString(),
 							reader["TableName"].ToString()));
 				}
 			}
-			CheckCyclicDependencyAbsence(relations);
-			tables.Sort(delegate(string a, string b) { return IsChildParent(a, b, relations) ? 1 : -1;});
-			List<Relation> sortedRelations = new List<Relation>();
-			List<string> sortedTables = new List<string>();
-			return sortedTables;
+			return relations;
 		}
 
-		private bool IsChildParent(string table1, string table2, List<Relation> relations)
+		public List<string> GetTablesSortedByDependency()
 		{
-			foreach (Relation r in relations)
+			return SortTablesByDependency(new List<string>(GetTables()));
+		}
+
+		private List<string> SortTablesByDependency(List<string> tables)
+		{
+			List<Relation> relations = GetTablesRelations();
+			return DependencySorter.Run(tables, relations);
+			
+		}
+
+		public class DependencySorter
+		{
+			public static List<string> Run(List<string> tables, List<Relation> relations)
 			{
-				if (r.Child == table1 && r.Parent == table2)
-				{
-					return true;
-				}
+				CheckCyclicDependencyAbsence(relations);
+				List<string> sortedTables = new List<string>(tables);
+				sortedTables.Sort(delegate(string a, string b)
+				            	{
+									if (a == b) return 0;
+				            		return IsChildParent(a, b, relations) ? 1 : -1;
+				            	});
+				return sortedTables;
 			}
-			return false;
-		}
+			
+			private static void CheckCyclicDependencyAbsence(List<Relation> relations)
+			{
+				//TODO: implement
+			}
 
-		private void CheckCyclicDependencyAbsence(List<Relation> relations)
-		{
-			//TODO: implement
+			private static bool IsChildParent(string table1, string table2, IEnumerable<Relation> relations)
+			{
+				foreach (Relation r in relations)
+				{
+					if (r.Child == table1 && r.Parent == table2)
+					{
+						return true;
+					}
+				}
+				return false;
+			}
 		}
 
 		public void DeleteColumnConstraints(string table, string column)

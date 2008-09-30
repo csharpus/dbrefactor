@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using DbRefactor.Providers;
@@ -47,7 +48,7 @@ namespace DbRefactor.Tools
 		{
 			shouldDelete = delete;
 			writer = new StringWriter();
-			foreach (string table in _provider.GetTables())
+			foreach (string table in _provider.GetTablesSortedByDependency())
 			{
 				Column[] columns = _provider.GetColumns(table);
 				hasIdentity = _provider.TableHasIdentity(table);

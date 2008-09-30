@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System.Data;
 using Rhino.Mocks;
 using NUnit.Framework.SyntaxHelpers;
+using System.Collections.Generic;
 
 
 namespace DbRefactor.Tests.Core
@@ -236,6 +237,22 @@ namespace DbRefactor.Tests.Core
 			ExpectExecuteQueryOn(
 				String.Format("SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}') AND name='{1}'",
 				table, column));
+		}
+
+		[Test]
+		public void DependencySorter_should_sort_tables_ascending()
+		{
+			List<string> tables = new List<string>();
+			tables.Add("Child");
+			tables.Add("Parent");
+
+			List<TransformationProvider.Relation> relations 
+				= new List<TransformationProvider.Relation>();
+			relations.Add(new TransformationProvider.Relation("Parent", "Child"));
+
+			List<string> sorted = TransformationProvider.DependencySorter.Run(tables, relations);
+			Assert.That(sorted[0], Is.EqualTo("Parent"));
+			Assert.That(sorted[1], Is.EqualTo("Child"));
 		}
 	}
 }
