@@ -57,9 +57,9 @@ namespace DbRefactor
 	/// {
 	///		public override void Up()
 	///		{
-	///			CreateTable("Customer",
-	///				String("Name", 50),
-	///				String("Address", 100));
+	///			CreateTable("Customer", Columns
+	///				.String("Name", 50)
+	///				.String("Address", 100));
 	/// 	}
 	/// 
 	/// 	public override void Down()
