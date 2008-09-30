@@ -177,6 +177,8 @@ namespace DbRefactor.Providers
 		//		public abstract bool ConstraintExists(string name, string table);
 		public bool ConstraintExists(string name, string table)
 		{
+			Check.RequireNonEmpty(name, "name");
+			Check.RequireNonEmpty(table, "table");
 			using (IDataReader reader =
 				ExecuteQuery("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')",
 				             name))
@@ -304,6 +306,8 @@ namespace DbRefactor.Providers
 
 		public void DeleteColumnConstraints(string table, string column)
 		{
+			Check.RequireNonEmpty(table, "table");
+			Check.RequireNonEmpty(column, "column");
 			string sqlContrainte =
 				String.Format(
 					@"WITH constraint_depends
@@ -472,6 +476,9 @@ namespace DbRefactor.Providers
 		/// <param name="columns">Primary column names</param>
 		public void AddPrimaryKey(string name, string table, params string[] columns)
 		{
+			Check.RequireNonEmpty(name, "name");
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columns.Length > 0, "You have to pass at least one column");
 			//if (ConstraintExists(name, table))
 			//{
 			//    Logger.Warn("Primary key {0} already exists", name);
@@ -560,6 +567,11 @@ namespace DbRefactor.Providers
 		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns, 
 			string refTable, string[] refColumns, OnDelete constraint)
 		{
+			Check.RequireNonEmpty(name, "name");
+			Check.RequireNonEmpty(primaryTable, "primaryTable");
+			Check.RequireNonEmpty(refTable, "refTable");
+			Check.Require(primaryColumns.Length > 0, "You have to pass at least one primary column");
+			Check.Require(refColumns.Length > 0, "You have to pass at least one ref column");
 			//if (ConstraintExists(name, primaryTable))
 			//{
 			//    Logger.Warn("The contraint {0} already exists", name);
@@ -604,6 +616,7 @@ namespace DbRefactor.Providers
 
 		public Column[] GetColumns(string table)
 		{
+			Check.RequireNonEmpty(table, "table");
 			List<Column> columns = new List<Column>();
 
 			using (IDataReader reader = ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME FROM information_schema.columns WHERE table_name = '{0}';", table))
@@ -619,6 +632,7 @@ namespace DbRefactor.Providers
 
 		public int ExecuteNonQuery(string sql, params string[] values)
 		{
+			Check.RequireNonEmpty(sql, "sql");
 			return _environment.ExecuteNonQuery(String.Format(sql, values));
 		}
 
@@ -630,6 +644,7 @@ namespace DbRefactor.Providers
 		/// <returns>A data iterator, <see cref="System.Data.IDataReader">IDataReader</see>.</returns>
 		public IDataReader ExecuteQuery(string sql, params string[] values)
 		{
+			Check.RequireNonEmpty(sql, "sql");
 			return _environment.ExecuteQuery(String.Format(sql, values));
 		}
 
@@ -640,31 +655,45 @@ namespace DbRefactor.Providers
 
 		public IDataReader Select(string what, string from)
 		{
+			Check.RequireNonEmpty(what, "what");
+			Check.RequireNonEmpty(from, "from");
 			return Select(what, from, "1=1");
 		}
 
 		public IDataReader Select(string what, string from, string where)
 		{
+			Check.RequireNonEmpty(what, "what");
+			Check.RequireNonEmpty(from, "from");
+			Check.RequireNonEmpty(where, "where");
 			return ExecuteQuery("SELECT {0} FROM {1} WHERE {2}", what, from, where);
 		}
 
 		public object SelectScalar(string what, string from)
 		{
+			Check.RequireNonEmpty(what, "what");
+			Check.RequireNonEmpty(from, "from");
 			return SelectScalar(what, from, "1=1");
 		}
 
 		public object SelectScalar(string what, string from, string where)
 		{
+			Check.RequireNonEmpty(what, "what");
+			Check.RequireNonEmpty(from, "from");
+			Check.RequireNonEmpty(where, "where");
 			return ExecuteScalar("SELECT {0} FROM {1} WHERE {2}", what, from, where);
 		}
 
 		public int Update(string table, params string[] columnValues)
 		{
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columnValues.Length > 0, "You have to pass at least one column value");
 			return ExecuteNonQuery("UPDATE [{0}] SET {1}", table, String.Join(", ", columnValues));
 		}
 
 		public int Insert(string table, params string[] columnValues)
 		{
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columnValues.Length > 0, "You have to pass at least one column value");
 			string[] columns = new string[columnValues.Length];
 			string[] values = new string[columnValues.Length];
 			int i = 0;
@@ -753,11 +782,13 @@ namespace DbRefactor.Providers
 
 		public bool TableHasIdentity(string table)
 		{
+			Check.RequireNonEmpty(table, "table");
 			return Convert.ToInt32(ExecuteScalar("SELECT OBJECTPROPERTY(object_id('{0}'), 'TableHasIdentity')", table)) == 1;
 		}
 
 		public void ExecuteFile(string fileName)
 		{
+			Check.RequireNonEmpty(fileName, "fileName");
 			using(StreamReader reader = File.OpenText(fileName))
 			{
 				string content = reader.ReadToEnd();
