@@ -96,8 +96,11 @@ namespace DbRefactor.Tools
 						writer.Write(") values (");
 						foreach (Column column in columns)
 						{
-
-							if (column.Type == typeof(DateTime))
+							if (reader[column.Name] == DBNull.Value)
+							{
+								writer.Write("NULL");
+							}
+							else if (column.Type == typeof(DateTime))
 							{
 								writer.Write("'{0}'", FormatDateTime((DateTime)reader[column.Name]));
 							}

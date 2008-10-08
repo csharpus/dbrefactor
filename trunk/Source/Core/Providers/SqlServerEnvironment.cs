@@ -31,6 +31,7 @@ namespace DbRefactor.Providers
 		int IDatabaseEnvironment.ExecuteNonQuery(string sql)
 		{
 			IDbCommand cmd = BuildCommand(sql);
+			cmd.CommandTimeout = 120;
 			return cmd.ExecuteNonQuery();
 		}
 
