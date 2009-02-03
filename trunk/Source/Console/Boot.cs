@@ -38,7 +38,9 @@ namespace DbRefactor.Console
 			[Optional(-1, Description = "To specific version to migrate the database to")]
 			int version,
 			[Optional(false, Description = "Show debug information")]
-			bool trace)
+			bool trace,
+			[Optional(null, Description = "To define another set of migrations")]
+			string category)
 		{
 			Assembly asm = Assembly.LoadFrom(migrationAssembly);
 
@@ -49,7 +51,7 @@ namespace DbRefactor.Console
 			}
 			else
 			{
-				migrator.MigrateTo(version);
+				migrator.MigrateTo(version, category);
 			}
 		}
 	}

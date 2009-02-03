@@ -372,7 +372,9 @@ namespace Migrator.Providers
 				}
 			}
 		}
-		
+
+		public string Category { get; set;}
+
 		protected void CreateSchemaInfoTable()
  		{
  			EnsureHasConnection();

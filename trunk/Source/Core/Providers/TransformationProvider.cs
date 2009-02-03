@@ -690,6 +690,14 @@ namespace DbRefactor.Providers
 			return ExecuteNonQuery("UPDATE [{0}] SET {1}", table, String.Join(", ", columnValues));
 		}
 
+		public int Update(string table, string[] columnValues, string where)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columnValues.Length > 0, "You have to pass at least one column value");
+			Check.RequireNonEmpty(where, "where");
+			return ExecuteNonQuery("UPDATE [{0}] SET {1} WHERE {2}", table, String.Join(", ", columnValues), where);
+		}
+
 		public int Insert(string table, params string[] columnValues)
 		{
 			Check.RequireNonEmpty(table, "table");
@@ -736,6 +744,8 @@ namespace DbRefactor.Providers
 			_environment.CommitTransaction();
 		}
 
+		private string _category;
+
 		/// <summary>
 		/// Get or set the current version of the database.
 		/// This determines if the migrator should migrate up or down
@@ -749,7 +759,7 @@ namespace DbRefactor.Providers
 			get
 			{
 				CreateSchemaInfoTable();
-				object version = SelectScalar("Version", "SchemaInfo");
+				object version = SelectScalar("Version", "SchemaInfo", String.Format("Category='{0}'", _category));
 				if (version == null)
 				{
 					return 0;
@@ -762,11 +772,20 @@ namespace DbRefactor.Providers
 			set
 			{
 				CreateSchemaInfoTable();
-				int count = Update("SchemaInfo", "Version=" + value);
+				int count = Update("SchemaInfo", new[] {"Version=" + value}, String.Format("Category='{0}'", _category));
 				if (count == 0)
 				{
-					Insert("SchemaInfo", "Version=" + value);
+					Insert("SchemaInfo", "Version=" + value, "Category=" + _category);
 				}
+			}
+		}
+
+		public string Category
+		{
+			get { return _category; }
+			set
+			{
+				_category = value ?? String.Empty;
 			}
 		}
 
@@ -777,6 +796,11 @@ namespace DbRefactor.Providers
 			{
 				AddTable("SchemaInfo",
 					new Column("Version", typeof(int), ColumnProperties.PrimaryKey));
+			}
+			if (!ColumnExists("SchemaInfo", "Category"))
+			{
+				AddColumn("SchemaInfo", new Column("Category", typeof(string), 50, ColumnProperties.Null));
+				Update("SchemaInfo", "Category=''");
 			}
 		}
 

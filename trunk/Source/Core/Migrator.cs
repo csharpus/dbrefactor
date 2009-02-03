@@ -39,17 +39,37 @@ namespace DbRefactor
 			set { _args = value; }
 		}
 
+		private string _category;
+
+		public string Category
+		{
+			get
+			{
+				return _category;
+			}
+
+			set
+			{
+				_category = value;
+			}
+		}
+
+		public Migrator(string providerName, string connectionString, string category, Assembly migrationAssembly, bool trace)
+			: this(CreateProvider(connectionString), category, migrationAssembly, trace)
+		{ }
+
+
 		public Migrator(string providerName, string connectionString, Assembly migrationAssembly, bool trace)
-			: this(CreateProvider(connectionString), migrationAssembly, trace)
+			: this(CreateProvider(connectionString), null, migrationAssembly, trace)
 		{ }
 
 		public Migrator(string providerName, string connectionString, Assembly migrationAssembly)
-			: this(CreateProvider(connectionString), migrationAssembly, false)
+			: this(CreateProvider(connectionString), null, migrationAssembly, false)
 		{ }
 
 		private OldMigrator.Providers.SqlServerTransformationProvider _oldProvider;
 
-		internal Migrator(TransformationProvider provider, Assembly migrationAssembly, bool trace)
+		internal Migrator(TransformationProvider provider, string category, Assembly migrationAssembly, bool trace)
 		{
 			_provider = provider;
 
@@ -59,7 +79,7 @@ namespace DbRefactor
 			Logger logger = new Logger(_trace);
 			logger.Attach(new ConsoleWriter());
 			_logger = logger;
-
+			_category = category;
 
 			_migrationsTypes.AddRange(GetMigrationTypes(Assembly.GetExecutingAssembly()));
 
@@ -93,7 +113,7 @@ namespace DbRefactor
 		/// the <c>Down()</c> method of previous migration will be invoked.
 		/// </summary>
 		/// <param name="version">The version that must became the current one</param>
-		public void MigrateTo(int version)
+		public void MigrateTo(int version, string category)
 		{
 			_provider.Logger = _logger;
 			BeginTransaction();
@@ -206,6 +226,7 @@ namespace DbRefactor
 
 			// Update and commit all changes
 			_provider.CurrentVersion = version;
+			_provider.Category = category;
 
 			_provider.Commit();
 			_logger.Finished(originalVersion, version);
@@ -229,7 +250,7 @@ namespace DbRefactor
 		/// </summary>
 		public void MigrateToLastVersion()
 		{
-			MigrateTo(LastVersion);
+			MigrateTo(LastVersion, null);
 		}
 
 		/// <summary>

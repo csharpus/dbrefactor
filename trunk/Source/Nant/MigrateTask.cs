@@ -109,7 +109,7 @@ namespace DbRefactor.NAnt
 			if (_to == -1)
 				mig.MigrateToLastVersion();
 			else
-				mig.MigrateTo(_to);
+				mig.MigrateTo(_to, null);
 		}
 	}
 }
