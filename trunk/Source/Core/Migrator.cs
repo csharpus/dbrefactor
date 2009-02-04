@@ -250,7 +250,12 @@ namespace DbRefactor
 		/// </summary>
 		public void MigrateToLastVersion()
 		{
-			MigrateTo(LastVersion, null);
+			MigrateToLastVersion(String.Empty);
+		}
+
+		public void MigrateToLastVersion(string category)
+		{
+			MigrateTo(LastVersion, category);
 		}
 
 		/// <summary>

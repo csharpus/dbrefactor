@@ -775,7 +775,7 @@ namespace DbRefactor.Providers
 				int count = Update("SchemaInfo", new[] {"Version=" + value}, String.Format("Category='{0}'", _category));
 				if (count == 0)
 				{
-					Insert("SchemaInfo", "Version=" + value, "Category=" + _category);
+					Insert("SchemaInfo", "Version=" + value, "Category='" + _category + "'");
 				}
 			}
 		}
