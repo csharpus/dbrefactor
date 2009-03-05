@@ -72,6 +72,7 @@ namespace DbRefactor
 		internal Migrator(TransformationProvider provider, string category, Assembly migrationAssembly, bool trace)
 		{
 			_provider = provider;
+			_provider.Category = category;
 
 			_oldProvider = new OldMigrator.Providers.SqlServerTransformationProvider(((provider as TransformationProvider).Environment as SqlServerEnvironment).Connection as SqlConnection);
 
@@ -113,7 +114,7 @@ namespace DbRefactor
 		/// the <c>Down()</c> method of previous migration will be invoked.
 		/// </summary>
 		/// <param name="version">The version that must became the current one</param>
-		public void MigrateTo(int version, string category)
+		public void MigrateTo(int version)
 		{
 			_provider.Logger = _logger;
 			BeginTransaction();
@@ -226,7 +227,7 @@ namespace DbRefactor
 
 			// Update and commit all changes
 			_provider.CurrentVersion = version;
-			_provider.Category = category;
+			
 
 			_provider.Commit();
 			_logger.Finished(originalVersion, version);
@@ -250,12 +251,7 @@ namespace DbRefactor
 		/// </summary>
 		public void MigrateToLastVersion()
 		{
-			MigrateToLastVersion(String.Empty);
-		}
-
-		public void MigrateToLastVersion(string category)
-		{
-			MigrateTo(LastVersion, category);
+			MigrateTo(LastVersion);
 		}
 
 		/// <summary>

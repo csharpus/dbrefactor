@@ -44,14 +44,14 @@ namespace DbRefactor.Console
 		{
 			Assembly asm = Assembly.LoadFrom(migrationAssembly);
 
-			Migrator migrator = new Migrator(provider, connectionString, asm, trace);
+			var migrator = new Migrator(provider, connectionString, category, asm, trace);
 			if (version == -1)
 			{
 				migrator.MigrateToLastVersion();
 			}
 			else
 			{
-				migrator.MigrateTo(version, category);
+				migrator.MigrateTo(version);
 			}
 		}
 	}
