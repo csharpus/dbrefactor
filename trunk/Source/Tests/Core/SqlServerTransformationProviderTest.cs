@@ -151,28 +151,28 @@ namespace DbRefactor.Tests.Core
 		public void StringColumn()
 		{
 			Column column = new Column("Column1", typeof (string), 10);
-			Assert.That(column.ColumnSQL(), Is.EqualTo("Column1 nvarchar(10) NULL"));
+			Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] nvarchar(10) NULL"));
 		}
 
 		[Test]
 		public void IntNotNullColumn()
 		{
 			Column column = new Column("Column1", typeof(int), ColumnProperties.NotNull);
-			Assert.That(column.ColumnSQL(), Is.EqualTo("Column1 int NOT NULL"));
+			Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] int NOT NULL"));
 		}
 
 		[Test]
 		public void BooleanColumnWithDefaultValue()
 		{
 			Column column = new Column("Column1", typeof(bool), ColumnProperties.NotNull, true);
-			Assert.That(column.ColumnSQL(), Is.EqualTo("Column1 bit NOT NULL DEFAULT 1"));
+			Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] bit NOT NULL DEFAULT 1"));
 		}
 
 		[Test]
 		public void PrimaryKeyColumn()
 		{
 			Column column = new Column("ID", typeof(int), ColumnProperties.PrimaryKeyWithIdentity);
-			Assert.That(column.ColumnSQL(), Is.EqualTo("ID int NOT NULL IDENTITY PRIMARY KEY"));
+			Assert.That(column.ColumnSQL(), Is.EqualTo("[ID] int NOT NULL IDENTITY PRIMARY KEY"));
 		}
 
 		[Test]
@@ -180,7 +180,7 @@ namespace DbRefactor.Tests.Core
 		{
 			using (mockery.Record())
 			{
-				ExpectExecuteNonQueryOn("CREATE TABLE [Table1] (ID int NULL)");
+				ExpectExecuteNonQueryOn("CREATE TABLE [Table1] ([ID] int NULL)");
 			}
 			using (mockery.Playback())
 			{
@@ -194,7 +194,7 @@ namespace DbRefactor.Tests.Core
 		{
 			using (mockery.Record())
 			{
-				ExpectExecuteNonQueryOn("CREATE TABLE [Table1] (ID int NULL, Name nvarchar(10) NULL)");
+				ExpectExecuteNonQueryOn("CREATE TABLE [Table1] ([ID] int NULL, [Name] nvarchar(10) NULL)");
 			}
 			using (mockery.Playback())
 			{
