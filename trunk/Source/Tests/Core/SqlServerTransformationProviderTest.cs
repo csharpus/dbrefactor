@@ -83,7 +83,7 @@ namespace DbRefactor.Tests.Core
 		{
 			using (mockery.Record())
 			{
-				ExpectExecuteNonQueryOn("EXEC sp_rename '[Table].[OldName]', '[NewName]', 'COLUMN'");
+				ExpectExecuteNonQueryOn("EXEC sp_rename '[Table].[OldName]', 'NewName'");
 			}
 			using (mockery.Playback())
 			{
@@ -253,6 +253,22 @@ namespace DbRefactor.Tests.Core
 			List<string> sorted = TransformationProvider.DependencySorter.Run(tables, relations);
 			Assert.That(sorted[0], Is.EqualTo("Child"));
 			Assert.That(sorted[1], Is.EqualTo("Parent"));
+		}
+
+		[Test]
+		public void InsertLocalizationLetters()
+		{
+			using (mockery.Record())
+			{
+				ExpectExecuteNonQueryOn(string.Format("INSERT INTO [{0}] ({1}, {2}) VALUES ({3}, '{4}')", "Table1", "Id", "Name", 1, "Имя"));
+			}
+			using (mockery.Playback())
+			{
+				_provider.Insert("Table1",
+				string.Format("Id={0}", 1),
+				string.Format("Name='{0}'", "Имя"));
+			}
+
 		}
 	}
 }
