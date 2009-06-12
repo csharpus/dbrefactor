@@ -13,7 +13,7 @@ namespace Example
 				.String("Name", 50)
 				.Decimal("Price", 6, 2)
 				.Boolean("IsSold", false)
-				.DateTime("DateAdded").NotNull()
+				.DateTime("DateAdded").NotNull().PrimaryKey()
 				.Text("Description"));
 		}
 

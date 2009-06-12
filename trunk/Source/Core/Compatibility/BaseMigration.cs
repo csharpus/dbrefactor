@@ -16,6 +16,7 @@ namespace DbRefactor.Compatibility
 		/// </summary>
 		public abstract void Down();
 
-		public abstract Table CreateTable(string tableName);
+		public abstract NewTable CreateTable(string tableName);
+		public abstract ActionTable Table(string tableName);
 	}
 }

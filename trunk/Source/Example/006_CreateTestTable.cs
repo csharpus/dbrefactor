@@ -9,13 +9,12 @@ namespace Example
 		{
 			CreateTable("Test")
 				.Int("ID").PrimaryKeyWithIdentity().NotNull()
-				.String("Name", 255, "xxx")
+				.String("Name", 255)
 				.Execute();
 		}
 
 		public override void Down()
 		{
-			
 		}
 	}
 }
