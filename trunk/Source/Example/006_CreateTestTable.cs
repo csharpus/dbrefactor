@@ -7,7 +7,10 @@ namespace Example
 	{
 		public override void Up()
 		{
-			CreateTable("Test").Int("ID", ColumnProperties.PrimaryKeyWithIdentity).Execute();
+			CreateTable("Test")
+				.Int("ID").PrimaryKeyWithIdentity().NotNull()
+				.String("Name", 255, "xxx")
+				.Execute();
 		}
 
 		public override void Down()

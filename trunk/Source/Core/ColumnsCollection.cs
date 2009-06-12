@@ -27,6 +27,18 @@ namespace DbRefactor
 			_columns.Add(column);
 		}
 
+		public Column LastColumnItem
+		{
+			get
+			{
+				if (_columns.Count == 0)
+				{
+					throw new InvalidOperationException("Columns does not have any columns");
+				}
+				return _columns[_columns.Count - 1];
+			}
+		}
+
 		/// <summary>
 		/// Creates a string column for "CreateTable" method
 		/// </summary>
@@ -323,7 +335,7 @@ namespace DbRefactor
 			return this;
 		}
 
-		private void AddProperty(ColumnProperties property)
+		public void AddProperty(ColumnProperties property)
 		{
 			if (_columns.Count == 0)
 			{
