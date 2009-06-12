@@ -6,10 +6,8 @@ using DbRefactor.Tools.DesignByContract;
 
 namespace DbRefactor
 {
-	public class ActionTable
+	public class ActionTable: Table
 	{
-		private IDatabaseEnvironment databaseEnvironment;
-		public string TableName { get; set; }
 		private List<string> columnValues;
 
 		private const string StringParameterPattern = "{0}='{1}'";
@@ -24,9 +22,8 @@ namespace DbRefactor
 
 		private Operation operation = Operation.None;
 
-		public ActionTable(IDatabaseEnvironment environment)
+		public ActionTable(IDatabaseEnvironment environment) : base(environment)
 		{
-			databaseEnvironment = environment;
 			columnValues = new List<string>();
 		}
 

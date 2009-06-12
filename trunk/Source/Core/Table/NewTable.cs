@@ -5,15 +5,12 @@ using DbRefactor.Providers;
 
 namespace DbRefactor
 {
-	public class NewTable
+	public class NewTable : Table
 	{
-		private IDatabaseEnvironment databaseEnvironment;
 		private ColumnsCollection columns;
-		public string TableName { get; set; }
 
-		public NewTable(IDatabaseEnvironment environment)
+		public NewTable(IDatabaseEnvironment environment) : base(environment)
 		{
-			databaseEnvironment = environment;
 			columns = ColumnsCollection.Create();
 		}
 

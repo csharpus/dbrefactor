@@ -83,6 +83,7 @@
     <Compile Include="Attributes.cs" />
     <Compile Include="Table\ActionTable.cs" />
     <Compile Include="Table\NewTable.cs" />
+    <Compile Include="Table\Table.cs" />
     <Compile Include="Tools\DataDumper.cs" />
     <Compile Include="Tools\DesignByContract\DesignByContract.cs" />
     <Compile Include="Tools\Loggers\ConsoleWriter.cs" />
