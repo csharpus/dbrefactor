@@ -8,12 +8,13 @@ namespace DbRefactor
 	public class Table
 	{
 		private IDatabaseEnvironment databaseEnvironment;
-		protected ColumnsCollection Columns { get; set; }
+		private ColumnsCollection Columns;
 		public string TableName { get; set; }
 
 		public Table(IDatabaseEnvironment environment)
 		{
 			databaseEnvironment = environment;
+			Columns = ColumnsCollection.Create();
 		}
 
 		public Table Int(string columnName)
