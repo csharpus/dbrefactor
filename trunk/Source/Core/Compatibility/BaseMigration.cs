@@ -15,5 +15,7 @@ namespace DbRefactor.Compatibility
 		/// Defines transformations to revert things done in <c>Up</c>.
 		/// </summary>
 		public abstract void Down();
+
+		public abstract Table CreateTable(string tableName);
 	}
 }

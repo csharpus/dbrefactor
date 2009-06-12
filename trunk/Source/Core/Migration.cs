@@ -215,5 +215,11 @@ namespace DbRefactor
         {
             Database.RenameColumn(table, oldName, newName);
         }
+
+		public override Table CreateTable(string tableName)
+		{
+			Table table = new Table(TransformationProvider.Environment) { TableName = tableName };
+			return table;
+		}
 	}
 }
