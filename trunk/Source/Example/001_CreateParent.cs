@@ -7,8 +7,6 @@ namespace Example
 	{
 		public override void Up()
 		{
-			//CreateTable("Parent").Int("ID", ColumnProperties.PrimaryKeyWithIdentity).Execute();
-
 			CreateTable(
 				"Parent", Columns
 				.Int("ID").PrimaryKeyWithIdentity()

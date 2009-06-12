@@ -8,44 +8,44 @@ namespace DbRefactor
 	public class Table
 	{
 		private IDatabaseEnvironment databaseEnvironment;
-		private ColumnsCollection Columns;
+		private ColumnsCollection columns;
 		public string TableName { get; set; }
 
 		public Table(IDatabaseEnvironment environment)
 		{
 			databaseEnvironment = environment;
-			Columns = ColumnsCollection.Create();
+			columns = ColumnsCollection.Create();
 		}
 
 		public Table Int(string columnName)
 		{
-			Columns.Int(columnName);
+			columns.Int(columnName);
 			return this;
 		}
 
 		public Table Int(string columnName, ColumnProperties properties)
 		{
-			Columns.Int(columnName, properties);
+			columns.Int(columnName, properties);
 			return this;
 		}
 
 
 		public Table Int(string columnName, int defaultValue)
 		{
-			Columns.Int(columnName, defaultValue);
+			columns.Int(columnName, defaultValue);
 			return this;
 		}
 
 		public Table Int(string columnName, ColumnProperties properties, int defaultValue)
 		{
-			Columns.Int(columnName, properties, defaultValue);
+			columns.Int(columnName, properties, defaultValue);
 			return this;
 		}
 
 		public void Execute()
 		{
 			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
-			provider.AddTable(TableName, Columns.ToArray());
+			provider.AddTable(TableName, columns.ToArray());
 		}
 	}
 }

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.50727</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{42F23730-3B9E-4178-A3A4-DEEF6518B941}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -48,6 +48,7 @@
     <Compile Include="003_AddTypeToChild.cs" />
     <Compile Include="004_AddStringFieldToChild.cs" />
     <Compile Include="005_DropPrimaryKey.cs" />
+    <Compile Include="006_CreateTestTable.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
