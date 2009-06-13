@@ -10,9 +10,10 @@ namespace DbRefactor
 		protected IDatabaseEnvironment databaseEnvironment;
 		public string TableName { get; set; }
 
-		protected Table(IDatabaseEnvironment environment)
+		protected Table(IDatabaseEnvironment environment, string tableName)
 		{
 			databaseEnvironment = environment;
+			TableName = tableName;
 		}
 
 	}

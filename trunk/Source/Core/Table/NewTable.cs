@@ -9,7 +9,7 @@ namespace DbRefactor
 	{
 		private ColumnsCollection columns;
 
-		public NewTable(IDatabaseEnvironment environment) : base(environment)
+		public NewTable(IDatabaseEnvironment environment, string tableName): base(environment, tableName)
 		{
 			columns = ColumnsCollection.Create();
 		}

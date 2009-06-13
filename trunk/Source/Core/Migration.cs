@@ -218,14 +218,18 @@ namespace DbRefactor
 
 		public override NewTable CreateTable(string tableName)
 		{
-			var table = new NewTable(TransformationProvider.Environment) { TableName = tableName };
-			return table;
+			return new NewTable(TransformationProvider.Environment, tableName);
 		}
 
 		public override ActionTable Table(string tableName)
 		{
-			var table = new ActionTable(TransformationProvider.Environment) { TableName = tableName };
-			return table;
+			return new ActionTable(TransformationProvider.Environment, tableName);
 		}
+
+		public override AlterTable AlterTable(string tableName)
+		{
+			return new AlterTable(TransformationProvider.Environment, tableName);
+		}
+
 	}
 }

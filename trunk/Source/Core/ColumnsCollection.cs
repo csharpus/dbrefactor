@@ -22,7 +22,7 @@ namespace DbRefactor
 			return new ColumnsCollection();
 		}
 
-		private void Add(Column column)
+		public void Add(Column column)
 		{
 			_columns.Add(column);
 		}

@@ -22,7 +22,7 @@ namespace DbRefactor
 
 		private Operation operation = Operation.None;
 
-		public ActionTable(IDatabaseEnvironment environment) : base(environment)
+		public ActionTable(IDatabaseEnvironment environment, string tableName) : base(environment, tableName)
 		{
 			columnValues = new List<string>();
 		}

@@ -82,6 +82,7 @@
     <Compile Include="Providers\TypeToSqlProviders\SQLServerTypeToSqlProvider.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Table\ActionTable.cs" />
+    <Compile Include="Table\AlterTable.cs" />
     <Compile Include="Table\NewTable.cs" />
     <Compile Include="Table\Table.cs" />
     <Compile Include="Tools\DataDumper.cs" />
