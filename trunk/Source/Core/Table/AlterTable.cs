@@ -16,12 +16,21 @@ namespace DbRefactor
 			RenameColumn,
 			RenameTable,
 			DropColumn,
-			DropTable
+			DropTable,
+			RemoveForeignKey,
+			AddForeignKey,
+			DropForeignKey
 		} ;
 
 		private Operation operation = Operation.None;
 		private ColumnsCollection columns;				// For column operations
 		private string newTableName;
+
+		private string _foreignKeyColumn;
+		private string _primaryKeyTable;
+		private string _primaryKeyColumn;
+		private OnDelete foreignKeyConstraint = OnDelete.NoAction;
+		private string keyName;
         
 		public AlterTable(IDatabaseEnvironment environment, string tableName): base(environment, tableName)
 		{
@@ -30,80 +39,78 @@ namespace DbRefactor
 
 		#region Table operations
 
-		public AlterTable RenameTable(string newName)
+		public void RenameTable(string newName)
 		{
 			newTableName = newName;
 			operation = Operation.RenameTable;
-			return this;
+			Execute();
 		}
 
-		public AlterTable DropTable()
+		public void DropTable()
 		{
 			operation = Operation.DropTable;
-			return this;
+			Execute();
 		}
 
-		
 		#endregion Table operations
 
 		#region Column operations
 		
-		public AlterTable AlterColumn(Column column)
+		public void AlterColumn(Column column)
 		{
-			Check.Ensure(operation == Operation.None, "The operation already exists.");
 			operation = Operation.AlterColumn;
 			columns.Add(column);
-			return this;
+			Execute();
 		}
 
-		public AlterTable RemoveColumnConstraints(string column)
+		public void RemoveColumnConstraints(string column)
 		{
-			Check.Ensure(operation == Operation.None, "The operation already exists.");
 			operation = Operation.RemoveColumnConstraints;
 			columns.Int(column);
-			return this;
+			Execute();
 		}
 
-		public AlterTable RenameColumn(string oldName, string newName)
+		public void RenameColumn(string oldName, string newName)
 		{
-			Check.Ensure(operation == Operation.None, "The operation already exists.");
 			operation = Operation.RenameColumn;
 			columns.Int(oldName);
 			columns.Int(newName);
-			return this;
+			Execute();
 		}
 
-		public AlterTable DropColumn(string column)
+		public void DropColumn(string column)
 		{
-			Check.Ensure(operation == Operation.None, "The operation already exists.");
 			operation = Operation.DropColumn;
 			columns.Int(column);
-			return this;
+			Execute();
 		}
 
-/*
-		protected void AddForeignKey(string name, string foreignKeyTable,
-			string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)
+		public void AddForeignKey(string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)
 		{
-			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn,
-				primaryKeyTable, primaryKeyColumn);
+			AddForeignKey(foreignKeyColumn, primaryKeyTable, primaryKeyColumn, OnDelete.NoAction);
 		}
 
-		protected void AddForeignKey(string name, string foreignKeyTable,
-			string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn, OnDelete ondelete)
+		protected void AddForeignKey(string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn, OnDelete ondelete)
 		{
-			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, primaryKeyTable, primaryKeyColumn, ondelete);
+			operation = Operation.AddForeignKey;
+			_foreignKeyColumn = foreignKeyColumn;
+			_primaryKeyTable = primaryKeyTable;
+			_primaryKeyColumn = primaryKeyColumn;
+			foreignKeyConstraint = ondelete;
+			Execute();
 		}
 
-		protected void DropForeignKey(string foreignKeyTable, string name)
+		protected void DropForeignKey(string key)
 		{
-			Database.RemoveForeignKey(foreignKeyTable, name);
+			operation = Operation.DropForeignKey;
+			keyName = key;
+			Execute();
 		}
-*/
+
 		#endregion Column operations
 
 		// does it make sense to use kind of Operation Strategy
-		public void Execute()
+		private void Execute()
 		{
 			Check.Ensure(operation != Operation.None, "The operation has not been set.");
 
@@ -138,6 +145,21 @@ namespace DbRefactor
 					provider.DropColumn(TableName, columns.LastColumnItem.Name);
 					break;
 
+				case Operation.RemoveForeignKey:
+					provider.RemoveForeignKey(TableName, keyName);
+					break;
+
+				case Operation.AddForeignKey:
+					string key = keyName;
+					if(String.IsNullOrEmpty(key))
+						key = GenerateForeignKey(TableName, _primaryKeyTable);	// FK_TableName_prinaryKeyTable
+					break;
+
+				case Operation.DropForeignKey:
+					string _key = keyName;
+					if (String.IsNullOrEmpty(_key))
+						provider.RemoveForeignKey(TableName, _key);
+					break;
 
 				case Operation.RenameTable:
 					Check.Ensure(!String.IsNullOrEmpty(newTableName), "New table name has not set");
@@ -148,6 +170,11 @@ namespace DbRefactor
 					provider.DropTable(TableName);
 					break;
 			}
+		}
+
+		private string GenerateForeignKey(string tableName, string primaryKeyTable)
+		{
+			return String.Format("FK_{0}_{1}", tableName, primaryKeyTable);
 		}
 	}
 }

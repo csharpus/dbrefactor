@@ -8,9 +8,9 @@ namespace DbRefactor
 {
 	public class ActionTable: Table
 	{
-		//private List<string> columnValues;
-		private List<List<string>> actionList;
-		private const string StringParameterPattern = "{0}='{1}'";
+		private List<string> columnValues;
+		//private List<List<string>> actionList;
+        private const string StringParameterPattern = "{0}='{1}'";
 		private const string NotStringParameterPattern = "{0}={1}";
 
 		private enum Operation 
@@ -24,30 +24,35 @@ namespace DbRefactor
 
 		public ActionTable(IDatabaseEnvironment environment, string tableName) : base(environment, tableName)
 		{
-			actionList = new List<List<string>>();
+			//actionList = new List<List<string>>();
+			columnValues = new List<string>();
 		}
 
 		public ActionTable Insert()
 		{
-			actionList.Add(new List<string>());
+			if(Operation.None != operation)
+				Execute();
+			//actionList.Add(new List<string>());
 			return TableOperation(Operation.Insert);
 		}
 
 		public ActionTable Update(string table)
 		{
-			actionList.Add(new List<string>());
+			if (Operation.None != operation)
+				Execute();
+			//actionList.Add(new List<string>());
 			return TableOperation(Operation.Update);
 		}
 
 		public ActionTable AddParameter(string column, string value)
 		{
-			actionList[actionList.Count -1].Add(String.Format(StringParameterPattern, column, value));
+			columnValues.Add(String.Format(StringParameterPattern, column, value));
 			return this;
 		}
 
 		public ActionTable AddParameter(string column, int value)
 		{
-			actionList[actionList.Count - 1].Add(String.Format(NotStringParameterPattern, column, value));
+			columnValues.Add(String.Format(NotStringParameterPattern, column, value));
 			return this;
 		}
 
@@ -59,36 +64,36 @@ namespace DbRefactor
 
 		public ActionTable AddParameter(string column, decimal value)
 		{
-			actionList[actionList.Count - 1].Add(String.Format(NotStringParameterPattern, column, value));
+			columnValues.Add(String.Format(NotStringParameterPattern, column, value));
 			return this;
 		}
 
 		public ActionTable AddParameter(string column, bool value)
 		{
-			actionList[actionList.Count - 1].Add(String.Format(NotStringParameterPattern, column, value ? 1 : 0));
+			columnValues.Add(String.Format(NotStringParameterPattern, column, value ? 1 : 0));
 			return this;
 		}
 
 		public ActionTable AddParameter(string column, long value)
 		{
-			actionList[actionList.Count - 1].Add(String.Format(NotStringParameterPattern, column, value));
+			columnValues.Add(String.Format(NotStringParameterPattern, column, value));
 			return this;
 		}
 
-		public void Execute()
+		private void Execute()
 		{
 			Check.Ensure(operation != Operation.None, "The operation has not been set.");
-			//Check.Ensure(columnValues.Count != 0, "Values have not been set.");
+			Check.Ensure(columnValues.Count != 0, "Values have not been set.");
 
 			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
+            
+			if(operation == Operation.Insert)
+				provider.Insert(TableName, columnValues.ToArray());
+			else
+				provider.Update(TableName, columnValues.ToArray());
 
-			foreach (var columnList in actionList)
-			{
-				if(operation == Operation.Insert)
-					provider.Insert(TableName, columnList.ToArray());
-				else
-					provider.Update(TableName, columnList.ToArray());
-			}
+			operation = Operation.None;
+			columnValues = new List<string>();
 		}
 
 		private ActionTable TableOperation(Operation tableOperation)
