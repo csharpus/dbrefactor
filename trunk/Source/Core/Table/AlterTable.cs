@@ -90,7 +90,7 @@ namespace DbRefactor
 			AddForeignKey(foreignKeyColumn, primaryKeyTable, primaryKeyColumn, OnDelete.NoAction);
 		}
 
-		protected void AddForeignKey(string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn, OnDelete ondelete)
+		public void AddForeignKey(string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn, OnDelete ondelete)
 		{
 			operation = Operation.AddForeignKey;
 			_foreignKeyColumn = foreignKeyColumn;
@@ -100,7 +100,7 @@ namespace DbRefactor
 			Execute();
 		}
 
-		protected void DropForeignKey(string key)
+		public void DropForeignKey(string key)
 		{
 			operation = Operation.DropForeignKey;
 			keyName = key;
@@ -151,8 +151,9 @@ namespace DbRefactor
 
 				case Operation.AddForeignKey:
 					string key = keyName;
-					if(String.IsNullOrEmpty(key))
+					if (String.IsNullOrEmpty(keyName))
 						key = GenerateForeignKey(TableName, _primaryKeyTable);	// FK_TableName_prinaryKeyTable
+					provider.AddForeignKey(key, TableName, _foreignKeyColumn, _primaryKeyTable, _primaryKeyColumn, foreignKeyConstraint);
 					break;
 
 				case Operation.DropForeignKey:
