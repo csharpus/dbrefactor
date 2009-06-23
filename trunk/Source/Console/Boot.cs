@@ -23,8 +23,6 @@ namespace DbRefactor.Console
 		public static void Main(string[] argv)
 		{
 			Consolery.Run(typeof(Boot), argv);
-			//MigratorConsole con = new MigratorConsole(argv);
-			//return con.Run();
 		}
 
 		[Action]

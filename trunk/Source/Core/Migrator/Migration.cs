@@ -8,6 +8,8 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
+
+using System;
 using Migrator.Providers;
 using Migrator.Loggers;
 using DbRefactor.Compatibility;
@@ -66,6 +68,7 @@ namespace Migrator
 	/// }
 	/// </code>
 	/// </example>
+	[Obsolete("Old migrator support is obsolete")]
 	public abstract class Migration : BaseMigration
 	{
 		private TransformationProvider _transformationProvider;

@@ -105,6 +105,7 @@ namespace DbRefactor
 		/// <summary>
 		/// Event logger.
 		/// </summary>
+		[Obsolete("Usage of this logger is obsolete")]
 		public ILogger Logger
 		{
 			get
@@ -113,11 +114,13 @@ namespace DbRefactor
 			}
 		}
 
+		[Obsolete("Please, use CreateTable(\"Name\").Int(\"ColumnName\").Execute()")]
 		protected void CreateTable(string name, ColumnsCollection columns)
 		{
 			Database.AddTable(name, columns.ToArray());
 		}
 
+		[Obsolete("This collection is obsolete. Perviously used for CreateTable")]
 		protected static ColumnsCollection Columns
 		{
 			get
@@ -139,6 +142,7 @@ namespace DbRefactor
 			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, primaryKeyTable, primaryKeyColumn, ondelete);
 		}
 
+		[Obsolete("Please, use Table(\"Name\").AddInt(\"ColumneName\")")]
 		protected void AddTo(string table, Column column)
 		{
 			Database.AddColumn(table, column);
@@ -196,6 +200,7 @@ namespace DbRefactor
 			return Database.Update(table, columnValues);
 		}
 
+		[Obsolete("Please, use AlterTable(\"Name\")...")]
 		protected void AlterColumn(string table, Column column)
 		{
 			Database.AlterColumn(table, column);
@@ -230,6 +235,5 @@ namespace DbRefactor
 		{
 			return new AlterTable(TransformationProvider.Environment, tableName);
 		}
-
 	}
 }

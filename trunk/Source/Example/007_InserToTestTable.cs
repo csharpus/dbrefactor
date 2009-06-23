@@ -9,8 +9,7 @@ namespace Example
 		{
 			Table("Test")
 				.Insert()
-				.AddParameter("Name", "test1")
-				.Execute();
+				.AddParameter("Name", "test1");
 		}
 
 		public override void Down()
