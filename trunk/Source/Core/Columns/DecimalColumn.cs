@@ -1,5 +1,8 @@
+using System;
+
 namespace DbRefactor
 {
+	[Obsolete("This class will be removed in feature")]
 	public class DecimalColumn: Column
 	{
 		private int _remainder;

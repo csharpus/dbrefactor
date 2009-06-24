@@ -19,6 +19,7 @@ namespace DbRefactor
 	/// Represents a table column properties.
 	/// </summary>
 	[Flags]
+	[Obsolete("Do not use it directly, use methods like Null() or Identity() instead in fluent interface")]
 	public enum ColumnProperties
 	{
 		/// <summary>
@@ -55,6 +56,7 @@ namespace DbRefactor
 	/// <summary>
 	/// Represents a table column.
 	/// </summary>
+	[Obsolete("This class will be removed in feature")]
 	public class Column
 	{
 

@@ -4,6 +4,7 @@ namespace DbRefactor
 	using System.Collections.Generic;
 	using System.Text;
 
+	[Obsolete("This class will be removed in feature")]
 	public class ColumnsCollection
 	{
 		private readonly List<Column> _columns = new List<Column>();

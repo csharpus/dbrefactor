@@ -21,6 +21,7 @@ namespace DbRefactor
 	{
 		public IrreversibleMigrationException() : base("Irreversible migration")
 		{
+			
 		}
 	}
 }

@@ -12,7 +12,6 @@ namespace Example
 
 		public override void Down()
 		{
-			
 		}
 	}
 }
