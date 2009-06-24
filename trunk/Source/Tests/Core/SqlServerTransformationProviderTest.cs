@@ -1,4 +1,4 @@
-Ôªøusing System;
+using System;
 using DbRefactor.Providers;
 using NUnit.Framework;
 using System.Data;
@@ -260,13 +260,13 @@ namespace DbRefactor.Tests.Core
 		{
 			using (mockery.Record())
 			{
-				ExpectExecuteNonQueryOn(string.Format("INSERT INTO [{0}] ({1}, {2}) VALUES ({3}, '{4}')", "Table1", "Id", "Name", 1, "–ò–º—è"));
+				ExpectExecuteNonQueryOn(string.Format("INSERT INTO [{0}] ({1}, {2}) VALUES ({3}, '{4}')", "Table1", "Id", "Name", 1, "»Ïˇ"));
 			}
 			using (mockery.Playback())
 			{
 				_provider.Insert("Table1",
 				string.Format("Id={0}", 1),
-				string.Format("Name='{0}'", "–ò–º—è"));
+				string.Format("Name='{0}'", "»Ïˇ"));
 			}
 
 		}

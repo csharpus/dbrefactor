@@ -10,10 +10,10 @@
 #endregion
 
 using System;
+using DbRefactor.Compatibility;
 using DbRefactor.Providers;
 using DbRefactor.Tools.Loggers;
 using System.Data;
-using DbRefactor.Compatibility;
 
 namespace DbRefactor
 {
@@ -71,9 +71,9 @@ namespace DbRefactor
 	/// </example>
 	public abstract class Migration : BaseMigration
 	{
-		private TransformationProvider _transformationProvider;
+		private Providers.TransformationProvider _transformationProvider;
 
-		internal TransformationProvider TransformationProvider
+		internal Providers.TransformationProvider TransformationProvider
 		{
 			get
 			{

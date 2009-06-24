@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Text;
-using DbRefactor.Providers;
-using NUnit.Framework;
-using Rhino.Mocks;
+﻿using DbRefactor;
 
 namespace DbRefactor.Tests
 {
@@ -17,6 +11,7 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
+
 			CreateTable("User")
 				.Int("Id").PrimaryKeyWithIdentity().NotNull()
 				.String("Role", 30)

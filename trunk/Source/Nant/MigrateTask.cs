@@ -103,7 +103,7 @@ namespace DbRefactor.NAnt
 		{
 			Assembly asm = Assembly.LoadFrom(_migrationsAssembly.FullName);
 			
-			DbRefactor.Migrator mig = new DbRefactor.Migrator(_provider, _connectionString, asm, _trace);
+			Migrator mig = new Migrator(_provider, _connectionString, asm, _trace);
 			mig.Logger = new TaskLogger(this);
 			
 			if (_to == -1)

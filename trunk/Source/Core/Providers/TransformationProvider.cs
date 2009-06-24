@@ -14,8 +14,8 @@ using System.Collections.Generic;
 using System.Data;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Tools.DesignByContract;
-using DbRefactor.Tools.Loggers;
 using System.IO;
+using ILogger=DbRefactor.Tools.Loggers.ILogger;
 
 namespace DbRefactor.Providers
 {
@@ -29,7 +29,7 @@ namespace DbRefactor.Providers
 			return new TransformationProvider(new SqlServerEnvironment(connectionString));
 		}
 
-		private ILogger _logger = new Logger(false);
+		private Tools.Loggers.ILogger _logger = new Tools.Loggers.Logger(false);
 
 		private readonly IDatabaseEnvironment _environment;
 

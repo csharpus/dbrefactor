@@ -4,7 +4,7 @@ namespace DbRefactor
 	using OldMigrator = global::Migrator;
 	using DbRefactor.Compatibility;
 
-	public class MigrationHelper
+	internal class MigrationHelper
 	{
 		private static BaseMigrationAttribute GetMigrationAttribute(Type t)
 		{
@@ -34,7 +34,7 @@ namespace DbRefactor
 			BaseMigrationAttribute attribute = GetMigrationAttribute(t);
 			return attribute != null 
 				&& 
-					(typeof (DbRefactor.Migration).IsAssignableFrom(t) 
+					(typeof (Migration).IsAssignableFrom(t) 
 					|| typeof(OldMigrator.Migration).IsAssignableFrom(t))
 				&& !attribute.Ignore;
 		}

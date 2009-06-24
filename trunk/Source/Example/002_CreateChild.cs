@@ -1,4 +1,4 @@
-﻿using DbRefactor;
+using DbRefactor;
 
 namespace Example
 {

@@ -10,13 +10,12 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using DbRefactor.Compatibility;
-using DbRefactor.Tools.Loggers;
 using DbRefactor.Providers;
+using ILogger=DbRefactor.Tools.Loggers.ILogger;
 
 namespace DbRefactor
 {
@@ -30,7 +29,7 @@ namespace DbRefactor
 		private readonly TransformationProvider _provider;
 		private readonly List<Type> _migrationsTypes = new List<Type>();
 		private readonly bool _trace;  // show trace for debugging
-		private ILogger _logger = new Logger(false);
+		private Tools.Loggers.ILogger _logger = new Tools.Loggers.Logger(false);
 		private string[] _args;
 
 		public string[] args
@@ -77,8 +76,8 @@ namespace DbRefactor
 			_oldProvider = new OldMigrator.Providers.SqlServerTransformationProvider(((provider as TransformationProvider).Environment as SqlServerEnvironment).Connection as SqlConnection);
 
 			_trace = trace;
-			Logger logger = new Logger(_trace);
-			logger.Attach(new ConsoleWriter());
+			Tools.Loggers.Logger logger = new Tools.Loggers.Logger(_trace);
+			logger.Attach(new Tools.Loggers.ConsoleWriter());
 			_logger = logger;
 			_category = category;
 
@@ -155,9 +154,9 @@ namespace DbRefactor
 
 				if (firstRun)
 				{
-					if (migration is DbRefactor.Migration)
+					if (migration is Migration)
 					{
-						(migration as DbRefactor.Migration).InitializeOnce(_args);
+						(migration as Migration).InitializeOnce(_args);
 					}
 					firstRun = false;
 				}
@@ -166,9 +165,9 @@ namespace DbRefactor
 				{
 					string migrationName = ToHumanName(migration.GetType().Name);
 
-					if (migration is DbRefactor.Migration)
+					if (migration is Migration)
 					{
-						(migration as DbRefactor.Migration).TransformationProvider = _provider;
+						(migration as Migration).TransformationProvider = _provider;
 					}
 					else
 					{
