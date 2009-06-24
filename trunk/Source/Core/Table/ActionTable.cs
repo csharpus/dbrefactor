@@ -26,11 +26,28 @@ namespace DbRefactor
 			columnValues = new List<string>();
 		}
 
+		/// <summary>
+		/// Insert new record to database table
+		/// </summary>
+		/// <param name="parameters">This is parameters for operation Insert.<br />
+		/// To add parameters you could use next syntaxes
+		/// Table(TableName).Insert(new {ColumnName1=Parameter1, ColumName2="StringParameter2", ...})
+		/// </param>
+		/// <returns></returns>
 		public ActionTable Insert(object parameters)
 		{
 			Execute(parameters, Operation.Insert);
 			return this;
 		}
+
+		/// <summary>
+		/// Update record in database table
+		/// </summary>
+		/// <param name="parameters">This is parameters for operation Update.<br />
+		/// To add parameters you could use next syntaxes
+		/// Table(TableName).Update(new {ColumnName1=Parameter1, ColumName2="StringParameter2", ...})
+		/// </param>
+		/// <returns></returns>
 
 		public ActionTable Update(object parameters)
 		{
