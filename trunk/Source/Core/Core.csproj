@@ -96,6 +96,7 @@
     <Compile Include="Tools\Loggers\ILogger.cs" />
     <Compile Include="Tools\Loggers\ILogWriter.cs" />
     <Compile Include="Tools\Loggers\Logger.cs" />
+    <Compile Include="Tools\ParametersHelper.cs" />
     <Compile Include="Tools\SchemaDumper.cs" />
   </ItemGroup>
   <ItemGroup>

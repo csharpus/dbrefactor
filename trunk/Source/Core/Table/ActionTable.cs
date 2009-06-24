@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using DbRefactor.Providers;
+using DbRefactor.Tools;
 using DbRefactor.Tools.DesignByContract;
 
 namespace DbRefactor
@@ -8,7 +9,6 @@ namespace DbRefactor
 	public class ActionTable: Table
 	{
 		private List<string> columnValues;
-		//private List<List<string>> actionList;
         private const string StringParameterPattern = "{0}='{1}'";
 		private const string NotStringParameterPattern = "{0}={1}";
 
@@ -19,68 +19,30 @@ namespace DbRefactor
 			Update
 		} ;
 
-		private Operation operation = Operation.None;
+		//private Operation operation = Operation.None;
 
 		public ActionTable(IDatabaseEnvironment environment, string tableName) : base(environment, tableName)
 		{
-			//actionList = new List<List<string>>();
 			columnValues = new List<string>();
 		}
 
-		public ActionTable Insert()
+		public ActionTable Insert(object parameters)
 		{
-			if(Operation.None != operation)
-				Execute();
-			//actionList.Add(new List<string>());
-			return TableOperation(Operation.Insert);
-		}
-
-		public ActionTable Update(string table)
-		{
-			if (Operation.None != operation)
-				Execute();
-			//actionList.Add(new List<string>());
-			return TableOperation(Operation.Update);
-		}
-
-		public ActionTable AddParameter(string column, string value)
-		{
-			columnValues.Add(String.Format(StringParameterPattern, column, value));
+			Execute(parameters, Operation.Insert);
 			return this;
 		}
 
-		public ActionTable AddParameter(string column, int value)
+		public ActionTable Update(object parameters)
 		{
-			columnValues.Add(String.Format(NotStringParameterPattern, column, value));
+			Execute(parameters, Operation.Update);
 			return this;
 		}
 
-		public ActionTable AddParameter(string column, DateTime value)
+		private void Execute(object parameters, Operation operation)
 		{
-			AddParameter(column, value.ToString());
-			return this;
-		}
+			List<string> paramList = ParametersHelper.GetParameters(parameters);
+			AddParameters(paramList);
 
-		public ActionTable AddParameter(string column, decimal value)
-		{
-			columnValues.Add(String.Format(NotStringParameterPattern, column, value));
-			return this;
-		}
-
-		public ActionTable AddParameter(string column, bool value)
-		{
-			columnValues.Add(String.Format(NotStringParameterPattern, column, value ? 1 : 0));
-			return this;
-		}
-
-		public ActionTable AddParameter(string column, long value)
-		{
-			columnValues.Add(String.Format(NotStringParameterPattern, column, value));
-			return this;
-		}
-
-		private void Execute()
-		{
 			Check.Ensure(operation != Operation.None, "The operation has not been set.");
 			Check.Ensure(columnValues.Count != 0, "Values have not been set.");
 
@@ -95,12 +57,10 @@ namespace DbRefactor
 			columnValues = new List<string>();
 		}
 
-		private ActionTable TableOperation(Operation tableOperation)
+		private void AddParameters(IEnumerable<string> parameters)
 		{
-			Check.Ensure(operation == Operation.None || operation == tableOperation, "You couls not use different type of operations.");
-			operation = tableOperation;
-			return this;
+			foreach (var parameter in parameters)
+				columnValues.Add(parameter);
 		}
-
 	}
 }
