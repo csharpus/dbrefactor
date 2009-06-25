@@ -683,6 +683,7 @@ namespace DbRefactor.Providers
 			return ExecuteScalar("SELECT {0} FROM {1} WHERE {2}", what, from, where);
 		}
 
+
 		public int Update(string table, params string[] columnValues)
 		{
 			Check.RequireNonEmpty(table, "table");
@@ -690,6 +691,15 @@ namespace DbRefactor.Providers
 			return ExecuteNonQuery("UPDATE [{0}] SET {1}", table, String.Join(", ", columnValues));
 		}
 
+		public int Update(string table, string[] columnValues, string[] where)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columnValues.Length > 0, "You have to pass at least one column value");
+			Check.Require(where.Length > 0, "You have to pass at least one criteria for update");
+			return ExecuteNonQuery("UPDATE [{0}] SET {1} WHERE {2}", table, String.Join(", ", columnValues), String.Join(" AND ", where));
+		}
+
+		[Obsolete("Old method will be removed in a feature")]
 		public int Update(string table, string[] columnValues, string where)
 		{
 			Check.RequireNonEmpty(table, "table");
@@ -697,6 +707,14 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(where, "where");
 			return ExecuteNonQuery("UPDATE [{0}] SET {1} WHERE {2}", table, String.Join(", ", columnValues), where);
 		}
+
+		public int Delete(string table, string[] where)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(where.Length > 0, "You have to pass at least one criteria for delete");
+			return ExecuteNonQuery("DELETE FROM [{0}] WHERE {1}", table, String.Join(" AND ", where));
+		}
+
 
 		public int Insert(string table, params string[] columnValues)
 		{

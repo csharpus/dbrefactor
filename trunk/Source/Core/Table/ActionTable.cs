@@ -16,10 +16,12 @@ namespace DbRefactor
 		{
 			None,
 			Insert,
-			Update
+			Update,
+			Delete
 		} ;
 
-		//private Operation operation = Operation.None;
+		private Operation actionOperation = Operation.None;
+		private object operationParameters = null;
 
 		public ActionTable(IDatabaseEnvironment environment, string tableName) : base(environment, tableName)
 		{
@@ -36,7 +38,10 @@ namespace DbRefactor
 		/// <returns></returns>
 		public ActionTable Insert(object parameters)
 		{
-			Execute(parameters, Operation.Insert);
+			Check.Ensure(actionOperation == Operation.None || actionOperation == Operation.None, "Only One type of operation allowed.");
+			actionOperation = Operation.Insert;
+			operationParameters = parameters;
+			Execute(operationParameters, null);
 			return this;
 		}
 
@@ -48,29 +53,55 @@ namespace DbRefactor
 		/// Table(TableName).Update(new {ColumnName1=Parameter1, ColumName2="StringParameter2", ...})
 		/// </param>
 		/// <returns></returns>
-
 		public ActionTable Update(object parameters)
 		{
-			Execute(parameters, Operation.Update);
+			Check.Ensure(actionOperation == Operation.None, "Please specify criteria for previous update operation.");
+			operationParameters = parameters;
+			actionOperation = Operation.Update;
 			return this;
 		}
 
-		private void Execute(object parameters, Operation operation)
+		public ActionTable Delete()
 		{
-			List<string> paramList = ParametersHelper.GetParameters(parameters);
-			AddParameters(paramList);
+			Check.Ensure(actionOperation == Operation.None, "Please specify criteria for previous operation.");
+			actionOperation = Operation.Update;
+			return this;
 
-			Check.Ensure(operation != Operation.None, "The operation has not been set.");
+		}
+
+
+		public ActionTable Where(object parameters)
+		{
+			Execute(operationParameters, parameters);
+			return this;
+		}
+
+		private void Execute(object operationParams, object criteriaParameters)
+		{
+			List<string> updateParamList = ParametersHelper.GetParameters(operationParams);
+			AddParameters(updateParamList);
+
+			Check.Ensure(actionOperation != Operation.None, "The operation has not been set.");
 			Check.Ensure(columnValues.Count != 0, "Values have not been set.");
 
 			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
-            
-			if(operation == Operation.Insert)
-				provider.Insert(TableName, columnValues.ToArray());
-			else
-				provider.Update(TableName, columnValues.ToArray());
 
-			operation = Operation.None;
+			if (actionOperation == Operation.Insert)
+			{
+				provider.Insert(TableName, columnValues.ToArray());
+			}
+			else if (actionOperation == Operation.Delete)
+			{
+				List<string> crieriaParamList = ParametersHelper.GetParameters(criteriaParameters);
+				provider.Update(TableName, columnValues.ToArray(), crieriaParamList.ToArray());
+			}
+			else
+			{
+				List<string> crieriaParamList = ParametersHelper.GetParameters(criteriaParameters);
+				provider.Delete(TableName, crieriaParamList.ToArray());
+
+			}
+			actionOperation = Operation.None;
 			columnValues = new List<string>();
 		}
 
