@@ -159,14 +159,6 @@ namespace DbRefactor
 
 		#endregion Column properties
 
-		//public Table DefaultValue(object value)
-		//{
-		//    Type type = columns.LastColumnItem.Type;
-		//    columns.LastColumnItem.DefaultValue = Convert.ChangeType(value, type);
-			
-		//    return this;
-		//}
-
 		public void Execute()
 		{
 			TransformationProvider provider = new TransformationProvider(databaseEnvironment);

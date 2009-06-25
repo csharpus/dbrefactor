@@ -54,7 +54,8 @@ namespace DbRefactor.Tests
 
 		public override void Down()
 		{
-			AlterTable("User").AlterColumn(new Column("Role", typeof(string)));
+			
+			AlterTable("User").AddColumn().String("Role", 255).Null().Execute();
 		}
 	}
 
@@ -63,13 +64,12 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
-			AlterTable("User").AlterColumn(new Column("RoleId", typeof(int)));
-			
+			AlterTable("User").AlterColumn().String("Role", 255).NotNull().Execute();
 		}
 
 		public override void Down()
 		{
-			AlterTable("User").DropColumn("RoleId");
+			AlterTable("User").AlterColumn().String("Role", 255).Null().Execute();
 		}
 	}
 
