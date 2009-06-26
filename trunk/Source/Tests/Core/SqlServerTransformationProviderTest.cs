@@ -1,10 +1,8 @@
 using System;
-using DbRefactor;
 using DbRefactor.Providers;
 using NUnit.Framework;
 using System.Data;
 using Rhino.Mocks;
-using NUnit.Framework.SyntaxHelpers;
 using System.Collections.Generic;
 
 
@@ -151,28 +149,28 @@ namespace DbRefactor.Tests.Core
 		[Test]
 		public void StringColumn()
 		{
-			Column column = new Column("Column1", typeof (string), 10);
+			var column = new Column("Column1", typeof (string), 10);
 			Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] nvarchar(10) NULL"));
 		}
 
 		[Test]
 		public void IntNotNullColumn()
 		{
-			Column column = new Column("Column1", typeof(int), ColumnProperties.NotNull);
+			var column = new Column("Column1", typeof(int), ColumnProperties.NotNull);
 			Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] int NOT NULL"));
 		}
 
 		[Test]
 		public void BooleanColumnWithDefaultValue()
 		{
-			Column column = new Column("Column1", typeof(bool), ColumnProperties.NotNull, true);
+			var column = new Column("Column1", typeof(bool), ColumnProperties.NotNull, true);
 			Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] bit NOT NULL DEFAULT 1"));
 		}
 
 		[Test]
 		public void PrimaryKeyColumn()
 		{
-			Column column = new Column("ID", typeof(int), ColumnProperties.PrimaryKeyWithIdentity);
+			var column = new Column("ID", typeof(int), ColumnProperties.PrimaryKeyWithIdentity);
 			Assert.That(column.ColumnSQL(), Is.EqualTo("[ID] int NOT NULL IDENTITY PRIMARY KEY"));
 		}
 

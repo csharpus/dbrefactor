@@ -1,2 +1,2 @@
-NUnit 2.4.3
+NUnit 2.5
 http://nunit.sourceforge.net
