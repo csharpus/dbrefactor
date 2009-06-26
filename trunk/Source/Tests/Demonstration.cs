@@ -145,4 +145,23 @@ namespace DbRefactor.Tests
 		}
 	}
 
+	/// <summary>
+	/// Also, DBRefactor could be usefull to change column type or any options
+	/// that have been set before.
+	/// </summary>
+	[Migration(8)]
+	public class AlterColumnn : Migration
+	{
+		public override void Up()
+		{
+			AlterTable("User").AlterColumn().String("PersonalInformation", 1000).NotNull();
+		}
+
+		public override void Down()
+		{
+			AlterTable("User").AlterColumn().Text("PersonalInformation").Null();
+		}
+	}
+
+
 }
