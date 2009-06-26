@@ -7,9 +7,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("Test")
-				.Insert()
-				.AddParameter("Name", "test1");
+			Table("Test").Insert(new {Name = "Test1"});
 		}
 
 		public override void Down()

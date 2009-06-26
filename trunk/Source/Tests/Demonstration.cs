@@ -93,36 +93,14 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
-			Table("Role")
-				.Insert().AddParameter("Name", "Administrator")
-				.Insert().AddParameter("Name", "Coordinator")
-				.Insert().AddParameter("Name", "Manager")
-				.Insert().AddParameter("Name", "User");
+		
+			Table("Role").Insert(new {Name = "Administrator"});
+			Table("Role").Insert(new {Name = "Manager"});
 		}
 
 		public override void Down()
 		{
-		}
-	}
-
-	[Migration(6)]
-	public class InsertToUserTable : Migration
-	{
-		public override void Up()
-		{
-			Table("User")
-				.Insert().AddParameter("RoleId", 1)
-				.AddParameter("FirstName", "Rob")
-				.AddParameter("LastName", "Tompson")
-
-				.Insert().AddParameter("RoleId", 4)
-				.AddParameter("FirstName", "User1")
-				.AddParameter("LastName", "User2")
-				.AddParameter("Description", "some text from user ...");
-		}
-
-		public override void Down()
-		{
+			
 		}
 	}
 }
