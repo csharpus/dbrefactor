@@ -178,6 +178,11 @@ namespace DbRefactor
 			return Database.ExecuteScalar(sql, values);
 		}
 
+		protected object SelectScalar(string what, string from, string where)
+		{
+			return SelectScalar(what, from, where);
+		}
+
 		/// <summary>
 		/// Example:
 		/// <code>Insert("Table", "column1='value1'", "column2=10");</code>
