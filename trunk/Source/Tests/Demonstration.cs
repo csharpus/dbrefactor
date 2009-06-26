@@ -105,6 +105,7 @@ namespace DbRefactor.Tests
 	}
 
 	/// <summary>
+	/// To keep independens from Ids, use SelectScalar with query by constant field
 	/// Rows could be deleted. Using "Where" to filter deleted rows
 	/// </summary>
 	[Migration(6)]

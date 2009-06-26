@@ -180,7 +180,7 @@ namespace DbRefactor
 
 		protected object SelectScalar(string what, string from, string where)
 		{
-			return SelectScalar(what, from, where);
+			return Database.SelectScalar(what, from, where);
 		}
 
 		/// <summary>
