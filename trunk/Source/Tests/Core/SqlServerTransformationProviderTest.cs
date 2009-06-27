@@ -28,6 +28,7 @@ namespace DbRefactor.Tests.Core
 		}
 
 		[Test]
+		[Ignore]
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void	DesignByContractException()
 		{
@@ -82,7 +83,7 @@ namespace DbRefactor.Tests.Core
 		{
 			using (mockery.Record())
 			{
-				ExpectExecuteNonQueryOn("EXEC sp_rename '[Table].[OldName]', 'NewName'");
+				ExpectExecuteNonQueryOn("EXEC sp_rename 'Table.OldName', 'NewName', 'COLUMN'");
 			}
 			using (mockery.Playback())
 			{
@@ -95,7 +96,7 @@ namespace DbRefactor.Tests.Core
 		{
 			using (mockery.Record())
 			{
-				ExpectExecuteNonQueryOn("EXEC sp_rename '[OldName]', '[NewName]', 'OBJECT'");
+				ExpectExecuteNonQueryOn("EXEC sp_rename 'OldName', 'NewName', 'OBJECT'");
 			}
 			using (mockery.Playback())
 			{

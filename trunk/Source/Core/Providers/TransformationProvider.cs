@@ -121,7 +121,8 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(oldColumnName, "oldColumnName");
 			Check.RequireNonEmpty(newColumnName, "newColumnName");
-			ExecuteNonQuery("EXEC sp_rename '[{0}].[{1}]', '{2}'",
+			ExecuteNonQuery("EXEC sp_rename '{0}.{1}', '{2}', 'COLUMN'",
+
 				table, oldColumnName, newColumnName);
 		}
 
@@ -134,7 +135,7 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(oldName, "oldName");
 			Check.RequireNonEmpty(newName, "newName");
-			ExecuteNonQuery("EXEC sp_rename '[{0}]', '[{1}]', 'OBJECT'",
+			ExecuteNonQuery("EXEC sp_rename '{0}', '{1}', 'OBJECT'",
 				oldName, newName);
 		}
 
