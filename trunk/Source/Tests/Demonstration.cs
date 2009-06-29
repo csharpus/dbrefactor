@@ -36,7 +36,7 @@ namespace DbRefactor.Tests
 			CreateTable("User")
 				.Int("Id").PrimaryKeyWithIdentity().NotNull()
 				.String("FirstName", 70).NotNull()
-				.String("LastName", 70).NotNull()
+				.String("LastName", 70).NotNull().Indexed()
 				.Boolean("Gender")
 				.DateTime("Birthday").NotNull()
 				.Text("Description").Null()
