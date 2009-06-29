@@ -12,6 +12,8 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
+
+// Remove NotNull from Id because primary key not null by default
 			CreateTable("Role")
 				.Int("Id").PrimaryKeyWithIdentity().NotNull()
 				.String("Name", 30).Unique().NotNull()
@@ -33,6 +35,8 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
+// Add long field here
+// Add unique field here
 			CreateTable("User")
 				.Int("Id").PrimaryKeyWithIdentity().NotNull()
 				.String("FirstName", 70).NotNull()
@@ -73,6 +77,7 @@ namespace DbRefactor.Tests
 	[Migration(4)]
 	public class AddForeignKeyToUserTable: Migration
 	{
+// Declaration is inconsistent because add and drop are different
 		public override void Up()
 		{
 			AlterTable("User").AddForeignKey("RoleId", "Role", "Id", OnDelete.SetDefault);
@@ -113,10 +118,12 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
+// It might be better to use something like Table("Role").Select<int>("RoleId", new {Name = "Manager"})
 			Table("User").Insert(new {
 				RoleId = (int)SelectScalar("RoleId", "Role", "Name = Manager"), 
 				FirstName = "Robert", 
 				LastName = "Tompson",
+// Gender is not a good example to store as boolean
 				Gender = true,					// true - male; false - female
 				Birthday = DateTime.Parse("20/04/1982")
 			});
@@ -163,5 +170,5 @@ namespace DbRefactor.Tests
 		}
 	}
 
-
+// Add an example for 'rename table', 'update table'
 }
