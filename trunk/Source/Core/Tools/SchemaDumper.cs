@@ -14,7 +14,8 @@ using DbRefactor.Providers;
 
 namespace DbRefactor.Tools
 {
-	public class SchemaDumper
+//TODO: this class should be changed according to new changes
+	internal class SchemaDumper
 	{
 		readonly TransformationProvider _provider;
 

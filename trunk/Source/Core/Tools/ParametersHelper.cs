@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DbRefactor.Tools
 {
-	public class ParametersHelper
+	internal class ParametersHelper
 	{
 		public static List<string> GetParameters(object obj)
 		{

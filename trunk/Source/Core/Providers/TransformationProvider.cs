@@ -21,6 +21,7 @@ namespace DbRefactor.Providers
 {
 	/// <summary>
 	/// A 'tranformation' is an operation that modifies the database.
+	/// This class might be changed in feature
 	/// </summary>
 	public sealed class TransformationProvider
 	{

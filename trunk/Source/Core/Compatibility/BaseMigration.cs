@@ -4,6 +4,7 @@ using System.Text;
 
 namespace DbRefactor.Compatibility
 {
+	[Obsolete("This class will be removed in feature")]
 	public abstract class BaseMigration
 	{
 		/// <summary>
