@@ -1,7 +1,7 @@
 ﻿using System;
 using DbRefactor;
 
-namespace DbRefactor.Tests
+namespace Example
 {
 	/// <summary>
 	/// This is a first migration that create "Role" table.
@@ -117,12 +117,12 @@ namespace DbRefactor.Tests
 		{
 // It might be better to use something like Table("Role").Select<int>("RoleId", new {Name = "Manager"})
 			Table("User").Insert(new {
-				RoleId = (int)SelectScalar("RoleId", "Role", "Name = Manager"), 
+				RoleId = 2,//(int)SelectScalar("RoleId", "Role", "Name = Manager"), 
 				FirstName = "Robert", 
 				LastName = "Tompson",
 // Gender is not a good example to store as boolean
-				Gender = true,					// true - male; false - female
-				Birthday = DateTime.Parse("20/04/1982")
+				Gender = 1,					// true - male; false - female
+				Birthday = new DateTime(1982, 4, 20)
 			});
 		}
 
