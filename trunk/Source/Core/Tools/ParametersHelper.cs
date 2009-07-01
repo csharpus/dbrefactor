@@ -15,7 +15,8 @@ namespace DbRefactor.Tools
 
 			foreach (var property in obj.GetType().GetProperties())
 			{
-				parameters.Add(String.Format(property.PropertyType.Name == "String" ? stringProperty : customTypeProperty,
+				parameters.Add(String.Format(property.PropertyType.Name == "String" || property.PropertyType.Name == "DateTime" ? 
+					stringProperty : customTypeProperty,
 					property.Name,
 					property.GetValue(obj, null)));
 			}

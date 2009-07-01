@@ -82,7 +82,7 @@ namespace Example
 
 		public override void Down()
 		{
-			AlterTable("User").DropForeignKey("FK_User_Id");
+			AlterTable("User").DropForeignKey("FK_User_Role");
 		}
 	}
 
@@ -110,6 +110,7 @@ namespace Example
 	/// To keep independens from Ids, use SelectScalar with query by constant field
 	/// Rows could be deleted. Using "Where" to filter deleted rows
 	/// </summary>
+
 	[Migration(6)]
 	public class InsertToUserTable : Migration
 	{
@@ -117,7 +118,7 @@ namespace Example
 		{
 // It might be better to use something like Table("Role").Select<int>("RoleId", new {Name = "Manager"})
 			Table("User").Insert(new {
-				RoleId = 2,//(int)SelectScalar("RoleId", "Role", "Name = Manager"), 
+				RoleId = (int)SelectScalar("Id", "Role", "Name = 'Manager'"), 
 				FirstName = "Robert", 
 				LastName = "Tompson",
 // Gender is not a good example to store as boolean
@@ -140,12 +141,12 @@ namespace Example
 	{
 		public override void Up()
 		{
-			AlterTable("").RenameColumn("Description", "PersonalInformation");
+			AlterTable("User").RenameColumn("Description", "PersonalInformation");
 		}
 
 		public override void Down()
 		{
-			AlterTable("").RenameColumn("PersonalInformation", "Description");
+			AlterTable("User").RenameColumn("PersonalInformation", "Description");
 		}
 	}
 
@@ -166,6 +167,7 @@ namespace Example
 			AlterTable("User").AlterColumn().Text("PersonalInformation").Null();
 		}
 	}
+
 
 // Add an example for 'rename table', 'update table'
 }
