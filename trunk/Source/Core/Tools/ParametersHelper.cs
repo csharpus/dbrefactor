@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace DbRefactor.Tools
 {
@@ -15,10 +13,16 @@ namespace DbRefactor.Tools
 
 			foreach (var property in obj.GetType().GetProperties())
 			{
+				object value = null;
+				if (property.PropertyType.Name == "Boolean")
+					value = (bool)property.GetValue(obj, null) ? "1" : "0";
+				else
+					value = property.GetValue(obj, null);
+
 				parameters.Add(String.Format(property.PropertyType.Name == "String" || property.PropertyType.Name == "DateTime" ? 
 					stringProperty : customTypeProperty,
 					property.Name,
-					property.GetValue(obj, null)));
+					value));
 			}
 			return parameters;
 		}

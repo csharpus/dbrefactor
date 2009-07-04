@@ -235,10 +235,5 @@ namespace DbRefactor
 		{
 			return new ActionTable(TransformationProvider.Environment, tableName);
 		}
-
-		public override AlterTable AlterTable(string tableName)
-		{
-			return new AlterTable(TransformationProvider.Environment, tableName);
-		}
 	}
 }

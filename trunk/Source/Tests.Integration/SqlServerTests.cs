@@ -58,7 +58,7 @@ namespace DbRefactor.Tests.Integration
 		{
 			public override void Up()
 			{
-				AlterTable("Test").AddColumn().String("Name", 5).Execute();
+				Table("Test").AddColumn().String("Name", 5).Execute();
 			}
 		}
 

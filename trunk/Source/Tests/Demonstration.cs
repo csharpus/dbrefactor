@@ -59,12 +59,12 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
-			AlterTable("User").AddColumn().Int("RoleId", 2).NotNull().Execute();
+			Table("User").AddColumn().Int("RoleId", 2).NotNull().Execute();
 		}
 
 		public override void Down()
 		{
-			AlterTable("User").DropColumn("RoleId");
+			Table("User").DropColumn("RoleId");
 		}
 	}
 
@@ -77,12 +77,12 @@ namespace DbRefactor.Tests
 // Declaration is inconsistent because add and drop are different
 		public override void Up()
 		{
-			AlterTable("User").AddForeignKey("RoleId", "Role", "Id", OnDelete.SetDefault);
+			Table("User").AddForeignKey("RoleId", "Role", "Id", OnDelete.SetDefault);
 		}
 
 		public override void Down()
 		{
-			AlterTable("User").DropForeignKey("FK_User_Id");
+			Table("User").DropForeignKey("FK_User_Id");
 		}
 	}
 
@@ -140,12 +140,12 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
-			AlterTable("").RenameColumn("Description", "PersonalInformation");
+			Table("").RenameColumn("Description", "PersonalInformation");
 		}
 
 		public override void Down()
 		{
-			AlterTable("").RenameColumn("PersonalInformation", "Description");
+			Table("").RenameColumn("PersonalInformation", "Description");
 		}
 	}
 
@@ -158,12 +158,12 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
-			AlterTable("User").AlterColumn().String("PersonalInformation", 1000).NotNull();
+			Table("User").AlterColumn().String("PersonalInformation", 1000).NotNull();
 		}
 
 		public override void Down()
 		{
-			AlterTable("User").AlterColumn().Text("PersonalInformation").Null();
+			Table("User").AlterColumn().Text("PersonalInformation").Null();
 		}
 	}
 

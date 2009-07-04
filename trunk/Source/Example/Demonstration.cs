@@ -37,7 +37,7 @@ namespace Example
 				.Long("Id").PrimaryKeyWithIdentity()
 				.String("FirstName", 70).NotNull()
 				.String("LastName", 70).NotNull().Indexed()
-				.Boolean("Gender")
+				.Boolean("IsRegistered", false)
 				.DateTime("Birthday").NotNull()
 				.Text("Description").Null()
 				.String("Email", 255).Unique()
@@ -59,12 +59,12 @@ namespace Example
 	{
 		public override void Up()
 		{
-			AlterTable("User").AddColumn().Int("RoleId", 2).NotNull().Execute();
+			Table("User").AddColumn().Int("RoleId", 2).NotNull().Execute();
 		}
 
 		public override void Down()
 		{
-			AlterTable("User").DropColumn("RoleId");
+			Table("User").DropColumn("RoleId");
 		}
 	}
 
@@ -77,12 +77,12 @@ namespace Example
 // Declaration is inconsistent because add and drop are different
 		public override void Up()
 		{
-			AlterTable("User").AddForeignKey("RoleId", "Role", "Id", OnDelete.SetDefault);
+			Table("User").AddForeignKey("RoleId", "Role", "Id", OnDelete.SetDefault);
 		}
 
 		public override void Down()
 		{
-			AlterTable("User").DropForeignKey("FK_User_Role");
+			Table("User").DropForeignKey("FK_User_Role");
 		}
 	}
 
@@ -111,6 +111,7 @@ namespace Example
 	/// Rows could be deleted. Using "Where" to filter deleted rows
 	/// </summary>
 
+
 	[Migration(6)]
 	public class InsertToUserTable : Migration
 	{
@@ -121,8 +122,7 @@ namespace Example
 				RoleId = (int)SelectScalar("Id", "Role", "Name = 'Manager'"), 
 				FirstName = "Robert", 
 				LastName = "Tompson",
-// Gender is not a good example to store as boolean
-				Gender = 1,					// true - male; false - female
+				IsRegistered = true,					// true - male; false - female
 				Birthday = new DateTime(1982, 4, 20)
 			});
 		}
@@ -141,12 +141,12 @@ namespace Example
 	{
 		public override void Up()
 		{
-			AlterTable("User").RenameColumn("Description", "PersonalInformation");
+			Table("User").RenameColumn("Description", "PersonalInformation");
 		}
 
 		public override void Down()
 		{
-			AlterTable("User").RenameColumn("PersonalInformation", "Description");
+			Table("User").RenameColumn("PersonalInformation", "Description");
 		}
 	}
 
@@ -159,14 +159,15 @@ namespace Example
 	{
 		public override void Up()
 		{
-			AlterTable("User").AlterColumn().String("PersonalInformation", 1000).NotNull();
+			Table("User").AlterColumn().String("PersonalInformation", 1000).NotNull();
 		}
 
 		public override void Down()
 		{
-			AlterTable("User").AlterColumn().Text("PersonalInformation").Null();
+			Table("User").AlterColumn().Text("PersonalInformation").Null();
 		}
 	}
+
 
 
 // Add an example for 'rename table', 'update table'
