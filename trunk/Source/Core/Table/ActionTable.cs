@@ -22,7 +22,8 @@ namespace DbRefactor
 			DropTable,
 			RemoveForeignKey,
 			AddForeignKey,
-			DropForeignKey
+			DropForeignKey,
+			SelectScalar
 		} ;
 
 		private List<string> columnValues; 
@@ -84,13 +85,19 @@ namespace DbRefactor
 			Check.Ensure(operation == Operation.None, "Please specify criteria for previous operation.");
 			operation = Operation.Update;
 			return this;
-
 		}
 
 		public ActionTable Where(object parameters)
 		{
 			Execute(operationParameters, parameters);
 			return this;
+		}
+
+		public T SelectScalar<T>(string what, object where)
+		{
+			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
+			List<string> crieriaParamList = ParametersHelper.GetParameters(where);
+			return (T)provider.SelectScalar(what, TableName, String.Join(" AND ", crieriaParamList.ToArray())); ;
 		}
 
 		#region Table operations
@@ -174,12 +181,11 @@ namespace DbRefactor
 		}
 
 		#endregion Column operations
-
-
+        
 		private void Execute(object operationParams, object criteriaParameters)
 		{
-			List<string> updateParamList = ParametersHelper.GetParameters(operationParams);
-			AddParameters(updateParamList);
+			List<string> operationParamList = ParametersHelper.GetParameters(operationParams);
+			AddParameters(operationParamList);
 
 			Check.Ensure(operation != Operation.None, "The operation has not been set.");
 			Check.Ensure(columnValues.Count != 0, "Values have not been set.");
@@ -205,7 +211,7 @@ namespace DbRefactor
 			columnValues = new List<string>();
 		}
 
-				// does it make sense to use kind of Operation Strategy
+		// does it make sense to use kind of Operation Strategy
 		private void Execute()
 		{
 			Check.Ensure(operation != Operation.None, "The operation has not been set.");

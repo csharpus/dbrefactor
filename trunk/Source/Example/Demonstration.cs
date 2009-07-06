@@ -74,7 +74,6 @@ namespace Example
 	[Migration(4)]
 	public class AddForeignKeyToUserTable: Migration
 	{
-// Declaration is inconsistent because add and drop are different
 		public override void Up()
 		{
 			Table("User").AddForeignKey("RoleId", "Role", "Id", OnDelete.SetDefault);
@@ -110,19 +109,16 @@ namespace Example
 	/// To keep independens from Ids, use SelectScalar with query by constant field
 	/// Rows could be deleted. Using "Where" to filter deleted rows
 	/// </summary>
-
-
 	[Migration(6)]
 	public class InsertToUserTable : Migration
 	{
 		public override void Up()
 		{
-// It might be better to use something like Table("Role").Select<int>("RoleId", new {Name = "Manager"})
 			Table("User").Insert(new {
-				RoleId = (int)SelectScalar("Id", "Role", "Name = 'Manager'"), 
+				RoleId = Table("Role").SelectScalar<int>("Id", new { Name = "Manager" }), 
 				FirstName = "Robert", 
 				LastName = "Tompson",
-				IsRegistered = true,					// true - male; false - female
+				IsRegistered = true,					
 				Birthday = new DateTime(1982, 4, 20)
 			});
 		}
@@ -149,7 +145,7 @@ namespace Example
 			Table("User").RenameColumn("PersonalInformation", "Description");
 		}
 	}
-
+	
 	/// <summary>
 	/// Also, DBRefactor could be usefull to change column type or any options
 	/// that have been set before.
@@ -159,16 +155,14 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("User").AlterColumn().String("PersonalInformation", 1000).NotNull();
+			Table("User").AlterColumn().String("PersonalInformation", 1000).Execute();
 		}
 
 		public override void Down()
 		{
-			Table("User").AlterColumn().Text("PersonalInformation").Null();
+			Table("User").AlterColumn().Text("PersonalInformation").Execute();
 		}
 	}
-
-
 
 // Add an example for 'rename table', 'update table'
 }

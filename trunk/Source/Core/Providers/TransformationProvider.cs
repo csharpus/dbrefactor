@@ -193,7 +193,7 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(sqlColumn, "sqlColumn");
-			ExecuteNonQuery("ALTER TABLE {0} ALTER COLUMN {1}", table, sqlColumn);
+			ExecuteNonQuery("ALTER TABLE [{0}] ALTER COLUMN {1}", table, sqlColumn);
 		}
 
 		public class Relation

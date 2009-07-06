@@ -1,14 +1,14 @@
 ﻿using System;
 using DbRefactor;
 
-namespace DbRefactor.Tests
+namespace Example
 {
 	/// <summary>
 	/// This is a first migration that create "Role" table.
 	/// Down method exists to roll back a database structure to previos version.
 	/// </summary>
 	[Migration(1)]
-	public class CreateRoleTable: Migration
+	public class CreateRoleTable : Migration
 	{
 		public override void Up()
 		{
@@ -37,7 +37,7 @@ namespace DbRefactor.Tests
 				.Long("Id").PrimaryKeyWithIdentity()
 				.String("FirstName", 70).NotNull()
 				.String("LastName", 70).NotNull().Indexed()
-				.Boolean("Gender")
+				.Boolean("IsRegistered", false)
 				.DateTime("Birthday").NotNull()
 				.Text("Description").Null()
 				.String("Email", 255).Unique()
@@ -72,9 +72,8 @@ namespace DbRefactor.Tests
 	/// It is easy to reach column with foreign key or drop it.
 	/// </summary>
 	[Migration(4)]
-	public class AddForeignKeyToUserTable: Migration
+	public class AddForeignKeyToUserTable : Migration
 	{
-// Declaration is inconsistent because add and drop are different
 		public override void Up()
 		{
 			Table("User").AddForeignKey("RoleId", "Role", "Id", OnDelete.SetDefault);
@@ -82,7 +81,7 @@ namespace DbRefactor.Tests
 
 		public override void Down()
 		{
-			Table("User").DropForeignKey("FK_User_Id");
+			Table("User").DropForeignKey("FK_User_Role");
 		}
 	}
 
@@ -95,13 +94,13 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
-			Table("Role").Insert(new {Name = "Administrator"});
-			Table("Role").Insert(new {Name = "Manager"});
+			Table("Role").Insert(new { Name = "Administrator" });
+			Table("Role").Insert(new { Name = "Manager" });
 		}
 
 		public override void Down()
 		{
-			Table("Role").Delete().Where(new {Name = "Administrator"});
+			Table("Role").Delete().Where(new { Name = "Administrator" });
 			Table("Role").Delete().Where(new { Name = "Manager" });
 		}
 	}
@@ -115,14 +114,13 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
-// It might be better to use something like Table("Role").Select<int>("RoleId", new {Name = "Manager"})
-			Table("User").Insert(new {
-				RoleId = (int)SelectScalar("RoleId", "Role", "Name = Manager"), 
-				FirstName = "Robert", 
+			Table("User").Insert(new
+			{
+				RoleId = Table("Role").SelectScalar<int>("Id", new { Name = "Manager" }),
+				FirstName = "Robert",
 				LastName = "Tompson",
-// Gender is not a good example to store as boolean
-				Gender = true,					// true - male; false - female
-				Birthday = DateTime.Parse("20/04/1982")
+				IsRegistered = true,
+				Birthday = new DateTime(1982, 4, 20)
 			});
 		}
 
@@ -140,12 +138,12 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
-			Table("").RenameColumn("Description", "PersonalInformation");
+			Table("User").RenameColumn("Description", "PersonalInformation");
 		}
 
 		public override void Down()
 		{
-			Table("").RenameColumn("PersonalInformation", "Description");
+			Table("User").RenameColumn("PersonalInformation", "Description");
 		}
 	}
 
@@ -158,14 +156,14 @@ namespace DbRefactor.Tests
 	{
 		public override void Up()
 		{
-			Table("User").AlterColumn().String("PersonalInformation", 1000).NotNull();
+			Table("User").AlterColumn().String("PersonalInformation", 1000).Execute();
 		}
 
 		public override void Down()
 		{
-			Table("User").AlterColumn().Text("PersonalInformation").Null();
+			Table("User").AlterColumn().Text("PersonalInformation").Execute();
 		}
 	}
 
-// Add an example for 'rename table', 'update table'
+	// Add an example for 'rename table', 'update table'
 }

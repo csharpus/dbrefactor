@@ -257,7 +257,7 @@ namespace Migrator.Providers
 		}
 		public virtual object SelectScalar(string what, string from, string where)
 		{
-			return ExecuteScalar(string.Format("SELECT {0} FROM {1} WHERE {2}", what, from, where));
+			return ExecuteScalar(string.Format("SELECT {0} FROM [{1}] WHERE {2}", what, from, where));
 		}
 		
 		public virtual int Update(string table, params string[] columnValues)
