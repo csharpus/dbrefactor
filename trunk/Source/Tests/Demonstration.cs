@@ -5,7 +5,7 @@ namespace Example
 {
 	/// <summary>
 	/// This is a first migration that create "Role" table.
-	/// Down method exists to roll back a database structure to previos version.
+	/// Down method exists to roll back a database structure to previous version.
 	/// </summary>
 	[Migration(1)]
 	public class CreateRoleTable : Migration
