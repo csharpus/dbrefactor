@@ -68,7 +68,7 @@ namespace DbRefactor
 		/// Update record in database table
 		/// </summary>
 		/// <param name="parameters">This is parameters for operation Update.<br />
-		/// To add parameters you could use next syntaxes
+		/// To add parameters you could use follow syntax
 		/// Table(TableName).Update(new {ColumnName1=Parameter1, ColumName2="StringParameter2", ...})
 		/// </param>
 		/// <returns></returns>
@@ -196,7 +196,7 @@ namespace DbRefactor
 			{
 				provider.Insert(TableName, columnValues.ToArray());
 			}
-			else if (operation == Operation.Delete)
+			else if (operation == Operation.Update)
 			{
 				List<string> crieriaParamList = ParametersHelper.GetParameters(criteriaParameters);
 				provider.Update(TableName, columnValues.ToArray(), crieriaParamList.ToArray());

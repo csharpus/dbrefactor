@@ -155,14 +155,32 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("User").AlterColumn().String("PersonalInformation", 1000).Execute();
+			Table("User").Update(new {PersonalInformation = "none..."}).Where(new {PersonalInformation = DBNull.Value});
+
+			Table("User").AlterColumn().String("PersonalInformation", 1000).NotNull().Execute();
 		}
 
 		public override void Down()
 		{
-			Table("User").AlterColumn().Text("PersonalInformation").Execute();
+			Table("User").AlterColumn().Text("PersonalInformation").Null().Execute();
+			Table("User").Update(new { PersonalInformation = DBNull.Value }).Where(new { PersonalInformation = "none..." });
 		}
 	}
 
-// Add an example for 'rename table', 'update table'
+	/// <summary>
+	/// Likewise, you could use migrations to rename table
+	/// </summary>
+	[Migration(9)]
+	public class RenameRoleTable : Migration
+	{
+		public override void Up()
+		{
+			Table("Role").RenameTable("ActorType");
+		}
+
+		public override void Down()
+		{
+			Table("ActorType").RenameTable("Role");
+		}
+	}
 }
