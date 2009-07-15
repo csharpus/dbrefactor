@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using DbRefactor.Providers;
 using DbRefactor.Tools;
 using DbRefactor.Tools.DesignByContract;
@@ -98,6 +99,13 @@ namespace DbRefactor
 			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
 			List<string> crieriaParamList = ParametersHelper.GetParameters(where);
 			return (T)provider.SelectScalar(what, TableName, String.Join(" AND ", crieriaParamList.ToArray())); ;
+		}
+
+		public IDataReader Select(string what, object where)
+		{
+			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
+			List<string> crieriaParamList = ParametersHelper.GetParameters(where);
+			return provider.Select(what, TableName, String.Join(" AND ", crieriaParamList.ToArray())); ;
 		}
 
 		#region Table operations
