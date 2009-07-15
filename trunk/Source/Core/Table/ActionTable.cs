@@ -66,7 +66,7 @@ namespace DbRefactor
 		}
 
 		/// <summary>
-		/// Update record in database table
+		/// Update record(s) in database table
 		/// </summary>
 		/// <param name="parameters">This is parameters for operation Update.<br />
 		/// To add parameters you could use follow syntax
@@ -81,19 +81,36 @@ namespace DbRefactor
 			return this;
 		}
 
+		/// <summary>
+		/// Delete record(s) in datbase table.
+		/// To filter deleted rows use method Where
+		/// </summary>
+		/// <returns></returns>
 		public ActionTable Delete()
 		{
 			Check.Ensure(operation == Operation.None, "Please specify criteria for previous operation.");
 			operation = Operation.Update;
 			return this;
 		}
-
+		 
+		/// <summary>
+		/// This method is a filter for group operations on table records
+		/// </summary>
+		/// <param name="parameters"></param>
+		/// <returns></returns>
 		public ActionTable Where(object parameters)
 		{
 			Execute(operationParameters, parameters);
 			return this;
 		}
 
+		/// <summary>
+		/// Select single value from database table
+		/// </summary>
+		/// <typeparam name="T">Type of return value</typeparam>
+		/// <param name="what">Data table field</param>
+		/// <param name="where">Filter</param>
+		/// <returns></returns>
 		public T SelectScalar<T>(string what, object where)
 		{
 			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
@@ -101,6 +118,12 @@ namespace DbRefactor
 			return (T)provider.SelectScalar(what, TableName, String.Join(" AND ", crieriaParamList.ToArray())); ;
 		}
 
+		/// <summary>
+		/// Select multiple values from database table
+		/// </summary>
+		/// <param name="what">Data table field</param>
+		/// <param name="where">Filter</param>
+		/// <returns></returns>
 		public IDataReader Select(string what, object where)
 		{
 			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
@@ -110,6 +133,10 @@ namespace DbRefactor
 
 		#region Table operations
 
+		/// <summary>
+		/// Rename table
+		/// </summary>
+		/// <param name="newName">New table name</param>
 		public void RenameTo(string newName)
 		{
 			newTableName = newName;
@@ -117,6 +144,9 @@ namespace DbRefactor
 			Execute();
 		}
 
+		/// <summary>
+		/// Delete table from database
+		/// </summary>
 		public void DropTable()
 		{
 			operation = Operation.DropTable;
