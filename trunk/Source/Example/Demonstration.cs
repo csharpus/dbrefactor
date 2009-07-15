@@ -175,12 +175,12 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("Role").RenameTable("ActorType");
+			Table("Role").RenameTo("ActorType");
 		}
 
 		public override void Down()
 		{
-			Table("ActorType").RenameTable("Role");
+			Table("ActorType").RenameTo("Role");
 		}
 	}
 }

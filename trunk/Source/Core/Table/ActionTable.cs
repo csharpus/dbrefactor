@@ -110,7 +110,7 @@ namespace DbRefactor
 
 		#region Table operations
 
-		public void RenameTable(string newName)
+		public void RenameTo(string newName)
 		{
 			newTableName = newName;
 			operation = Operation.RenameTable;
