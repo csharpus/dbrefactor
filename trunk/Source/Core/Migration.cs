@@ -17,58 +17,59 @@ using System.Data;
 
 namespace DbRefactor
 {
-	/// <summary>
-	/// A migration is a group of transformation applied to the database schema
-	/// (or sometimes data) to port the database from one version to another.
-	/// The <c>Up()</c> method must apply the modifications (eg.: create a table)
-	/// and the <c>Down()</c> method must revert, or rollback the modifications
-	/// (eg.: delete a table).
-	/// <para>
-	/// Each migration must be decorated with the <c>[Migration(0)]</c> attribute.
-	/// Each migration number (0) must be unique, or else a 
-	/// <c>DuplicatedVersionException</c> will be trown.
-	/// </para>
-	/// <para>
-	/// All migrations are executed inside a transaction. If an exception is
-	/// thrown, the transaction will be rolledback and transformations wont be
-	/// applied.
-	/// </para>
-	/// <para>
-	/// It is best to keep a limited number of transformation inside a migration
-	/// so you can easely move from one version of to another with fine grain
-	/// modifications.
-	/// You should give meaningful name to the migration class and prepend the
-	/// migration number to the filename so they keep ordered, eg.: 
-	/// <c>002_CreateTableTest.cs</c>.
-	/// </para>
-	/// <para>
-	/// Use the <c>Database</c> property to apply transformation and the
-	/// <c>Logger</c> property to output informations in the console (or other).
-	/// For more details on transformations see
-	/// <see cref="TransformationProvider">TransformationProvider</see>.
-	/// </para>
-	/// </summary>
-	/// <example>
-	/// The following migration creates a new Customer table.
-	/// (File <c>003_AddCustomerTable.cs</c>)
-	/// <code>
-	/// [Migration(3)]
-	/// public class AddCustomerTable : Migration
-	/// {
-	///		public override void Up()
-	///		{
-	///			CreateTable("Customer", Columns
-	///				.String("Name", 50)
-	///				.String("Address", 100));
-	/// 	}
-	/// 
-	/// 	public override void Down()
-	/// 	{
-	/// 		DropTable("Customer");
-	/// 	}
-	/// }
-	/// </code>
-	/// </example>
+	///// <summary>
+	///// A migration is a group of transformation applied to the database schema
+	///// (or sometimes data) to port the database from one version to another.
+	///// The <c>Up()</c> method must apply the modifications (eg.: create a table)
+	///// and the <c>Down()</c> method must revert, or rollback the modifications
+	///// (eg.: delete a table).
+	///// <para>
+	///// Each migration must be decorated with the <c>[Migration(0)]</c> attribute.
+	///// Each migration number (0) must be unique, or else a 
+	///// <c>DuplicatedVersionException</c> will be trown.
+	///// </para>
+	///// <para>
+	///// All migrations are executed inside a transaction. If an exception is
+	///// thrown, the transaction will be rolledback and transformations wont be
+	///// applied.
+	///// </para>
+	///// <para>
+	///// It is best to keep a limited number of transformation inside a migration
+	///// so you can easely move from one version of to another with fine grain
+	///// modifications.
+	///// You should give meaningful name to the migration class and prepend the
+	///// migration number to the filename so they keep ordered, eg.: 
+	///// <c>002_CreateTableTest.cs</c>.
+	///// </para>
+	///// <para>
+	///// Use the <c>Database</c> property to apply transformation and the
+	///// <c>Logger</c> property to output informations in the console (or other).
+	///// For more details on transformations see
+	///// <see cref="TransformationProvider">TransformationProvider</see>.
+	///// </para>
+	///// </summary>
+	///// <example>
+	///// The following migration creates a new Customer table.
+	///// (File <c>003_AddCustomerTable.cs</c>)
+	///// <code>
+	///// [Migration(3)]
+	///// public class AddCustomerTable : Migration
+	///// {
+	/////		public override void Up()
+	/////		{
+	/////			CreateTable("Customer", Columns
+	/////				.String("Name", 50)
+	/////				.String("Address", 100));
+	///// 	}
+	///// 
+	///// 	public override void Down()
+	///// 	{
+	///// 		DropTable("Customer");
+	///// 	}
+	///// }
+	///// </code>
+	///// </example>
+	
 	public abstract class Migration : BaseMigration
 	{
 		private Providers.TransformationProvider _transformationProvider;
@@ -142,7 +143,7 @@ namespace DbRefactor
 			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, primaryKeyTable, primaryKeyColumn, ondelete);
 		}
 
-		[Obsolete("Please, use Table(\"Name\").AddInt(\"ColumneName\")")]
+		[Obsolete("Please, use Table(...).AddColumn")]
 		protected void AddTo(string table, Column column)
 		{
 			Database.AddColumn(table, column);
@@ -158,26 +159,33 @@ namespace DbRefactor
 			Database.RemoveForeignKey(foreignKeyTable, name);
 		}
 
-		protected void DropColumn(string table, string column)
+		private void DropColumn(string table, string column)
 		{
 			Database.DropColumn(table, column);
 		}
 
+		/// <param name="sql">Supports format items to <see cref="string.Format(string,object)"/></param>
+		/// <param name="values">An object to format</param>
 		protected void ExecuteNonQuery(string sql, params string[] values)
 		{
 			Database.ExecuteNonQuery(sql, values);
 		}
 
+		/// <param name="sql">Supports format items to <see cref="string.Format(string,object)"/></param>
+		/// <param name="values">An object to format</param>
 		protected IDataReader ExecuteQuery(string sql, params string[] values)
 		{
 			return Database.ExecuteQuery(sql, values);
 		}
 
+		/// <param name="sql">Supports format items to <see cref="string.Format(string,object)"/></param>
+		/// <param name="values">An object to format</param>
 		protected object ExecuteScalar(string sql, params string[] values)
 		{
 			return Database.ExecuteScalar(sql, values);
 		}
 
+		[Obsolete("Please, use Table.SelectScalar(...)")]
 		protected object SelectScalar(string what, string from, string where)
 		{
 			return Database.SelectScalar(what, from, where);
@@ -189,6 +197,7 @@ namespace DbRefactor
 		/// </summary>
 		/// <example><code>Insert("Table", "column1='value1'", "column2=10");</code></example>
 		/// <returns>Number of rows inserted</returns>
+		[Obsolete("Please, use Table.Insert(...)")]
 		protected int Insert(string table, params string[] columnValues)
 		{
 			return Database.Insert(table, columnValues);
@@ -200,12 +209,13 @@ namespace DbRefactor
 		/// sets value of the column1 to 'value1'
 		/// </summary>
 		/// <returns>Number of rows updated</returns>
+		[Obsolete("Please, use Table.Update(...)")]
 		protected int Update(string table, params string[] columnValues) 
 		{
 			return Database.Update(table, columnValues);
 		}
 
-		[Obsolete("Please, use AlterTable(\"Name\")...")]
+		[Obsolete("Please, use Table.AlterColumn(...")]
 		protected void AlterColumn(string table, Column column)
 		{
 			Database.AlterColumn(table, column);
@@ -216,11 +226,13 @@ namespace DbRefactor
 			Database.DeleteColumnConstraints(table, column);
 		}
 
+		[Obsolete("Please, use Table(...).RenameTo")]
         protected void RenameTable(string oldName, string newName)
         {
             Database.RenameTable(oldName, newName);
         }
 
+		[Obsolete("Please, use Table(...).RenameColumn")]
         protected void RenameColumn(string table, string oldName, string newName)
         {
             Database.RenameColumn(table, oldName, newName);
