@@ -26,9 +26,10 @@ namespace DbRefactor.Tools
 
 		public string Dump()
 		{
-			StringWriter writer = new StringWriter();
+			var writer = new StringWriter();
 
-			writer.WriteLine("using DbRefactor;\n");
+			writer.WriteLine("using DbRefactor;");
+			writer.WriteLine();
 			writer.WriteLine("[Migration(1)]");
 			writer.WriteLine("public class SchemaDump : Migration");
 			writer.WriteLine("{");
@@ -37,21 +38,23 @@ namespace DbRefactor.Tools
 
 			foreach (string table in _provider.GetTables())
 			{
-				writer.WriteLine("\t\tDatabase.AddTable(\"{0}\",", table);
-				foreach (Column column in _provider.GetColumns(table))
+				writer.WriteLine("\t\tCreateTable(\"{0}\")", table);
+				foreach (var column in _provider.GetColumns(table))
 				{
-					writer.WriteLine("\t\t\tnew Column(\"{0}\", typeof({1})),", column.Name, column.Type);
+					writer.WriteLine("\t\t\t.String(\"{0}\")", column.Name);
 				}
-				writer.WriteLine("\t\t);");
+				writer.WriteLine("\t\t\t.Execute();");
+				writer.WriteLine();
 			}
 
-			writer.WriteLine("\t}\n");
+			writer.WriteLine("\t}");
+			writer.WriteLine();
 			writer.WriteLine("\tpublic override void Down()");
 			writer.WriteLine("\t{");
 
 			foreach (string table in _provider.GetTables())
 			{
-				writer.WriteLine("\t\tDatabase.RemoveTable(\"{0}\");", table);
+				writer.WriteLine("\t\tDropTable(\"{0}\");", table);
 			}
 
 			writer.WriteLine("\t}");
@@ -62,7 +65,7 @@ namespace DbRefactor.Tools
 
 		public void DumpTo(string file)
 		{
-			using (StreamWriter writer = new StreamWriter(file))
+			using (var writer = new StreamWriter(file))
 			{
 				DumpTo(writer);
 			}

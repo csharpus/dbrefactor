@@ -223,5 +223,17 @@ namespace Example
 		}
 	}
 
-// TODO: Add an example for 'rename table', 'update table'
+	[Migration(12)]
+	public class RenameTable : Migration
+	{
+		public override void Up()
+		{
+			Table("User").RenameTo("Users");
+		}
+
+		public override void Down()
+		{
+			Table("Users").RenameTo("User");
+		}
+	}
 }

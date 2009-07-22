@@ -1,4 +1,5 @@
 #region License
+
 //The contents of this file are subject to the Mozilla Public License
 //Version 1.1 (the "License"); you may not use this file except in
 //compliance with the License. You may obtain a copy of the License at
@@ -7,11 +8,13 @@
 //basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
 //License for the specific language governing rights and limitations
 //under the License.
+
 #endregion
 
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq.Expressions;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Tools.DesignByContract;
 using System.IO;
@@ -41,10 +44,7 @@ namespace DbRefactor.Providers
 
 		internal IDatabaseEnvironment Environment
 		{
-			get
-			{
-				return _environment;
-			}
+			get { return _environment; }
 		}
 
 		/// <summary>
@@ -123,8 +123,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(oldColumnName, "oldColumnName");
 			Check.RequireNonEmpty(newColumnName, "newColumnName");
 			ExecuteNonQuery("EXEC sp_rename '{0}.{1}', '{2}', 'COLUMN'",
-
-				table, oldColumnName, newColumnName);
+			                table, oldColumnName, newColumnName);
 		}
 
 		/// <summary>
@@ -137,7 +136,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(oldName, "oldName");
 			Check.RequireNonEmpty(newName, "newName");
 			ExecuteNonQuery("EXEC sp_rename '{0}', '{1}', 'OBJECT'",
-				oldName, newName);
+			                oldName, newName);
 		}
 
 		public bool ColumnExists(string table, string column)
@@ -208,36 +207,25 @@ namespace DbRefactor.Providers
 
 			public string Parent
 			{
-				get
-				{
-					return _parent;
-				}
+				get { return _parent; }
 
-				set
-				{
-					_parent = value;
-				}
+				set { _parent = value; }
 			}
 
 			private string _child;
 
 			public string Child
 			{
-				get
-				{
-					return _child;
-				}
+				get { return _child; }
 
-				set
-				{
-					_child = value;
-				}
+				set { _child = value; }
 			}
 		}
 
 		private List<Relation> GetTablesRelations()
 		{
-			string query = @"
+			string query =
+				@"
 				SELECT f.name AS ForeignKey,
 				   OBJECT_NAME(f.parent_object_id) AS TableName,
 				   COL_NAME(fc.parent_object_id, 
@@ -271,7 +259,6 @@ namespace DbRefactor.Providers
 		{
 			List<Relation> relations = GetTablesRelations();
 			return DependencySorter.Run(tables, relations);
-			
 		}
 
 		public class DependencySorter
@@ -281,13 +268,13 @@ namespace DbRefactor.Providers
 				CheckCyclicDependencyAbsence(relations);
 				List<string> sortedTables = new List<string>(tables);
 				sortedTables.Sort(delegate(string a, string b)
-				            	{
-									if (a == b) return 0;
-				            		return IsChildParent(a, b, relations) ? -1 : 1;
-				            	});
+				                  	{
+				                  		if (a == b) return 0;
+				                  		return IsChildParent(a, b, relations) ? -1 : 1;
+				                  	});
 				return sortedTables;
 			}
-			
+
 			private static void CheckCyclicDependencyAbsence(List<Relation> relations)
 			{
 				//TODO: implement
@@ -380,7 +367,7 @@ namespace DbRefactor.Providers
 
 		private static string JoinColumns(Column[] columns)
 		{
-			string[] columnStrings = new string[columns.Length];
+			var columnStrings = new string[columns.Length];
 			int i = 0;
 			foreach (Column column in columns)
 			{
@@ -486,39 +473,18 @@ namespace DbRefactor.Providers
 			//    Logger.Warn("Primary key {0} already exists", name);
 			//    return;
 			//}
-			ExecuteNonQuery("ALTER TABLE [{0}] ADD CONSTRAINT {1} PRIMARY KEY ({2}) ", 
-				table, name, String.Join(",", columns));
+			ExecuteNonQuery("ALTER TABLE [{0}] ADD CONSTRAINT {1} PRIMARY KEY ({2}) ",
+			                table, name, String.Join(",", columns));
 		}
 
 		/// <summary>
 		/// Guesses the name of the foreign key and add it
 		/// </summary>
-		public void GenerateForeignKey(string primaryTable, string primaryColumn, string refTable, 
-			string refColumn)
-		{
-			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumn, 
-				refTable, refColumn);
-		}
-
-		/// <summary>
-		/// Guesses the name of the foreign key and add it
-		/// </see>
-		/// </summary>
-		public void GenerateForeignKey(string primaryTable, string[] primaryColumns, 
-			string refTable, string[] refColumns)
-		{
-			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumns, 
-				refTable, refColumns);
-		}
-
-		/// <summary>
-		/// Guesses the name of the foreign key and add it
-		/// </summary>
-		public void GenerateForeignKey(string primaryTable, string primaryColumn, string refTable, 
-			string refColumn, OnDelete ondelete)
+		public void GenerateForeignKey(string primaryTable, string primaryColumn, string refTable,
+		                               string refColumn)
 		{
 			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumn,
-				refTable, refColumn, ondelete);
+			              refTable, refColumn);
 		}
 
 		/// <summary>
@@ -526,10 +492,31 @@ namespace DbRefactor.Providers
 		/// </see>
 		/// </summary>
 		public void GenerateForeignKey(string primaryTable, string[] primaryColumns,
-			string refTable, string[] refColumns, OnDelete ondelete)
+		                               string refTable, string[] refColumns)
 		{
 			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumns,
-				refTable, refColumns, ondelete);
+			              refTable, refColumns);
+		}
+
+		/// <summary>
+		/// Guesses the name of the foreign key and add it
+		/// </summary>
+		public void GenerateForeignKey(string primaryTable, string primaryColumn, string refTable,
+		                               string refColumn, OnDelete ondelete)
+		{
+			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumn,
+			              refTable, refColumn, ondelete);
+		}
+
+		/// <summary>
+		/// Guesses the name of the foreign key and add it
+		/// </see>
+		/// </summary>
+		public void GenerateForeignKey(string primaryTable, string[] primaryColumns,
+		                               string refTable, string[] refColumns, OnDelete ondelete)
+		{
+			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumns,
+			              refTable, refColumns, ondelete);
 		}
 
 		/// <summary>
@@ -541,33 +528,35 @@ namespace DbRefactor.Providers
 		/// <param name="primaryColumn">Primary key column name</param>
 		/// <param name="refTable">Foreign table name</param>
 		/// <param name="refColumn">Foreign column name</param>
-		public void AddForeignKey(string name, string primaryTable, string primaryColumn, 
-			string refTable, string refColumn)
+		public void AddForeignKey(string name, string primaryTable, string primaryColumn,
+		                          string refTable, string refColumn)
 		{
-			AddForeignKey(name, primaryTable, new string[] { primaryColumn }, refTable, 
-				new string[] { refColumn });
+			AddForeignKey(name, primaryTable, new string[] {primaryColumn}, refTable,
+			              new string[] {refColumn});
 		}
+
 		/// <summary>
 		/// <see cref="TransformationProvider.AddForeignKey(string, string, string, string, string)">
 		/// AddForeignKey(string, string, string, string, string)
 		/// </see>
 		/// </summary>
-		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns, 
-			string refTable, string[] refColumns)
+		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns,
+		                          string refTable, string[] refColumns)
 		{
 			AddForeignKey(name, primaryTable, primaryColumns, refTable, refColumns,
-				OnDelete.NoAction);
+			              OnDelete.NoAction);
 		}
 
-		public void AddForeignKey(string name, string primaryTable, string primaryColumn, string refTable, string refColumn, OnDelete ondelete)
+		public void AddForeignKey(string name, string primaryTable, string primaryColumn, string refTable, string refColumn,
+		                          OnDelete ondelete)
 		{
-			AddForeignKey(name, primaryTable, new string[] { primaryColumn }, refTable,
-				new string[] { refColumn }, ondelete);
+			AddForeignKey(name, primaryTable, new string[] {primaryColumn}, refTable,
+			              new string[] {refColumn}, ondelete);
 		}
 
 		// Not sure how SQL server handles ON UPDATRE & ON DELETE
-		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns, 
-			string refTable, string[] refColumns, OnDelete constraint)
+		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns,
+		                          string refTable, string[] refColumns, OnDelete constraint)
 		{
 			Check.RequireNonEmpty(name, "name");
 			Check.RequireNonEmpty(primaryTable, "primaryTable");
@@ -616,12 +605,71 @@ namespace DbRefactor.Providers
 			return tables.ToArray();
 		}
 
+		private Dictionary<string, Expression<Func<ColumnProvider>>> GetTypesMap()
+		{
+			return new Dictionary<string, Expression<Func<ColumnProvider>>>
+			       	{
+			       		{"bigint", () => new LongProvider()},
+			       		{"binary", () => new ColumnProvider()},
+			       		{"bit", () => new ColumnProvider()},
+			       		{"char", () => new ColumnProvider()},
+			       		{"datetime", () => new ColumnProvider()},
+			       		{"decimal", () => new ColumnProvider()},
+			       		{"float", () => new ColumnProvider()},
+			       		{"image", () => new ColumnProvider()},
+			       		{"int", () => new ColumnProvider()},
+			       		{"money", () => new ColumnProvider()},
+			       		{"nchar", () => new ColumnProvider()},
+			       		{"ntext", () => new ColumnProvider()},
+			       		{"numeric", () => new ColumnProvider()},
+			       		{"nvarchar", () => new ColumnProvider()},
+			       		{"real", () => new ColumnProvider()},
+			       		{"smalldatetime", () => new ColumnProvider()},
+			       		{"smallint", () => new ColumnProvider()},
+			       		{"smallmoney", () => new ColumnProvider()},
+			       		{"sql_variant", () => new ColumnProvider()},
+			       		{"text", () => new ColumnProvider()},
+			       		{"timestamp", () => new ColumnProvider()},
+			       		{"tinyint", () => new ColumnProvider()},
+			       		{"uniqueidentifier", () => new ColumnProvider()},
+			       		{"varbinary", () => new ColumnProvider()},
+			       		{"varchar", () => new ColumnProvider()},
+			       		{"xml", () => new ColumnProvider()}
+			       	};
+		}
+
+		internal List<ColumnProvider> GetColumnProviders(string table)
+		{
+			var providers = new List<ColumnProvider>();
+
+
+			using (
+				IDataReader reader =
+					ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME FROM information_schema.columns WHERE table_name = '{0}';", table))
+			{
+				while (reader.Read())
+				{
+					var type = reader["DATA_TYPE"].ToString();
+					providers.Add(GetTypesMap()[type].Compile().Invoke());
+				}
+			}
+
+			return providers;
+		}
+
+		private static ColumnProvider GetProvider(string type)
+		{
+			return new ColumnProvider();
+		}
+
 		public Column[] GetColumns(string table)
 		{
 			Check.RequireNonEmpty(table, "table");
 			List<Column> columns = new List<Column>();
 
-			using (IDataReader reader = ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME FROM information_schema.columns WHERE table_name = '{0}';", table))
+			using (
+				IDataReader reader =
+					ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME FROM information_schema.columns WHERE table_name = '{0}';", table))
 			{
 				while (reader.Read())
 				{
@@ -698,7 +746,8 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(table, "table");
 			Check.Require(columnValues.Length > 0, "You have to pass at least one column value");
 			Check.Require(where.Length > 0, "You have to pass at least one criteria for update");
-			return ExecuteNonQuery("UPDATE [{0}] SET {1} WHERE {2}", table, String.Join(", ", columnValues), String.Join(" AND ", where));
+			return ExecuteNonQuery("UPDATE [{0}] SET {1} WHERE {2}", table, String.Join(", ", columnValues),
+			                       String.Join(" AND ", where));
 		}
 
 		[Obsolete("Old method will be removed in a feature")]
@@ -734,10 +783,10 @@ namespace DbRefactor.Providers
 			}
 
 			return ExecuteNonQuery(
-				"INSERT INTO [{0}] ({1}) VALUES ({2})", 
-				table, 
-				String.Join(", ", columns), 
-				String.Join(", ", values)); 
+				"INSERT INTO [{0}] ({1}) VALUES ({2})",
+				table,
+				String.Join(", ", columns),
+				String.Join(", ", values));
 		}
 
 		/// <summary>
@@ -784,10 +833,7 @@ namespace DbRefactor.Providers
 				{
 					return 0;
 				}
-				else
-				{
-					return Convert.ToInt32(version);
-				}
+				return Convert.ToInt32(version);
 			}
 			set
 			{
@@ -803,10 +849,7 @@ namespace DbRefactor.Providers
 		public string Category
 		{
 			get { return _category; }
-			set
-			{
-				_category = value ?? String.Empty;
-			}
+			set { _category = value ?? String.Empty; }
 		}
 
 		private void CreateSchemaInfoTable()
@@ -815,11 +858,11 @@ namespace DbRefactor.Providers
 			if (!TableExists("SchemaInfo"))
 			{
 				AddTable("SchemaInfo",
-					new Column("Version", typeof(int), ColumnProperties.PrimaryKey));
+				         new Column("Version", typeof (int), ColumnProperties.PrimaryKey));
 			}
 			if (!ColumnExists("SchemaInfo", "Category"))
 			{
-				AddColumn("SchemaInfo", new Column("Category", typeof(string), 50, ColumnProperties.Null));
+				AddColumn("SchemaInfo", new Column("Category", typeof (string), 50, ColumnProperties.Null));
 				Update("SchemaInfo", "Category=''");
 			}
 		}
@@ -833,7 +876,7 @@ namespace DbRefactor.Providers
 		public void ExecuteFile(string fileName)
 		{
 			Check.RequireNonEmpty(fileName, "fileName");
-			using(StreamReader reader = File.OpenText(fileName))
+			using (StreamReader reader = File.OpenText(fileName))
 			{
 				string content = reader.ReadToEnd();
 				_environment.ExecuteNonQuery(content);
@@ -841,6 +884,7 @@ namespace DbRefactor.Providers
 		}
 
 		#region Obsolete
+
 		[Obsolete("Use DropTable instead")]
 		public void RemoveTable(string name)
 		{
@@ -852,7 +896,37 @@ namespace DbRefactor.Providers
 		{
 			DropColumn(table, column);
 		}
-		#endregion
 
+		#endregion
+	}
+
+	public class ColumnProvider
+	{
+		public virtual Expression<Action<NewTable>> Method()
+		{
+			return t => t.String(null, default(int));
+		}
+
+		public string MethodName()
+		{
+			return ((MethodCallExpression) Method().Body).Method.Name;
+		}
+	}
+
+	public class LongProvider : ColumnProvider
+	{
+		public override Expression<Action<NewTable>> Method()
+		{
+			return t => t.Long(null);
+		}
+	}
+
+	internal class ColumnInfo
+	{
+		public string Name { get; set; }
+		public string Type { get; set; }
+		public bool Indexed { get; set; }
+		public bool PrimaryKey { get; set; }
+		public bool Identity { get; set; }
 	}
 }

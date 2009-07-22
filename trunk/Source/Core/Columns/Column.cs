@@ -87,84 +87,24 @@ namespace DbRefactor
 
 		internal Column(string name, Type type, int size, ColumnProperties property, object defaultValue)
 		{
-			_name = name;
-			_type = type;
-			_size = size;
-			_property = property;
-			_defaultValue = defaultValue;
+			Name = name;
+			Type = type;
+			Size = size;
+			ColumnProperty = property;
+			DefaultValue = defaultValue;
 		}
 
-		private string _name;
+		internal string Name { get; set; }
 
-		internal string Name
-		{
-			get
-			{
-				return _name;
-			}
-			set
-			{
-				_name = value;
-			}
-		}
+		internal Type Type { get; set; }
 
-		private Type _type;
+		internal int Size { get; set; }
 
-		internal Type Type
-		{
-			get
-			{
-				return _type;
-			}
-			set
-			{
-				_type = value;
-			}
-		}
+		internal ColumnProperties ColumnProperty { get; set; }
 
-		private int _size;
+		internal object DefaultValue { get; set; }
 
-		internal int Size
-		{
-			get
-			{
-				return _size;
-			}
-			set
-			{
-				_size = value;
-			}
-		}
-
-		private ColumnProperties _property;
-
-		internal ColumnProperties ColumnProperty
-		{
-			get
-			{
-				return _property;
-			}
-			set
-			{
-				_property = value;
-			}
-		}
-
-		private object _defaultValue;
-
-		internal object DefaultValue
-		{
-			get
-			{
-				return _defaultValue;
-			}
-			set
-			{
-				_defaultValue = value;
-			}
-		}
-
-		internal void MapColumnProperties(ColumnPropertiesMapper mapper, Column column)
+		internal static void MapColumnProperties(ColumnPropertiesMapper mapper, Column column)
 		{
 			mapper.Name = column.Name;
 			ColumnProperties properties = column.ColumnProperty;
@@ -205,39 +145,36 @@ namespace DbRefactor
 			}
 		}
 
-		SQLServerTypeToSqlProvider TypeToSqlProvider
+		static SQLServerTypeToSqlProvider TypeToSqlProvider
 		{
 			get { return new SQLServerTypeToSqlProvider(); }
 		}
 
-		internal ColumnPropertiesMapper GetColumnMapper(Column column)
+		internal static ColumnPropertiesMapper GetColumnMapper(Column column)
 		{
 			if (column.Type == typeof(char))
 			{
 				if (column.Size <= Convert.ToInt32(byte.MaxValue))
 					return TypeToSqlProvider.Char(Convert.ToByte(column.Size));
-				else if (column.Size <= Convert.ToInt32(ushort.MaxValue))
+				if (column.Size <= Convert.ToInt32(ushort.MaxValue))
 					return TypeToSqlProvider.Text;
-				else
-					return TypeToSqlProvider.LongText;
+				return TypeToSqlProvider.LongText;
 			}
 
 			if (column.Type == typeof(string))
 			{
 				if (column.Size <= 255)
 					return TypeToSqlProvider.String(Convert.ToUInt16(column.Size));
-				else if (column.Size <= Convert.ToInt32(ushort.MaxValue))
+				if (column.Size <= Convert.ToInt32(ushort.MaxValue))
 					return TypeToSqlProvider.Text;
-				else
-					return TypeToSqlProvider.LongText;
+				return TypeToSqlProvider.LongText;
 			}
 
 			if (column.Type == typeof(int))
 			{
 				if ((column.ColumnProperty & ColumnProperties.PrimaryKey) == ColumnProperties.PrimaryKey)
 					return TypeToSqlProvider.PrimaryKey;
-				else
-					return TypeToSqlProvider.Integer;
+				return TypeToSqlProvider.Integer;
 			}
 			if (column.Type == typeof(long))
 				return TypeToSqlProvider.Long;
@@ -249,8 +186,7 @@ namespace DbRefactor
 			{
 				if (column.Size == 0)
 					return TypeToSqlProvider.Double;
-				else
-					return TypeToSqlProvider.Decimal(column.Size);
+				return TypeToSqlProvider.Decimal(column.Size);
 			}
 
 			if (column.Type == typeof(decimal))
@@ -259,10 +195,7 @@ namespace DbRefactor
 				{
 					return TypeToSqlProvider.Decimal(column.Size, ((DecimalColumn) column).Remainder);
 				}
-				else
-				{
-					return TypeToSqlProvider.Decimal(column.Size);
-				}
+				return TypeToSqlProvider.Decimal(column.Size);
 			}
 
 			if (column.Type == typeof(bool))
@@ -275,10 +208,9 @@ namespace DbRefactor
 			{
 				if (column.Size <= Convert.ToInt32(byte.MaxValue))
 					return TypeToSqlProvider.Binary(Convert.ToByte(column.Size));
-				else if (column.Size <= Convert.ToInt32(ushort.MaxValue))
+				if (column.Size <= Convert.ToInt32(ushort.MaxValue))
 					return TypeToSqlProvider.Blob;
-				else
-					return TypeToSqlProvider.LongBlob;
+				return TypeToSqlProvider.LongBlob;
 			}
 
 			throw new ArgumentOutOfRangeException("column", "The " + column.Type + " type is not supported");
