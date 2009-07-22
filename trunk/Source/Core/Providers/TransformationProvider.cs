@@ -605,38 +605,40 @@ namespace DbRefactor.Providers
 			return tables.ToArray();
 		}
 
-		private Dictionary<string, Expression<Func<ColumnProvider>>> GetTypesMap()
+		private Dictionary<string, Expression<Func<ColumnProvider>>> GetTypesMap(ColumnData data)
 		{
 			return new Dictionary<string, Expression<Func<ColumnProvider>>>
 			       	{
-			       		{"bigint", () => new LongProvider()},
-			       		{"binary", () => new ColumnProvider()},
-			       		{"bit", () => new ColumnProvider()},
-			       		{"char", () => new ColumnProvider()},
-			       		{"datetime", () => new ColumnProvider()},
-			       		{"decimal", () => new ColumnProvider()},
-			       		{"float", () => new ColumnProvider()},
-			       		{"image", () => new ColumnProvider()},
-			       		{"int", () => new ColumnProvider()},
-			       		{"money", () => new ColumnProvider()},
-			       		{"nchar", () => new ColumnProvider()},
-			       		{"ntext", () => new ColumnProvider()},
-			       		{"numeric", () => new ColumnProvider()},
-			       		{"nvarchar", () => new ColumnProvider()},
-			       		{"real", () => new ColumnProvider()},
-			       		{"smalldatetime", () => new ColumnProvider()},
-			       		{"smallint", () => new ColumnProvider()},
-			       		{"smallmoney", () => new ColumnProvider()},
-			       		{"sql_variant", () => new ColumnProvider()},
-			       		{"text", () => new ColumnProvider()},
-			       		{"timestamp", () => new ColumnProvider()},
-			       		{"tinyint", () => new ColumnProvider()},
-			       		{"uniqueidentifier", () => new ColumnProvider()},
-			       		{"varbinary", () => new ColumnProvider()},
-			       		{"varchar", () => new ColumnProvider()},
-			       		{"xml", () => new ColumnProvider()}
+			       		{"bigint", () => new LongProvider(data.Name)},
+			       		{"binary", () => new ColumnProvider(data.Name)},
+			       		{"bit", () => new BooleanProvider(data.Name)},
+			       		{"char", () => new StringProvider(data.Name, data.Length.Value)},
+			       		{"datetime", () => new DateTimeProvider(data.Name)},
+			       		{"decimal", () => new DecimalProvider(data.Name, data.Precision.Value, data.Radix.Value)},
+			       		{"float", () => new ColumnProvider(data.Name)},
+			       		{"image", () => new ColumnProvider(data.Name)},
+			       		{"int", () => new IntProvider(data.Name)},
+			       		{"money", () => new DecimalProvider(data.Name, data.Precision.Value, data.Radix.Value)},
+			       		{"nchar", () => new StringProvider(data.Name, data.Length.Value)},
+			       		{"ntext", () => new TextProvider(data.Name)},
+			       		{"numeric", () => new DecimalProvider(data.Name, data.Precision.Value, data.Radix.Value)},
+			       		{"nvarchar", () => new StringProvider(data.Name, data.Length.Value)},
+			       		{"real", () => new ColumnProvider(data.Name)},
+			       		{"smalldatetime", () => new DateTimeProvider(data.Name)},
+			       		{"smallint", () => new IntProvider(data.Name)},
+			       		{"smallmoney", () => new DecimalProvider(data.Name, data.Precision.Value, data.Radix.Value)},
+			       		{"sql_variant", () => new ColumnProvider(data.Name)},
+			       		{"text", () => new TextProvider(data.Name)},
+			       		{"timestamp", () => new DateTimeProvider(data.Name)},
+			       		{"tinyint", () => new IntProvider(data.Name)},
+			       		{"uniqueidentifier", () => new StringProvider(data.Name, GUID_LENGTH)},
+			       		{"varbinary", () => new ColumnProvider(data.Name)},
+			       		{"varchar", () => new StringProvider(data.Name, data.Length.Value)},
+			       		{"xml", () => new TextProvider(data.Name)}
 			       	};
 		}
+
+		private const int GUID_LENGTH = 38; // 36 symbols in guid + 2 curly brackets
 
 		internal List<ColumnProvider> GetColumnProviders(string table)
 		{
@@ -645,21 +647,52 @@ namespace DbRefactor.Providers
 
 			using (
 				IDataReader reader =
-					ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME FROM information_schema.columns WHERE table_name = '{0}';", table))
+					ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME FROM, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX information_schema.columns WHERE table_name = '{0}';", table))
 			{
 				while (reader.Read())
 				{
-					var type = reader["DATA_TYPE"].ToString();
-					providers.Add(GetTypesMap()[type].Compile().Invoke());
+					var data = new ColumnData
+					           	{
+					           		Name = reader["COLUMN_NAME"].ToString(),
+					           		DataType = reader["DATA_TYPE"].ToString(),
+					           		Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
+									Precision = NullSafeGet<int>(reader, "NUMERIC_PRECISION"),
+									Radix = NullSafeGet<int>(reader, "NUMERIC_PRECISION_RADIX")
+					           	};
+					providers.Add(GetTypesMap(data)[data.DataType].Compile().Invoke());
 				}
 			}
 
 			return providers;
 		}
 
+		private static T? NullSafeGet<T>(IDataRecord reader, string name)
+			where T: struct
+		{
+			object value = reader[name];
+			if (value == null)
+			{
+				return null;
+			}
+			return (T) value;
+		}
+
+		private class ColumnData
+		{
+			public string DataType { get; set; }
+
+			public string Name { get; set; }
+
+			public int? Length { get; set; }
+
+			public int? Precision { get; set; }
+
+			public int? Radix { get; set; }
+		}
+
 		private static ColumnProvider GetProvider(string type)
 		{
-			return new ColumnProvider();
+			return new ColumnProvider(null);
 		}
 
 		public Column[] GetColumns(string table)
@@ -898,35 +931,5 @@ namespace DbRefactor.Providers
 		}
 
 		#endregion
-	}
-
-	public class ColumnProvider
-	{
-		public virtual Expression<Action<NewTable>> Method()
-		{
-			return t => t.String(null, default(int));
-		}
-
-		public string MethodName()
-		{
-			return ((MethodCallExpression) Method().Body).Method.Name;
-		}
-	}
-
-	public class LongProvider : ColumnProvider
-	{
-		public override Expression<Action<NewTable>> Method()
-		{
-			return t => t.Long(null);
-		}
-	}
-
-	internal class ColumnInfo
-	{
-		public string Name { get; set; }
-		public string Type { get; set; }
-		public bool Indexed { get; set; }
-		public bool PrimaryKey { get; set; }
-		public bool Identity { get; set; }
 	}
 }

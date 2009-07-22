@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Linq.Expressions;
 using DbRefactor.Providers;
 using DbRefactor.Tools;
 using NUnit.Framework;
@@ -117,6 +119,36 @@ namespace DbRefactor.Tests.Integration
 			}
 		}
 
+		[Test]
+		public void should_generate_method_call_from_lambda()
+		{
+			var longProvider = new LongProvider("ColumnName");
+			var methodCall = longProvider.Method().Body as MethodCallExpression;
+			string methodName = methodCall.Method.Name;
+			var arguments = methodCall.Arguments.Select(a => ObtainValue(a)).ToArray();
+			string methodArguments = String.Join(", ", arguments);
+			string methodValue = String.Format("{0}({1})", methodName, methodArguments);
+			Assert.That(methodValue, Is.EqualTo("Long(\"ColumnName\")"));
+		}
+
+		public string ObtainValue(Expression expression)
+		{
+			object value = ValueFromExpression(expression);
+			string stringValue = value.ToString();
+			return (value is string) ? "\"" + stringValue + "\"" : stringValue;
+		}
+
+		private object ValueFromExpression(Expression expression)
+		{
+			if (expression is ConstantExpression)
+			{
+				return (expression as ConstantExpression).Value;
+			}
+			var lambda = Expression.Lambda<Func<object>>(
+				Expression.Convert(expression, typeof(object)),
+				new ParameterExpression[0]);
+			return lambda.Compile()();
+		}
 
 		[Migration(1)]
 		public class CreateForeignKeyMigration : UpMigration

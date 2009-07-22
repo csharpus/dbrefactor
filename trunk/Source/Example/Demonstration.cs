@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using DbRefactor;
 
 namespace Example
 {
 	/// <summary>
-	/// This is a first migration that create "Role" table.
-	/// Down method exists to roll back a database structure to previous version.
+	/// This is a first migration that creates "Role" table.
+	/// Down method exists to roll back a database structure to the previous version.
 	/// </summary>
 	[Migration(1)]
 	public class CreateRoleTable: Migration
@@ -35,12 +37,12 @@ namespace Example
 		{
 			CreateTable("User")
 				.Long("Id").PrimaryKeyWithIdentity()
-				.String("FirstName", 70).NotNull()
-				.String("LastName", 70).NotNull().Indexed()
+				.String("Name", 70).NotNull().Unique().Indexed()
 				.Boolean("IsRegistered", false)
 				.DateTime("Birthday").NotNull()
 				.Text("Description").Null()
-				.String("Email", 255).Unique()
+				.Int("Age")
+				.Decimal("Salary", 10, 2)
 				.Execute();
 		}
 
@@ -181,6 +183,63 @@ namespace Example
 		public override void Down()
 		{
 			Table("ActorType").RenameTo("Role");
+		}
+	}
+
+	[Migration(10)]
+	public class ExecuteQuery : Migration
+	{
+		public override void Up()
+		{
+			IDataReader reader = ExecuteQuery("select Id, Name from User where IsRegistered = 0 or Description is null");
+
+			var systemUsers = new List<string>();
+
+			while (reader.Read())
+			{
+				var name = reader["Name"].ToString();
+				if (name.Contains("$"))
+				{
+					systemUsers.Add(name);
+				}
+			}
+			foreach (var user in systemUsers)
+			{
+				Table("User").Update(new { Name = "System/" + user }).Where(new { Name = user });
+			}
+		}
+
+		public override void Down()
+		{
+
+		}
+	}
+
+	[Migration(11)]
+	public class ExecuteScalar : Migration
+	{
+		public override void Up()
+		{
+			int value = (int)ExecuteScalar("select Id from User where IsRegistered = 1 or Description is null");
+		}
+
+		public override void Down()
+		{
+
+		}
+	}
+
+	[Migration(12)]
+	public class ExecuteNonQuery : Migration
+	{
+		public override void Up()
+		{
+			ExecuteNonQuery("delete from User where IsRegistered = 0 or Description is null");
+		}
+
+		public override void Down()
+		{
+
 		}
 	}
 }
