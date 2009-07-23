@@ -113,10 +113,13 @@ namespace DbRefactor.Tests.Integration
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]");
 			#endregion
 			var providers = provider.GetColumnProviders("Table1");
+			string values = String.Empty;
 			foreach (var columnProvider in providers)
 			{
 				var value = columnProvider.MethodName();
+				values += value;
 			}
+			Console.Write(values);
 		}
 
 		[Test]

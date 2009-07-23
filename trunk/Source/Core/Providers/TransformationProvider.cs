@@ -647,7 +647,7 @@ namespace DbRefactor.Providers
 
 			using (
 				IDataReader reader =
-					ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME FROM, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX information_schema.columns WHERE table_name = '{0}';", table))
+					ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, IS_NULLABLE FROM information_schema.columns WHERE table_name = '{0}';", table))
 			{
 				while (reader.Read())
 				{
@@ -656,8 +656,9 @@ namespace DbRefactor.Providers
 					           		Name = reader["COLUMN_NAME"].ToString(),
 					           		DataType = reader["DATA_TYPE"].ToString(),
 					           		Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
-									Precision = NullSafeGet<int>(reader, "NUMERIC_PRECISION"),
-									Radix = NullSafeGet<int>(reader, "NUMERIC_PRECISION_RADIX")
+									Precision = NullSafeGet<byte>(reader, "NUMERIC_PRECISION"),
+									Radix = NullSafeGet<short>(reader, "NUMERIC_PRECISION_RADIX"),
+									IsNull = reader["IS_NULLABLE"].ToString() == "YES"
 					           	};
 					providers.Add(GetTypesMap(data)[data.DataType].Compile().Invoke());
 				}
@@ -670,7 +671,7 @@ namespace DbRefactor.Providers
 			where T: struct
 		{
 			object value = reader[name];
-			if (value == null)
+			if (value == DBNull.Value)
 			{
 				return null;
 			}
@@ -688,6 +689,8 @@ namespace DbRefactor.Providers
 			public int? Precision { get; set; }
 
 			public int? Radix { get; set; }
+
+			public bool IsNull { get; set;}
 		}
 
 		private static ColumnProvider GetProvider(string type)
