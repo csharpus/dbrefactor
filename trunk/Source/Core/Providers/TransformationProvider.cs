@@ -317,7 +317,7 @@ namespace DbRefactor.Providers
 					FROM constraint_depends as c
 					WHERE c.TABLE_NAME = '{0}' AND c.COLUMN_NAME = '{1}';",
 					table, column);
-			List<string> constraints = new List<string>();
+			var constraints = new List<string>();
 
 			using (IDataReader reader = ExecuteQuery(sqlContrainte))
 			{
@@ -609,7 +609,7 @@ namespace DbRefactor.Providers
 		{
 			return new Dictionary<string, Expression<Func<ColumnProvider>>>
 			       	{
-			       		{"bigint", () => new LongProvider(data.Name)},
+			       		{"bigint", () => new LongProvider(data.Name, data.DefaultValue)},
 			       		{"binary", () => new ColumnProvider(data.Name)},
 			       		{"bit", () => new BooleanProvider(data.Name)},
 			       		{"char", () => new StringProvider(data.Name, data.Length.Value)},
@@ -640,6 +640,22 @@ namespace DbRefactor.Providers
 
 		private const int GUID_LENGTH = 38; // 36 symbols in guid + 2 curly brackets
 
+		private bool IsUnique(string table, string column)
+		{
+			return Convert.ToBoolean(ExecuteScalar(@"SELECT COUNT(c.CONSTRAINT_NAME) 
+				FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
+				join sys.objects as s on c.CONSTRAINT_NAME = s.Name and type = 'UQ'
+				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'", table, column));
+		}
+
+		private bool IsPrimaryKey(string table, string column)
+		{
+			return Convert.ToBoolean(ExecuteScalar(@"SELECT COUNT(c.CONSTRAINT_NAME) 
+				FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
+				join sys.objects as s on c.CONSTRAINT_NAME = s.Name and type = 'PK'
+				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'", table, column));
+		}
+
 		internal List<ColumnProvider> GetColumnProviders(string table)
 		{
 			var providers = new List<ColumnProvider>();
@@ -647,7 +663,7 @@ namespace DbRefactor.Providers
 
 			using (
 				IDataReader reader =
-					ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, IS_NULLABLE FROM information_schema.columns WHERE table_name = '{0}';", table))
+					ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}';", table))
 			{
 				while (reader.Read())
 				{
@@ -658,15 +674,50 @@ namespace DbRefactor.Providers
 					           		Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
 									Precision = NullSafeGet<byte>(reader, "NUMERIC_PRECISION"),
 									Radix = NullSafeGet<short>(reader, "NUMERIC_PRECISION_RADIX"),
-									IsNull = reader["IS_NULLABLE"].ToString() == "YES"
+									DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
 					           	};
 					providers.Add(GetTypesMap(data)[data.DataType].Compile().Invoke());
 				}
 			}
+			foreach (var provider in providers)
+			{
+				if (IsPrimaryKey(table, provider.Name))
+				{
+					provider.AddProperty(new PrimaryKeyProvider());
+				}
+				else if (!IsNull(table, provider.Name))
+				{
+					provider.AddProperty(new NotNullProvider());
+				}
 
+				if (IsIdentity(table, provider.Name))
+				{
+					provider.AddProperty(new IdentityProvider());
+				}
+
+				if (IsUnique(table, provider.Name))
+				{
+					provider.AddProperty(new UniqueProvider());
+				}
+			}
 			return providers;
 		}
 
+		private object GetDefaultValue(object databaseValue)
+		{
+			return databaseValue == DBNull.Value ? null : databaseValue;
+		}
+
+		private bool IsIdentity(string table, string column)
+		{
+			return Convert.ToBoolean(ExecuteScalar(@"SELECT COLUMNPROPERTY(OBJECT_ID('{0}'),'{1}','IsIdentity')", table, column));
+		}
+
+		private bool IsNull(string table, string column)
+		{
+			return Convert.ToBoolean(ExecuteScalar(@"SELECT COLUMNPROPERTY(OBJECT_ID('{0}'),'{1}','AllowsNull')", table, column));
+		}
+		
 		private static T? NullSafeGet<T>(IDataRecord reader, string name)
 			where T: struct
 		{
@@ -690,7 +741,7 @@ namespace DbRefactor.Providers
 
 			public int? Radix { get; set; }
 
-			public bool IsNull { get; set;}
+			public object DefaultValue { get; set; }
 		}
 
 		private static ColumnProvider GetProvider(string type)

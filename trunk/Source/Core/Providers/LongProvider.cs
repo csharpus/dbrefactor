@@ -5,8 +5,12 @@ namespace DbRefactor.Providers
 {
 	public class LongProvider : ColumnProvider
 	{
-		public LongProvider(string name) : base(name)
+		private long? defaultValue = null;
+
+		public LongProvider(string name, object defaultValue) : base(name)
 		{
+			if (defaultValue != null)
+				this.defaultValue = Convert.ToInt64(defaultValue);
 		}
 
 		public override Expression<Action<NewTable>> Method()

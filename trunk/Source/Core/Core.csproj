@@ -90,6 +90,7 @@
     <Compile Include="Providers\IDatabaseEnvironment.cs" />
     <Compile Include="Providers\IntProvider.cs" />
     <Compile Include="Providers\LongProvider.cs" />
+    <Compile Include="Providers\NotNullProvider.cs" />
     <Compile Include="Providers\ProviderFactory.cs" />
     <Compile Include="Providers\SqlServerEnvironment.cs" />
     <Compile Include="Providers\StringProvider.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="Providers\TransformationProvider.cs" />
     <Compile Include="Providers\TypeToSqlProviders\SQLServerTypeToSqlProvider.cs" />
     <Compile Include="Attributes.cs" />
+    <Compile Include="Providers\UniqueProvider.cs" />
     <Compile Include="Table\ActionTable.cs" />
     <Compile Include="Table\NewTable.cs" />
     <Compile Include="Table\Table.cs" />

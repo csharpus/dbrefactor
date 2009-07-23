@@ -1,4 +1,7 @@
 ﻿using System;
+using System.CodeDom;
+using System.CodeDom.Compiler;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using DbRefactor.Providers;
@@ -104,7 +107,7 @@ namespace DbRefactor.Tests.Integration
 	[TX] [text] COLLATE Cyrillic_General_CI_AS NULL,
 	[TS] [timestamp] NULL,
 	[TI] [tinyint] NULL,
-	[UI] [uniqueidentifier] NULL,
+	[UI] [uniqueidentifier] NOT NULL,
 	[VB] [varbinary](50) NULL,
 	[VM] [varbinary](max) NULL,
 	[VC] [varchar](50) COLLATE Cyrillic_General_CI_AS NULL,
@@ -117,28 +120,62 @@ namespace DbRefactor.Tests.Integration
 			foreach (var columnProvider in providers)
 			{
 				var value = columnProvider.MethodName();
-				values += value;
+				values += "." + value + "()";
+				foreach (var property in columnProvider.Properties)
+				{
+					values += "." + property.MethodName() + "()";
+				}
+				values += Environment.NewLine;
 			}
+			values += ";";
 			Console.Write(values);
 		}
 
 		[Test]
 		public void should_generate_method_call_from_lambda()
 		{
-			var longProvider = new LongProvider("ColumnName");
+			var longProvider = new LongProvider("ColumnName", 1);
 			var methodCall = longProvider.Method().Body as MethodCallExpression;
 			string methodName = methodCall.Method.Name;
 			var arguments = methodCall.Arguments.Select(a => ObtainValue(a)).ToArray();
 			string methodArguments = String.Join(", ", arguments);
 			string methodValue = String.Format("{0}({1})", methodName, methodArguments);
 			Assert.That(methodValue, Is.EqualTo("Long(\"ColumnName\")"));
+			//Assert.That(ToCsharpString(new DateTime()), Is.EqualTo("4m"));
+			//Assert.That(ToCsharpStringComplex(new[] { "1" }), Is.EqualTo("4m"));
 		}
 
 		public string ObtainValue(Expression expression)
 		{
 			object value = ValueFromExpression(expression);
-			string stringValue = value.ToString();
-			return (value is string) ? "\"" + stringValue + "\"" : stringValue;
+			//string stringValue = value.ToString();
+			//return (value is string) ? "\"" + stringValue + "\"" : stringValue;
+
+			return ToCsharpString(value);
+		}
+
+		private string ToCsharpStringComplex(object value)
+		{
+			CodeDomProvider cs = CodeDomProvider.CreateProvider("CSharp");
+			var p = new CodeObjectCreateExpression(typeof(string[]), new CodePrimitiveExpression("a"));
+			CodeGeneratorOptions options = new CodeGeneratorOptions();
+			options.BracingStyle = "C";
+			options.IndentString = "  ";
+			var writer = new StringWriter();
+			cs.GenerateCodeFromExpression(p, writer, options);
+			return writer.ToString();
+		}
+
+		private string ToCsharpString(object value)
+		{
+			CodeDomProvider cs = CodeDomProvider.CreateProvider("CSharp");
+			CodePrimitiveExpression p = new CodePrimitiveExpression(value);
+			CodeGeneratorOptions options = new CodeGeneratorOptions();
+			options.BracingStyle = "C";
+			options.IndentString = "  ";
+			var writer = new StringWriter();
+			cs.GenerateCodeFromExpression(p, writer, options);
+			return writer.ToString();
 		}
 
 		private object ValueFromExpression(Expression expression)
