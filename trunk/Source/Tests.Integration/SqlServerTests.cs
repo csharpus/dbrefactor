@@ -1,12 +1,15 @@
 ﻿using System;
 using System.CodeDom;
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using DbRefactor.Providers;
+using DbRefactor.Providers.Columns;
 using DbRefactor.Tools;
 using NUnit.Framework;
+using Rhino.Mocks;
 
 namespace DbRefactor.Tests.Integration
 {
@@ -55,7 +58,7 @@ namespace DbRefactor.Tests.Integration
 		{
 			CreateMigration<CreateTableMigration>().Up();
 			CreateMigration<AddColumnMigration>().Up();
-			
+
 			Assert.That(provider.ColumnExists("Test", "Name"), Is.True);
 		}
 
@@ -73,7 +76,7 @@ namespace DbRefactor.Tests.Integration
 		{
 			CreateMigration<CreateTableMigration>().Up();
 			CreateMigration<CreateForeignKeyMigration>().Up();
-			
+
 			Assert.That(provider.ConstraintExists("FK_Dependent_Test", "Test"), Is.True);
 		}
 
@@ -82,8 +85,11 @@ namespace DbRefactor.Tests.Integration
 		{
 			//var dumper = new SchemaDumper(@"Data Source=.\SQLEXPRESS;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
 			//dumper.Dump();
+
 			#region CreateTable
-			provider.ExecuteNonQuery(@"CREATE TABLE [dbo].[Table1](
+
+			provider.ExecuteNonQuery(
+				@"CREATE TABLE [dbo].[Table1](
 	[BI] [bigint] NULL,
 	[BN] [binary](50) NULL,
 	[BT] [bit] NULL,
@@ -114,18 +120,19 @@ namespace DbRefactor.Tests.Integration
 	[VR] [varchar](max) COLLATE Cyrillic_General_CI_AS NULL,
 	[XL] [xml] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]");
+
 			#endregion
+
 			var providers = provider.GetColumnProviders("Table1");
 			string values = String.Empty;
 			foreach (var columnProvider in providers)
 			{
-				var value = columnProvider.MethodName();
-				values += "." + value + "()";
+				var value = GetMethodValue(columnProvider);
+				values += Environment.NewLine + "." + value;
 				foreach (var property in columnProvider.Properties)
 				{
 					values += "." + property.MethodName() + "()";
 				}
-				values += Environment.NewLine;
 			}
 			values += ";";
 			Console.Write(values);
@@ -134,15 +141,36 @@ namespace DbRefactor.Tests.Integration
 		[Test]
 		public void should_generate_method_call_from_lambda()
 		{
-			var longProvider = new LongProvider("ColumnName", 1);
-			var methodCall = longProvider.Method().Body as MethodCallExpression;
-			string methodName = methodCall.Method.Name;
-			var arguments = methodCall.Arguments.Select(a => ObtainValue(a)).ToArray();
-			string methodArguments = String.Join(", ", arguments);
-			string methodValue = String.Format("{0}({1})", methodName, methodArguments);
+			var codeGenerationService = MockRepository.GenerateMock<ICodeGenerationService>();
+			codeGenerationService.Expect(s => s.PrimitiveValue(1)).Return("1");
+			var longProvider = new LongProvider("ColumnName", 1, codeGenerationService);
+			string methodValue = GetMethodValue(longProvider);
 			Assert.That(methodValue, Is.EqualTo("Long(\"ColumnName\")"));
 			//Assert.That(ToCsharpString(new DateTime()), Is.EqualTo("4m"));
 			//Assert.That(ToCsharpStringComplex(new[] { "1" }), Is.EqualTo("4m"));
+		}
+
+		private string GetMethodValue(ColumnProvider columnProvider)
+		{
+			var methodCall = columnProvider.Method().Body as MethodCallExpression;
+			string methodName = methodCall.Method.Name;
+			
+			IList<Expression> argumentsList;
+			if (methodCall.Method.IsStatic)
+			{
+				argumentsList = methodCall.Arguments.Skip(1).ToList();
+			}
+			else
+			{
+				argumentsList = methodCall.Arguments.ToList();
+			}
+			var arguments = argumentsList.Select(a => ObtainValue(a)).ToArray();
+			string methodArguments = String.Join(", ", arguments);
+			if (columnProvider.HasDefaultValue)
+			{
+				methodArguments += ", " + columnProvider.GetDefaultValueCode();
+			}
+			return String.Format("{0}({1})", methodName, methodArguments);
 		}
 
 		public string ObtainValue(Expression expression)
@@ -151,41 +179,27 @@ namespace DbRefactor.Tests.Integration
 			//string stringValue = value.ToString();
 			//return (value is string) ? "\"" + stringValue + "\"" : stringValue;
 
-			return ToCsharpString(value);
+			return ReflectionHelper.ToCsharpString(value);
 		}
 
 		private string ToCsharpStringComplex(object value)
 		{
 			CodeDomProvider cs = CodeDomProvider.CreateProvider("CSharp");
-			var p = new CodeObjectCreateExpression(typeof(string[]), new CodePrimitiveExpression("a"));
-			CodeGeneratorOptions options = new CodeGeneratorOptions();
-			options.BracingStyle = "C";
-			options.IndentString = "  ";
+			var p = new CodeObjectCreateExpression(typeof (string[]), new CodePrimitiveExpression("a"));
+			var options = new CodeGeneratorOptions {BracingStyle = "C", IndentString = "  "};
 			var writer = new StringWriter();
 			cs.GenerateCodeFromExpression(p, writer, options);
 			return writer.ToString();
 		}
 
-		private string ToCsharpString(object value)
-		{
-			CodeDomProvider cs = CodeDomProvider.CreateProvider("CSharp");
-			CodePrimitiveExpression p = new CodePrimitiveExpression(value);
-			CodeGeneratorOptions options = new CodeGeneratorOptions();
-			options.BracingStyle = "C";
-			options.IndentString = "  ";
-			var writer = new StringWriter();
-			cs.GenerateCodeFromExpression(p, writer, options);
-			return writer.ToString();
-		}
-
-		private object ValueFromExpression(Expression expression)
+		private static object ValueFromExpression(Expression expression)
 		{
 			if (expression is ConstantExpression)
 			{
 				return (expression as ConstantExpression).Value;
 			}
 			var lambda = Expression.Lambda<Func<object>>(
-				Expression.Convert(expression, typeof(object)),
+				Expression.Convert(expression, typeof (object)),
 				new ParameterExpression[0]);
 			return lambda.Compile()();
 		}
@@ -202,7 +216,7 @@ namespace DbRefactor.Tests.Integration
 		private TMigration CreateMigration<TMigration>()
 			where TMigration : Migration, new()
 		{
-			return new TMigration { TransformationProvider = provider };
+			return new TMigration {TransformationProvider = provider};
 		}
 
 		[SetUp]
@@ -222,7 +236,8 @@ namespace DbRefactor.Tests.Integration
 
 		private void CreateProvider()
 		{
-			provider = new TransformationProvider(new SqlServerEnvironment(@"Data Source=.\SQLEXPRESS;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI"));
+			provider =
+				new ProviderFactory().Create(@"Data Source=.\SQLEXPRESS;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
 		}
 
 		// private Migration CreateMigration(Func<)
@@ -232,7 +247,6 @@ namespace DbRefactor.Tests.Integration
 	{
 		public override void Down()
 		{
-			
 		}
 	}
 }

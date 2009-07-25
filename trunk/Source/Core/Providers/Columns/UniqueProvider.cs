@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 
-namespace DbRefactor.Providers
+namespace DbRefactor.Providers.Columns
 {
 	public class UniqueProvider : PropertyProvider
 	{

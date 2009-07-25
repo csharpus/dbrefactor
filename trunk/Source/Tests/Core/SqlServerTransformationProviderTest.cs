@@ -22,7 +22,7 @@ namespace DbRefactor.Tests.Core
 			mockery = new MockRepository();
 			Rreader = mockery.CreateMock<IDataReader>();
 			Renvironment = mockery.CreateMock<IDatabaseEnvironment>();
-			_provider = new TransformationProvider(Renvironment);
+			_provider = new TransformationProvider(Renvironment, null);
 
 			Expect.Call(Rreader.Dispose).Repeat.Any();
 		}

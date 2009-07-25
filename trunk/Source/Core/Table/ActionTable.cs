@@ -9,6 +9,8 @@ namespace DbRefactor
 {
 	public partial class ActionTable: Table
 	{
+		private readonly TransformationProvider provider;
+
 		private enum Operation
 		{
 			None,
@@ -42,8 +44,9 @@ namespace DbRefactor
 		private object operationParameters = null;
         private Operation operation = Operation.None;
 		
-		public ActionTable(IDatabaseEnvironment environment, string tableName) : base(environment, tableName)
+		public ActionTable(TransformationProvider provider, string tableName) : base(provider, tableName)
 		{
+			this.provider = provider;
 			columnValues = new List<string>();
 			columns = ColumnsCollection.Create();
 		}
@@ -113,7 +116,6 @@ namespace DbRefactor
 		/// <returns></returns>
 		public T SelectScalar<T>(string what, object where)
 		{
-			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
 			List<string> crieriaParamList = ParametersHelper.GetParameters(where);
 			return (T)provider.SelectScalar(what, TableName, String.Join(" AND ", crieriaParamList.ToArray())); ;
 		}
@@ -126,7 +128,6 @@ namespace DbRefactor
 		/// <returns></returns>
 		public IDataReader Select(string what, object where)
 		{
-			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
 			List<string> crieriaParamList = ParametersHelper.GetParameters(where);
 			return provider.Select(what, TableName, String.Join(" AND ", crieriaParamList.ToArray())); ;
 		}
@@ -166,12 +167,12 @@ namespace DbRefactor
 
 		public AlterColumnTable AlterColumn()
 		{
-			return new AlterColumnTable(TableName, databaseEnvironment);
+			return new AlterColumnTable(TableName, provider);
 		}
 
 		public AddColumnTable AddColumn()
 		{
-			return new AddColumnTable(TableName, databaseEnvironment);
+			return new AddColumnTable(TableName, provider);
 		}
 
 		public void RemoveColumnConstraints(string column)
@@ -228,8 +229,6 @@ namespace DbRefactor
 			Check.Ensure(operation != Operation.None, "The operation has not been set.");
 			Check.Ensure(columnValues.Count != 0, "Values have not been set.");
 
-			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
-
 			if (operation == Operation.Insert)
 			{
 				provider.Insert(TableName, columnValues.ToArray());
@@ -254,7 +253,6 @@ namespace DbRefactor
 		{
 			Check.Ensure(operation != Operation.None, "The operation has not been set.");
 
-			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
 			switch (operation)
 			{
 				case Operation.AlterColumn:
@@ -324,335 +322,4 @@ namespace DbRefactor
 				columnValues.Add(parameter);
 		}
 	}
-
-	public class AlterColumnTable
-	{
-		private readonly string name;
-		private readonly IDatabaseEnvironment environment;
-		private Column column;
-
-		public AlterColumnTable(string name, IDatabaseEnvironment environment)
-		{
-			this.name = name;
-			this.environment = environment;
-		}
-
-		#region Column types
-
-		public AlterColumnTable String(string columnName, int size)
-		{
-			column = Column.String(columnName, size);
-			return this;
-		}
-
-		public AlterColumnTable String(string columnName, int size, string defaultValue)
-		{
-			column = Column.String(columnName, size, defaultValue);
-			return this;
-		}
-
-		public AlterColumnTable Text(string columnName)
-		{
-			column = Column.Text(columnName);
-			return this;
-		}
-
-		public AlterColumnTable Text(string columnName, string defaultValue)
-		{
-			column = Column.Text(columnName, defaultValue);
-			return this;
-		}
-
-		public AlterColumnTable Int(string columnName)
-		{
-			column = Column.Int(columnName);
-			return this;
-		}
-
-		public AlterColumnTable Int(string columnName, int defaultValue)
-		{
-			column = Column.Int(columnName, defaultValue);
-			return this;
-		}
-
-		public AlterColumnTable Long(string columnName)
-		{
-			column = Column.Long(columnName);
-			return this;
-		}
-
-		public AlterColumnTable Long(string columnName, long defaultValue)
-		{
-			column = Column.Long(columnName, defaultValue);
-			return this;
-		}
-
-		public AlterColumnTable DateTime(string columnName)
-		{
-			column = Column.DateTime(columnName);
-			return this;
-		}
-
-		public AlterColumnTable DateTime(string columnName, DateTime defaultValue)
-		{
-			column = Column.DateTime(columnName, defaultValue);
-			return this;
-		}
-
-		public AlterColumnTable Decimal(string columnName)
-		{
-			column = Column.Decimal(columnName);
-			return this;
-		}
-
-		public AlterColumnTable Decimal(string columnName, int whole, int remainder)
-		{
-			column = Column.Decimal(columnName, whole, remainder);
-			return this;
-		}
-
-		public AlterColumnTable Decimal(string columnName, decimal defaultValue)
-		{
-			column = Column.Decimal(columnName, defaultValue);
-			return this;
-		}
-
-		public AlterColumnTable Decimal(string columnName, int whole, int remainder, decimal defaultValue)
-		{
-			column = Column.Decimal(columnName, whole, remainder, defaultValue);
-			return this;
-		}
-
-		public AlterColumnTable Boolean(string columnName)
-		{
-			column = Column.Boolean(columnName);
-			return this;
-		}
-
-		public AlterColumnTable Boolean(string columnName, bool defaultValue)
-		{
-			column = Column.Boolean(columnName, defaultValue);
-			return this;
-		}
-
-		#endregion Column types
-
-		#region Column properties
-
-		public AlterColumnTable Identity()
-		{
-			column.ColumnProperty |= ColumnProperties.Identity;
-			return this;
-		}
-
-		public AlterColumnTable Indexed()
-		{
-			column.ColumnProperty |= ColumnProperties.Indexed;
-			return this;
-		}
-
-		public AlterColumnTable NotNull()
-		{
-			column.ColumnProperty |= ColumnProperties.NotNull;
-			return this;
-		}
-
-		public AlterColumnTable Null()
-		{
-			column.ColumnProperty |= ColumnProperties.Null;
-			return this;
-		}
-
-		public AlterColumnTable PrimaryKey()
-		{
-			column.ColumnProperty |= ColumnProperties.PrimaryKey;
-			return this;
-		}
-
-		public AlterColumnTable PrimaryKeyWithIdentity()
-		{
-			column.ColumnProperty |= ColumnProperties.PrimaryKeyWithIdentity;
-			return this;
-		}
-
-		public AlterColumnTable Unique()
-		{
-			column.ColumnProperty |= ColumnProperties.Unique;
-			return this;
-		}
-
-		#endregion Column properties
-
-		public void Execute()
-		{
-			TransformationProvider provider = new TransformationProvider(environment);
-			provider.AlterColumn(name, column);
-		}
-	}
-
-	public class AddColumnTable
-	{
-		private readonly string name;
-		private readonly IDatabaseEnvironment environment;
-		private Column column;
-
-		public AddColumnTable(string name, IDatabaseEnvironment environment)
-		{
-			this.name = name;
-			this.environment = environment;
-		}
-
-		#region Column types
-
-		public AddColumnTable String(string columnName, int size)
-		{
-			column = Column.String(columnName, size);
-			return this;
-		}
-
-		public AddColumnTable String(string columnName, int size, string defaultValue)
-		{
-			column = Column.String(columnName, size, defaultValue);
-			return this;
-		}
-
-		public AddColumnTable Text(string columnName)
-		{
-			column = Column.Text(columnName);
-			return this;
-		}
-
-		public AddColumnTable Text(string columnName, string defaultValue)
-		{
-			column = Column.Text(columnName, defaultValue);
-			return this;
-		}
-
-		public AddColumnTable Int(string columnName)
-		{
-			column = Column.Int(columnName);
-			return this;
-		}
-
-		public AddColumnTable Int(string columnName, int defaultValue)
-		{
-			column = Column.Int(columnName, defaultValue);
-			return this;
-		}
-
-		public AddColumnTable Long(string columnName)
-		{
-			column = Column.Long(columnName);
-			return this;
-		}
-
-		public AddColumnTable Long(string columnName, long defaultValue)
-		{
-			column = Column.Long(columnName, defaultValue);
-			return this;
-		}
-
-		public AddColumnTable DateTime(string columnName)
-		{
-			column = Column.DateTime(columnName);
-			return this;
-		}
-
-		public AddColumnTable DateTime(string columnName, DateTime defaultValue)
-		{
-			column = Column.DateTime(columnName, defaultValue);
-			return this;
-		}
-
-		public AddColumnTable Decimal(string columnName)
-		{
-			column = Column.Decimal(columnName);
-			return this;
-		}
-
-		public AddColumnTable Decimal(string columnName, int whole, int remainder)
-		{
-			column = Column.Decimal(columnName, whole, remainder);
-			return this;
-		}
-
-		public AddColumnTable Decimal(string columnName, decimal defaultValue)
-		{
-			column = Column.Decimal(columnName, defaultValue);
-			return this;
-		}
-
-		public AddColumnTable Decimal(string columnName, int whole, int remainder, decimal defaultValue)
-		{
-			column = Column.Decimal(columnName, whole, remainder, defaultValue);
-			return this;
-		}
-
-		public AddColumnTable Boolean(string columnName)
-		{
-			column = Column.Boolean(columnName);
-			return this;
-		}
-
-		public AddColumnTable Boolean(string columnName, bool defaultValue)
-		{
-			column = Column.Boolean(columnName, defaultValue);
-			return this;
-		}
-
-		#endregion Column types
-
-		#region Column properties
-
-		public AddColumnTable Identity()
-		{
-			column.ColumnProperty |= ColumnProperties.Identity;
-			return this;
-		}
-
-		public AddColumnTable Indexed()
-		{
-			column.ColumnProperty |= ColumnProperties.Indexed;
-			return this;
-		}
-
-		public AddColumnTable NotNull()
-		{
-			column.ColumnProperty |= ColumnProperties.NotNull;
-			return this;
-		}
-
-		public AddColumnTable Null()
-		{
-			column.ColumnProperty |= ColumnProperties.Null;
-			return this;
-		}
-
-		public AddColumnTable PrimaryKey()
-		{
-			column.ColumnProperty |= ColumnProperties.PrimaryKey;
-			return this;
-		}
-
-		public AddColumnTable PrimaryKeyWithIdentity()
-		{
-			column.ColumnProperty |= ColumnProperties.PrimaryKeyWithIdentity;
-			return this;
-		}
-
-		public AddColumnTable Unique()
-		{
-			column.ColumnProperty |= ColumnProperties.Unique;
-			return this;
-		}
-
-		#endregion Column properties
-
-		public void Execute()
-		{
-			TransformationProvider provider = new TransformationProvider(environment);
-			provider.AddColumn(name, column);
-		}
-	}
-
 }

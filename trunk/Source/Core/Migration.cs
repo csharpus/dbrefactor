@@ -258,12 +258,12 @@ namespace DbRefactor
 
 		public override NewTable CreateTable(string tableName)
 		{
-			return new NewTable(TransformationProvider.Environment, tableName);
+			return new NewTable(TransformationProvider, tableName);
 		}
 
 		public override ActionTable Table(string tableName)
 		{
-			return new ActionTable(TransformationProvider.Environment, tableName);
+			return new ActionTable(TransformationProvider, tableName);
 		}
 	}
 }

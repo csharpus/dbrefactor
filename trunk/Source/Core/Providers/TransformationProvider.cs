@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
+using DbRefactor.Providers.Columns;
 using System.Resources;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Tools.DesignByContract;
@@ -29,23 +30,20 @@ namespace DbRefactor.Providers
 	/// </summary>
 	public sealed class TransformationProvider
 	{
-		public static TransformationProvider CreateSqlProvider(string connectionString)
-		{
-			return new TransformationProvider(new SqlServerEnvironment(connectionString));
-		}
-
 		private Tools.Loggers.ILogger _logger = new Tools.Loggers.Logger(false);
 
-		private readonly IDatabaseEnvironment _environment;
+		private readonly IDatabaseEnvironment environment;
+		private readonly ColumnProviderFactory columnFactory;
 
-		internal TransformationProvider(IDatabaseEnvironment environment)
+		internal TransformationProvider(IDatabaseEnvironment environment, ColumnProviderFactory columnProviderFactory)
 		{
-			_environment = environment;
+			this.environment = environment;
+			this.columnFactory = columnProviderFactory;
 		}
 
 		internal IDatabaseEnvironment Environment
 		{
-			get { return _environment; }
+			get { return environment; }
 		}
 
 		/// <summary>
@@ -593,7 +591,7 @@ namespace DbRefactor.Providers
 
 		public string[] GetTables()
 		{
-			List<string> tables = new List<string>();
+			var tables = new List<string>();
 
 			using (IDataReader reader =
 				ExecuteQuery("SELECT name FROM sysobjects WHERE xtype = 'U'"))
@@ -606,36 +604,36 @@ namespace DbRefactor.Providers
 			return tables.ToArray();
 		}
 
-		private Dictionary<string, Expression<Func<ColumnProvider>>> GetTypesMap(ColumnData data)
+		private Dictionary<string, Func<ColumnData, ColumnProvider>> GetTypesMap(ColumnData data)
 		{
-			return new Dictionary<string, Expression<Func<ColumnProvider>>>
+			return new Dictionary<string, Func<ColumnData, ColumnProvider>>
 			       	{
-			       		{"bigint", () => new LongProvider(data.Name, data.DefaultValue)},
-			       		{"binary", () => new ColumnProvider(data.Name)},
-			       		{"bit", () => new BooleanProvider(data.Name)},
-			       		{"char", () => new StringProvider(data.Name, data.Length.Value)},
-			       		{"datetime", () => new DateTimeProvider(data.Name)},
-			       		{"decimal", () => new DecimalProvider(data.Name, data.Precision.Value, data.Radix.Value)},
-			       		{"float", () => new ColumnProvider(data.Name)},
-			       		{"image", () => new ColumnProvider(data.Name)},
-			       		{"int", () => new IntProvider(data.Name)},
-			       		{"money", () => new DecimalProvider(data.Name, data.Precision.Value, data.Radix.Value)},
-			       		{"nchar", () => new StringProvider(data.Name, data.Length.Value)},
-			       		{"ntext", () => new TextProvider(data.Name)},
-			       		{"numeric", () => new DecimalProvider(data.Name, data.Precision.Value, data.Radix.Value)},
-			       		{"nvarchar", () => new StringProvider(data.Name, data.Length.Value)},
-			       		{"real", () => new ColumnProvider(data.Name)},
-			       		{"smalldatetime", () => new DateTimeProvider(data.Name)},
-			       		{"smallint", () => new IntProvider(data.Name)},
-			       		{"smallmoney", () => new DecimalProvider(data.Name, data.Precision.Value, data.Radix.Value)},
-			       		{"sql_variant", () => new ColumnProvider(data.Name)},
-			       		{"text", () => new TextProvider(data.Name)},
-			       		{"timestamp", () => new DateTimeProvider(data.Name)},
-			       		{"tinyint", () => new IntProvider(data.Name)},
-			       		{"uniqueidentifier", () => new StringProvider(data.Name, GUID_LENGTH)},
-			       		{"varbinary", () => new ColumnProvider(data.Name)},
-			       		{"varchar", () => new StringProvider(data.Name, data.Length.Value)},
-			       		{"xml", () => new TextProvider(data.Name)}
+			       		{"bigint", columnFactory.CreateLong },
+			       		{"binary", columnFactory.CreateBinary },
+			       		{"bit", columnFactory.CreateBoolean},
+			       		{"char", columnFactory.CreateString},
+			       		{"datetime", columnFactory.CreateDateTime},
+			       		{"decimal", columnFactory.CreateDecimal},
+			       		{"float", columnFactory.CreateFloat},
+			       		{"image", columnFactory.CreateBinary},
+			       		{"int", columnFactory.CreateInt},
+			       		{"money", columnFactory.CreateDecimal},
+			       		{"nchar", columnFactory.CreateString},
+			       		{"ntext", columnFactory.CreateText},
+			       		{"numeric", columnFactory.CreateDecimal},
+			       		{"nvarchar", columnFactory.CreateString},
+			       		{"real", columnFactory.CreateFloat},
+			       		{"smalldatetime", columnFactory.CreateDateTime},
+			       		{"smallint", columnFactory.CreateInt},
+			       		{"smallmoney", columnFactory.CreateDecimal},
+			       		{"sql_variant", columnFactory.CreateBinary},
+			       		{"text", columnFactory.CreateText},
+			       		{"timestamp", columnFactory.CreateDateTime},
+			       		{"tinyint", columnFactory.CreateInt},
+			       		{"uniqueidentifier", columnFactory.CreateString},
+			       		{"varbinary", columnFactory.CreateBinary},
+			       		{"varchar", columnFactory.CreateString},
+			       		{"xml", columnFactory.CreateString}
 			       	};
 		}
 
@@ -661,7 +659,6 @@ namespace DbRefactor.Providers
 		{
 			var providers = new List<ColumnProvider>();
 
-
 			using (
 				IDataReader reader =
 					ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}';", table))
@@ -677,7 +674,7 @@ namespace DbRefactor.Providers
 									Radix = NullSafeGet<short>(reader, "NUMERIC_PRECISION_RADIX"),
 									DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
 					           	};
-					providers.Add(GetTypesMap(data)[data.DataType].Compile().Invoke());
+					providers.Add(GetTypesMap(data)[data.DataType](data));
 				}
 			}
 			foreach (var provider in providers)
@@ -730,26 +727,6 @@ namespace DbRefactor.Providers
 			return (T) value;
 		}
 
-		private class ColumnData
-		{
-			public string DataType { get; set; }
-
-			public string Name { get; set; }
-
-			public int? Length { get; set; }
-
-			public int? Precision { get; set; }
-
-			public int? Radix { get; set; }
-
-			public object DefaultValue { get; set; }
-		}
-
-		private static ColumnProvider GetProvider(string type)
-		{
-			return new ColumnProvider(null);
-		}
-
 		public Column[] GetColumns(string table)
 		{
 			Check.RequireNonEmpty(table, "table");
@@ -771,7 +748,7 @@ namespace DbRefactor.Providers
 		public int ExecuteNonQuery(string sql, params string[] values)
 		{
 			Check.RequireNonEmpty(sql, "sql");
-			return _environment.ExecuteNonQuery(String.Format(sql, values));
+			return environment.ExecuteNonQuery(String.Format(sql, values));
 		}
 
 		/// <summary>
@@ -783,14 +760,14 @@ namespace DbRefactor.Providers
 		public IDataReader ExecuteQuery(string sql, params string[] values)
 		{
 			Check.RequireNonEmpty(sql, "sql");
-			return _environment.ExecuteQuery(String.Format(sql, values));
+			return environment.ExecuteQuery(String.Format(sql, values));
 		}
 
 
 
 		public object ExecuteScalar(string sql, params string[] values)
 		{
-			return _environment.ExecuteScalar(String.Format(sql, values));
+			return environment.ExecuteScalar(String.Format(sql, values));
 		}
 
 		public IDataReader Select(string what, string from)
@@ -884,7 +861,7 @@ namespace DbRefactor.Providers
 		/// </summary>
 		public void BeginTransaction()
 		{
-			_environment.BeginTransaction();
+			environment.BeginTransaction();
 		}
 
 		/// <summary>
@@ -892,7 +869,7 @@ namespace DbRefactor.Providers
 		/// </summary>
 		public void Rollback()
 		{
-			_environment.RollbackTransaction();
+			environment.RollbackTransaction();
 		}
 
 		/// <summary>
@@ -900,7 +877,7 @@ namespace DbRefactor.Providers
 		/// </summary>
 		public void Commit()
 		{
-			_environment.CommitTransaction();
+			environment.CommitTransaction();
 		}
 
 		private string _category;
@@ -967,7 +944,7 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(fileName, "fileName");
 			string content = File.ReadAllText(fileName);
-			_environment.ExecuteNonQuery(content);
+			environment.ExecuteNonQuery(content);
 		}
 
 		public void ExecuteResource(string assemblyName, string filePath)
@@ -983,12 +960,12 @@ namespace DbRefactor.Providers
 				if (stream == null)
 					throw new Exception("Could not locate embedded resource '" + filePath + "' in assembly '" + assemblyName + "'");
 
-				string script = String.Empty;
-				using (StreamReader streamReader = new StreamReader(stream)) 
+				string script;
+				using (var streamReader = new StreamReader(stream)) 
 				{
 					script = streamReader.ReadToEnd();
 				}
-				_environment.ExecuteNonQuery(script);
+				environment.ExecuteNonQuery(script);
 				
 			}
 			catch (Exception e)
@@ -1013,5 +990,20 @@ namespace DbRefactor.Providers
 		}
 
 		#endregion
+	}
+
+	public class ColumnData
+	{
+		public string DataType { get; set; }
+
+		public string Name { get; set; }
+
+		public int? Length { get; set; }
+
+		public int? Precision { get; set; }
+
+		public int? Radix { get; set; }
+
+		public object DefaultValue { get; set; }
 	}
 }

@@ -5,109 +5,114 @@ namespace DbRefactor
 {
 	public class NewTable : Table
 	{
-		private ColumnsCollection columns;
+		private readonly ColumnsCollection columns;
 
-		public NewTable(IDatabaseEnvironment environment, string tableName): base(environment, tableName)
+		public NewTable(TransformationProvider provider, string tableName): base(provider, tableName)
 		{
 			columns = ColumnsCollection.Create();
+		}
+
+		internal ColumnsCollection Columns
+		{
+			get { return columns; }
 		}
 
 		#region Column types
 
 		public NewTable String(string columnName, int size)
 		{
-			columns.String(columnName, size);
+			Columns.String(columnName, size);
 			return this;
 		}
 
 		public NewTable String(string columnName, int size, string defaultValue)
 		{
-			columns.String(columnName, size, defaultValue);
+			Columns.String(columnName, size, defaultValue);
 			return this;
 		}
 
 		public NewTable Text(string columnName)
 		{
-			columns.Text(columnName);
+			Columns.Text(columnName);
 			return this;
 		}
 
 		public NewTable Text(string columnName, string defaultValue)
 		{
-			columns.Text(columnName, defaultValue);
+			Columns.Text(columnName, defaultValue);
 			return this;
 		}
 
 		public NewTable Int(string columnName)
 		{
-			columns.Int(columnName);
+			Columns.Int(columnName);
 			return this;
 		}
 
 		public NewTable Int(string columnName, int defaultValue)
 		{
-			columns.Int(columnName, defaultValue);
+			Columns.Int(columnName, defaultValue);
 			return this;
 		}
 
 		public NewTable Long(string columnName)
 		{
-			columns.Long(columnName);
+			Columns.Long(columnName);
 			return this;
 		}
 
 		public NewTable Long(string columnName, long defaultValue)
 		{
-			columns.Long(columnName, defaultValue);
+			Columns.Long(columnName, defaultValue);
 			return this;
 		}
 
 		public NewTable DateTime(string columnName)
 		{
-			columns.DateTime(columnName);
+			Columns.DateTime(columnName);
 			return this;
 		}
 
 		public NewTable DateTime(string columnName, DateTime defaultValue)
 		{
-			columns.DateTime(columnName, defaultValue);
+			Columns.DateTime(columnName, defaultValue);
 			return this;
 		}
 
 
 		public NewTable Decimal(string columnName)
 		{
-			columns.Decimal(columnName);
+			Columns.Decimal(columnName);
 			return this;
 		}
 
 		public NewTable Decimal(string columnName, int whole, int remainder)
 		{
-			columns.Decimal(columnName, whole, remainder);
+			Columns.Decimal(columnName, whole, remainder);
 			return this;
 		}
 
 		public NewTable Decimal(string columnName, decimal defaultValue)
 		{
-			columns.Decimal(columnName, defaultValue);
+			Columns.Decimal(columnName, defaultValue);
 			return this;
 		}
 
 		public NewTable Decimal(string columnName, int whole, int remainder, decimal defaultValue)
 		{
-			columns.Decimal(columnName, whole, remainder, defaultValue);
+			Columns.Decimal(columnName, whole, remainder, defaultValue);
 			return this;
 		}
 
 		public NewTable Boolean(string columnName)
 		{
-			columns.Boolean(columnName);
+			Columns.Boolean(columnName);
 			return this;
 		}
 
 		public NewTable Boolean(string columnName, bool defaultValue)
 		{
-			columns.Boolean(columnName, defaultValue);
+			Columns.Boolean(columnName, defaultValue);
 			return this;
 		}
 
@@ -117,43 +122,43 @@ namespace DbRefactor
 
 		public NewTable Identity()
 		{
-			columns.AddProperty(ColumnProperties.Identity);
+			Columns.AddProperty(ColumnProperties.Identity);
 			return this;
 		}
 
 		public NewTable Indexed()
 		{
-			columns.AddProperty(ColumnProperties.Indexed);
+			Columns.AddProperty(ColumnProperties.Indexed);
 			return this;
 		}
 
 		public NewTable NotNull()
 		{
-			columns.AddProperty(ColumnProperties.NotNull);
+			Columns.AddProperty(ColumnProperties.NotNull);
 			return this;
 		}
 
 		public NewTable Null()
 		{
-			columns.AddProperty(ColumnProperties.Null);
+			Columns.AddProperty(ColumnProperties.Null);
 			return this;
 		}
 
 		public NewTable PrimaryKey()
 		{
-			columns.AddProperty(ColumnProperties.PrimaryKey);
+			Columns.AddProperty(ColumnProperties.PrimaryKey);
 			return this;
 		}
 
 		public NewTable PrimaryKeyWithIdentity()
 		{
-			columns.AddProperty(ColumnProperties.PrimaryKeyWithIdentity);
+			Columns.AddProperty(ColumnProperties.PrimaryKeyWithIdentity);
 			return this;
 		}
 
 		public NewTable Unique()
 		{
-			columns.AddProperty(ColumnProperties.Unique);
+			Columns.AddProperty(ColumnProperties.Unique);
 			return this;
 		}
 
@@ -161,8 +166,7 @@ namespace DbRefactor
 
 		public void Execute()
 		{
-			TransformationProvider provider = new TransformationProvider(databaseEnvironment);
-			provider.AddTable(TableName, columns.ToArray());
+			Provider.AddTable(TableName, Columns.ToArray());
 		}
 	}
 }

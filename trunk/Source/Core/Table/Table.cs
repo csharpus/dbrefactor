@@ -4,12 +4,18 @@ namespace DbRefactor
 {
 	public abstract class Table
 	{
+		private readonly TransformationProvider provider;
 		protected IDatabaseEnvironment databaseEnvironment;
 		public string TableName { get; set; }
 
-		protected Table(IDatabaseEnvironment environment, string tableName)
+		protected TransformationProvider Provider
 		{
-			databaseEnvironment = environment;
+			get { return provider; }
+		}
+
+		protected Table(TransformationProvider provider, string tableName)
+		{
+			this.provider = provider;
 			TableName = tableName;
 		}
 

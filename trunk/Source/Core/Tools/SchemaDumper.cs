@@ -9,6 +9,7 @@
 //under the License.
 #endregion
 
+using System;
 using System.IO;
 using DbRefactor.Providers;
 
@@ -41,7 +42,7 @@ namespace DbRefactor.Tools
 				writer.WriteLine("\t\tCreateTable(\"{0}\")", table);
 				foreach (var column in _provider.GetColumns(table))
 				{
-					writer.WriteLine("\t\t\t.String(\"{0}\")", column.Name);
+					writer.WriteLine("\t\t\t." + GenerateColumnCode(column));
 				}
 				writer.WriteLine("\t\t\t.Execute();");
 				writer.WriteLine();
@@ -61,6 +62,11 @@ namespace DbRefactor.Tools
 			writer.WriteLine("}");
 
 			return writer.ToString();
+		}
+
+		private string GenerateColumnCode(Column column)
+		{
+			throw new NotImplementedException();
 		}
 
 		public void DumpTo(string file)

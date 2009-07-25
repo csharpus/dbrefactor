@@ -17,7 +17,7 @@ namespace DbRefactor.Providers
 	{
 		public TransformationProvider Create(string connectionString)
 		{
-			return new TransformationProvider(new SqlServerEnvironment(connectionString));
+			return new TransformationProvider(new SqlServerEnvironment(connectionString), new ColumnProviderFactory(new CodeGenerationService()));
 			//string providerName = GuessProviderName(name);
 
 			//return (TransformationProvider)Activator.CreateInstance(
