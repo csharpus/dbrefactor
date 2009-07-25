@@ -37,8 +37,8 @@ namespace Example
 		public override void Up()
 		{
 			CreateTable("User")
-				.Long("Id").PrimaryKeyWithIdentity()
-				.String("Name", 70).NotNull().Unique().Indexed()
+				.Long("Id").PrimaryKey().Identity()
+				.String("Name", 70).NotNull().Unique()
 				.Boolean("IsRegistered", false)
 				.DateTime("Birthday").NotNull()
 				.Text("Description").Null()
@@ -119,8 +119,7 @@ namespace Example
 		{
 			Table("User").Insert(new {
 				RoleId = Table("Role").SelectScalar<int>("Id", new { Name = "Manager" }), 
-				FirstName = "Robert", 
-				LastName = "Tompson",
+				Name = "Robert Tompson",
 				IsRegistered = true,					
 				Birthday = new DateTime(1982, 4, 20)
 			});
@@ -192,7 +191,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			using (IDataReader reader = ExecuteQuery("select Id, FirstName + ' ' + LastName as 'Name' from [User] where IsRegistered = 0 or PersonalInformation is null"))
+			using (IDataReader reader = ExecuteQuery("select Id, [Name] from [User] where IsRegistered = 0 or PersonalInformation is null"))
 			{
 
 				var systemUsers = new List<string>();
