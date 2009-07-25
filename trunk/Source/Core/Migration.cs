@@ -10,6 +10,8 @@
 #endregion
 
 using System;
+using System.IO;
+using System.Resources;
 using DbRefactor.Compatibility;
 using DbRefactor.Providers;
 using DbRefactor.Tools.Loggers;
@@ -176,6 +178,22 @@ namespace DbRefactor
 		protected IDataReader ExecuteQuery(string sql, params string[] values)
 		{
 			return Database.ExecuteQuery(sql, values);
+		}
+
+		protected void ExecuteFile(string filePath)
+		{
+			Database.ExecuteFile(filePath);
+		}
+
+		/// <summary>
+		/// Extracts an embedded file out of a given assembly.
+		/// </summary>
+		/// <param name="assemblyName">The namespace of you assembly.</param>
+		/// <param name="filePath">The name of the file to extract.</param>
+		/// <returns>A stream containing the file data.</returns>
+		protected void ExecuteResource(string assemblyName, string filePath)
+		{
+			Database.ExecuteResource(assemblyName, filePath);
 		}
 
 		/// <param name="sql">Supports format items to <see cref="string.Format(string,object)"/></param>

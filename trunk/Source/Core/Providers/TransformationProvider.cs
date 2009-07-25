@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
+using System.Resources;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Tools.DesignByContract;
 using System.IO;
@@ -785,6 +786,8 @@ namespace DbRefactor.Providers
 			return _environment.ExecuteQuery(String.Format(sql, values));
 		}
 
+
+
 		public object ExecuteScalar(string sql, params string[] values)
 		{
 			return _environment.ExecuteScalar(String.Format(sql, values));
@@ -963,12 +966,37 @@ namespace DbRefactor.Providers
 		public void ExecuteFile(string fileName)
 		{
 			Check.RequireNonEmpty(fileName, "fileName");
-			using (StreamReader reader = File.OpenText(fileName))
+			string content = File.ReadAllText(fileName);
+			_environment.ExecuteNonQuery(content);
+		}
+
+		public void ExecuteResource(string assemblyName, string filePath)
+		{
+			Check.RequireNonEmpty(assemblyName, "assemblyName");
+			Check.RequireNonEmpty(filePath, "filePath");
+
+			try
 			{
-				string content = reader.ReadToEnd();
-				_environment.ExecuteNonQuery(content);
+				System.Reflection.Assembly a = System.Reflection.Assembly.Load(assemblyName);
+				Stream stream = a.GetManifestResourceStream(filePath);
+
+				if (stream == null)
+					throw new Exception("Could not locate embedded resource '" + filePath + "' in assembly '" + assemblyName + "'");
+
+				string script = String.Empty;
+				using (StreamReader streamReader = new StreamReader(stream)) 
+				{
+					script = streamReader.ReadToEnd();
+				}
+				_environment.ExecuteNonQuery(script);
+				
+			}
+			catch (Exception e)
+			{
+				throw new Exception(assemblyName + ": " + e.Message);
 			}
 		}
+
 
 		#region Obsolete
 

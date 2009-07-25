@@ -68,6 +68,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="ScriptFiles\013\CreateProcedure_GetAllRoles.sql" />
+    <None Include="ScriptFiles\013\DropProcedure_GetAllRoles.sql" />
+    <EmbeddedResource Include="ScriptFiles\014\DropProcedure_GetAllUsers.sql" />
+    <EmbeddedResource Include="ScriptFiles\014\CreateProcedure_GetAllUsers.sql" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\core\Core.csproj">

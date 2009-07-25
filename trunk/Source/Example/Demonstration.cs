@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Resources;
 using DbRefactor;
 
 namespace Example
@@ -191,22 +192,25 @@ namespace Example
 	{
 		public override void Up()
 		{
-			IDataReader reader = ExecuteQuery("select Id, Name from User where IsRegistered = 0 or Description is null");
-
-			var systemUsers = new List<string>();
-
-			while (reader.Read())
+			using (IDataReader reader = ExecuteQuery("select Id, FirstName + ' ' + LastName as 'Name' from [User] where IsRegistered = 0 or PersonalInformation is null"))
 			{
-				var name = reader["Name"].ToString();
-				if (name.Contains("$"))
+
+				var systemUsers = new List<string>();
+
+				while (reader.Read())
 				{
-					systemUsers.Add(name);
+					var name = reader["Name"].ToString();
+					if (name.Contains("$"))
+					{
+						systemUsers.Add(name);
+					}
+				}
+				foreach (var user in systemUsers)
+				{
+					Table("User").Update(new {Name = "System/" + user}).Where(new {Name = user});
 				}
 			}
-			foreach (var user in systemUsers)
-			{
-				Table("User").Update(new { Name = "System/" + user }).Where(new { Name = user });
-			}
+		
 		}
 
 		public override void Down()
@@ -220,7 +224,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			int value = (int)ExecuteScalar("select Id from User where IsRegistered = 1 or Description is null");
+			int value = Convert.ToInt32(ExecuteScalar("select Id from [User] where IsRegistered = 1 or PersonalInformation is null"));
 		}
 
 		public override void Down()
@@ -234,7 +238,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			ExecuteNonQuery("delete from User where IsRegistered = 0 or Description is null");
+			ExecuteNonQuery("delete from [User] where IsRegistered = 0 or PersonalInformation is null");
 		}
 
 		public override void Down()
@@ -242,4 +246,39 @@ namespace Example
 
 		}
 	}
+
+	[Migration(13)]
+	public class CreateProcedure_GetAllRoles : Migration
+	{
+		public override void Up()
+		{
+			string filePath = @"D:\Projects\CSharpUs.DBRefactor\Source\Example\ScriptFiles\013\CreateProcedure_GetAllRoles.sql";
+			ExecuteFile(filePath);
+		}
+
+		public override void Down()
+		{
+			string filePath = @"D:\Projects\CSharpUs.DBRefactor\Source\Example\ScriptFiles\013\DropProcedure_GetAllRoles.sql";
+			ExecuteFile(filePath);
+		}
+	}
+
+	[Migration(14)]
+	public class CreateProcedureFromEmbeddedRsource : Migration
+	{
+		public override void Up()
+		{
+			string filePath = @"Example.ScriptFiles._014.CreateProcedure_GetAllUsers.sql";
+            ExecuteResource(this.GetType().Assembly.FullName, filePath);
+		}
+
+		public override void Down()
+		{
+			string filePath = @"Example.ScriptFiles._014.DropProcedure_GetAllUsers.sql";
+			ExecuteResource(this.GetType().Assembly.FullName, filePath);
+
+		}
+	}
+
+
 }
