@@ -954,7 +954,7 @@ namespace DbRefactor.Providers
 
 			System.Reflection.Assembly a = System.Reflection.Assembly.Load(assemblyName);
 			Stream stream = a.GetManifestResourceStream(filePath);
-			Check.Require(stream != null, String.Format("Could not locate embedded resource '{0}' in assembly '{2}'", filePath, assemblyName));
+			Check.Require(stream != null, String.Format("Could not locate embedded resource '{0}' in assembly '{1}'", filePath, assemblyName));
 
 			string script;
 			using (var streamReader = new StreamReader(stream)) 
