@@ -6,6 +6,7 @@ using DbRefactor;
 
 namespace Example
 {
+
 	/// <summary>
 	/// This is a first migration that creates "Role" table.
 	/// Down method exists to roll back a database structure to the previous version.
@@ -275,9 +276,6 @@ namespace Example
 		{
 			string filePath = @"Example.ScriptFiles._014.DropProcedure_GetAllUsers.sql";
 			ExecuteResource(this.GetType().Assembly.FullName, filePath);
-
 		}
 	}
-
-
 }

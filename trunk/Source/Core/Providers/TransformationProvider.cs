@@ -952,26 +952,16 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(assemblyName, "assemblyName");
 			Check.RequireNonEmpty(filePath, "filePath");
 
-			try
-			{
-				System.Reflection.Assembly a = System.Reflection.Assembly.Load(assemblyName);
-				Stream stream = a.GetManifestResourceStream(filePath);
+			System.Reflection.Assembly a = System.Reflection.Assembly.Load(assemblyName);
+			Stream stream = a.GetManifestResourceStream(filePath);
+			Check.Require(stream != null, String.Format("Could not locate embedded resource '{0}' in assembly '{2}'", filePath, assemblyName));
 
-				if (stream == null)
-					throw new Exception("Could not locate embedded resource '" + filePath + "' in assembly '" + assemblyName + "'");
-
-				string script;
-				using (var streamReader = new StreamReader(stream)) 
-				{
-					script = streamReader.ReadToEnd();
-				}
-				environment.ExecuteNonQuery(script);
-				
-			}
-			catch (Exception e)
+			string script;
+			using (var streamReader = new StreamReader(stream)) 
 			{
-				throw new Exception(assemblyName + ": " + e.Message);
+				script = streamReader.ReadToEnd();
 			}
+			environment.ExecuteNonQuery(script);
 		}
 
 
