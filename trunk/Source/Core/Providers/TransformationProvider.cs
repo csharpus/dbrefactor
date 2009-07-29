@@ -95,6 +95,81 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("ALTER TABLE {0} DROP COLUMN {1} ", table, column);
 		}
 
+		internal void DropUnique(string table, string columnName)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.Ensure(IsUnique(table, columnName), "column is not unique");
+
+			List<string> indexes = GetIndexs(table, columnName);
+			Check.Require(indexes.Count > 0, "Index not found.");
+
+			RemoveIndex(table, indexes[0]);
+		}
+
+		public void DropPrimaryKey(string table)
+		{
+			Check.RequireNonEmpty(table, "table");
+			string primaryKeyColumn = GetPrimaryKeyColumn(table);
+			Check.RequireNonEmpty(primaryKeyColumn, "primary key");
+			
+			List<string> indexes = GetIndexs(table, primaryKeyColumn);
+			Check.Require(indexes.Count > 0, "Primary index not found.");
+
+			RemoveIndex(table, indexes[0]);
+		}
+
+		private List<string> GetIndexs(string table, string column)
+		{
+			string sql =
+				String.Format(
+					@"WITH constraint_depends
+						AS
+						(
+							SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.CONSTRAINT_NAME
+							FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
+							UNION ALL
+							SELECT s.name, o.name, c.name, d.name
+							FROM sys.default_constraints AS d
+							JOIN sys.objects AS o
+								ON o.object_id = d.parent_object_id
+							JOIN sys.columns AS c
+								ON c.object_id = o.object_id AND c.column_id = d.parent_column_id
+							JOIN sys.schemas AS s
+								ON s.schema_id = o.schema_id)
+					SELECT c.CONSTRAINT_NAME
+					FROM constraint_depends as c
+					WHERE c.TABLE_NAME = '{0}' AND c.COLUMN_NAME = '{1}';",
+					table, column);
+			
+			var indexes = new List<string>();
+			using (IDataReader reader =  ExecuteQuery(sql))
+			{
+				while (reader.Read())
+				{
+					indexes.Add(reader.GetString(0));
+				}
+			}
+			return indexes;
+		}
+
+		private string GetPrimaryKeyColumn(string table)
+		{
+			string sql = @"SELECT [name]
+						FROM syscolumns 
+						 WHERE [id] IN (SELECT [id] 
+										  FROM sysobjects 
+										 WHERE [name] = '{0}')
+						   AND colid IN (SELECT SIK.colid 
+										   FROM sysindexkeys SIK 
+										   JOIN sysobjects SO ON SIK.[id] = SO.[id]  
+										  WHERE SIK.indid = 2
+											AND SO.[name] = '{0}')
+
+						";
+
+			return Convert.ToString(ExecuteScalar(sql, table));
+		}
+
 		/// <summary>
 		/// Removes an existing table from the database
 		/// </summary>
@@ -157,31 +232,40 @@ namespace DbRefactor.Providers
 			}
 		}
 
+		/// <summary>
+		/// Determines if a table exists.
+		/// </summary>
+		/// <param name="table">Table name</param>
+		/// <returns><c>true</c> if the constraint exists.</returns>
 		public bool TableExists(string table)
 		{
-			Check.RequireNonEmpty(table, "table");
-			using (IDataReader reader =
-				ExecuteQuery("SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}')",
-				             table))
-			{
-				return reader.Read();
-			}
+			return ObjectExists(table);
 		}
 
 		/// <summary>
 		/// Determines if a constraint exists.
 		/// </summary>
 		/// <param name="name">Constraint name</param>
-		/// <param name="table">Table owning the constraint</param>
 		/// <returns><c>true</c> if the constraint exists.</returns>
-		//		public abstract bool ConstraintExists(string name, string table);
-		public bool ConstraintExists(string name, string table)
+		public bool ConstraintExists(string name)
+		{
+			return ObjectExists(name);
+		}
+
+		/// <summary>
+		/// Determines if a index exists.
+		/// </summary>
+		/// <param name="indexName">Index name</param>
+		/// <returns><c>true</c> if the index exists.</returns>
+		public bool IndexExists(string indexName)
+		{
+			return ObjectExists(indexName);
+		}
+
+		private bool ObjectExists(string name)
 		{
 			Check.RequireNonEmpty(name, "name");
-			Check.RequireNonEmpty(table, "table");
-			using (IDataReader reader =
-				ExecuteQuery("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')",
-				             name))
+			using (IDataReader reader = ExecuteQuery("SELECT TOP 1 * FROM sysobjects WHERE id LIKE object_id('{0}')", name))
 			{
 				return reader.Read();
 			}
@@ -434,7 +518,7 @@ namespace DbRefactor.Providers
 		{
 			AddColumn(table, column, type, size, property, null);
 		}
-
+			
 		/// <summary>
 		/// Add a new column to an existing table.
 		/// </summary>
@@ -583,10 +667,15 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(key, "key");
 			Check.RequireNonEmpty(table, "table");
-			//if (TableExists(table) && ConstraintExists(name, table))
-			//{
 			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT [{1}]", table, key);
-			//}
+		}
+
+		public void RemoveIndex(string table, string index)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.RequireNonEmpty(index, "index");
+
+			ExecuteNonQuery("ALTER TABLE [dbo].[{0}] DROP CONSTRAINT [{1}]", table, index);
 		}
 
 		public string[] GetTables()

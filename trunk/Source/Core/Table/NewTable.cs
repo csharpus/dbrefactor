@@ -126,12 +126,6 @@ namespace DbRefactor
 			return this;
 		}
 
-		public NewTable Indexed()
-		{
-			Columns.AddProperty(ColumnProperties.Indexed);
-			return this;
-		}
-
 		public NewTable NotNull()
 		{
 			Columns.AddProperty(ColumnProperties.NotNull);

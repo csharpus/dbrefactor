@@ -278,4 +278,32 @@ namespace Example
 			ExecuteResource(this.GetType().Assembly.FullName, filePath);
 		}
 	}
+
+	[Migration(15)]
+	public class DropUnique : Migration
+	{
+		public override void Up()
+		{
+			Table("ActorType").DropUnique("Name");
+		}
+
+		public override void Down()
+		{
+			Table("ActorType").AlterColumn().Int("Name").PrimaryKeyWithIdentity().Execute();
+		}
+	}
+
+	[Migration(16)]
+	public class DropPrimaryKey : Migration
+	{
+		public override void Up()
+		{
+			Table("User").DropPrimaryKey();
+		}
+
+		public override void Down()
+		{
+			Table("User").AlterColumn().String("Name", 30).Unique().NotNull().Execute();
+		}
+	}
 }

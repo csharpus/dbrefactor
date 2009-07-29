@@ -26,7 +26,9 @@ namespace DbRefactor
 			RemoveForeignKey,
 			AddForeignKey,
 			DropForeignKey,
-			SelectScalar
+			SelectScalar,
+			DropPrimaryKey,
+			DropUnique
 		} ;
 
 		private List<string> columnValues; 
@@ -41,6 +43,7 @@ namespace DbRefactor
 		private string _primaryKeyColumn;
 		private OnDelete foreignKeyConstraint = OnDelete.NoAction;
 		private string keyName;
+		private string _columnName;
 		private object operationParameters = null;
         private Operation operation = Operation.None;
 		
@@ -219,8 +222,21 @@ namespace DbRefactor
 			Execute();
 		}
 
+		public void DropPrimaryKey()
+		{
+			operation = Operation.DropPrimaryKey;
+			Execute();
+		}
+
+		public void DropUnique(string column)
+		{
+			_columnName = column;
+			operation = Operation.DropUnique;
+			Execute();
+		}
+
 		#endregion Column operations
-        
+
 		private void Execute(object operationParams, object criteriaParameters)
 		{
 			List<string> operationParamList = ParametersHelper.GetParameters(operationParams);
@@ -298,6 +314,14 @@ namespace DbRefactor
 					string _key = keyName;
 					if (String.IsNullOrEmpty(_key))
 						provider.RemoveForeignKey(TableName, _key);
+					break;
+
+				case Operation.DropPrimaryKey:
+					provider.DropPrimaryKey(TableName);
+					break;
+
+				case Operation.DropUnique:
+					provider.DropUnique(TableName, _columnName);
 					break;
 
 				case Operation.RenameTable:

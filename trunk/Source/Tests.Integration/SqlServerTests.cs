@@ -77,7 +77,7 @@ namespace DbRefactor.Tests.Integration
 			CreateMigration<CreateTableMigration>().Up();
 			CreateMigration<CreateForeignKeyMigration>().Up();
 
-			Assert.That(provider.ConstraintExists("FK_Dependent_Test", "Test"), Is.True);
+			Assert.That(provider.ConstraintExists("FK_Dependent_Test"), Is.True);
 		}
 
 		[Test]

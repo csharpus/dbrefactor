@@ -143,7 +143,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using (mockery.Playback())
 			{
-				_provider.ConstraintExists("FK_NAME", "TableName");
+				_provider.ConstraintExists("FK_NAME");
 			}
 		}
 
