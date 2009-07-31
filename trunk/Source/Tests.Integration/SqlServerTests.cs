@@ -1,10 +1,4 @@
 ﻿using System;
-using System.CodeDom;
-using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Tools;
@@ -123,85 +117,23 @@ namespace DbRefactor.Tests.Integration
 
 			#endregion
 
-			var providers = provider.GetColumnProviders("Table1");
-			string values = String.Empty;
-			foreach (var columnProvider in providers)
-			{
-				var value = GetMethodValue(columnProvider);
-				values += Environment.NewLine + "." + value;
-				foreach (var property in columnProvider.Properties)
-				{
-					values += "." + property.MethodName() + "()";
-				}
-			}
-			values += ";";
+			var tableName = "Table1";
+			string values = new SchemaDumper(provider).Dump();
 			Console.Write(values);
 		}
+
+
 
 		[Test]
 		public void should_generate_method_call_from_lambda()
 		{
-			var codeGenerationService = MockRepository.GenerateMock<ICodeGenerationService>();
-			codeGenerationService.Expect(s => s.PrimitiveValue(1)).Return("1");
-			var longProvider = new LongProvider("ColumnName", 1, codeGenerationService);
-			string methodValue = GetMethodValue(longProvider);
-			Assert.That(methodValue, Is.EqualTo("Long(\"ColumnName\")"));
+			//var codeGenerationService = MockRepository.GenerateMock<ICodeGenerationService>();
+			//codeGenerationService.Expect(s => s.PrimitiveValue(1)).Return("1");
+			//var longProvider = new LongProvider("ColumnName", 1, codeGenerationService);
+			//string methodValue = GetMethodValue(longProvider);
+			//Assert.That(methodValue, Is.EqualTo("Long(\"ColumnName\")"));
 			//Assert.That(ToCsharpString(new DateTime()), Is.EqualTo("4m"));
 			//Assert.That(ToCsharpStringComplex(new[] { "1" }), Is.EqualTo("4m"));
-		}
-
-		private string GetMethodValue(ColumnProvider columnProvider)
-		{
-			var methodCall = columnProvider.Method().Body as MethodCallExpression;
-			string methodName = methodCall.Method.Name;
-			
-			IList<Expression> argumentsList;
-			if (methodCall.Method.IsStatic)
-			{
-				argumentsList = methodCall.Arguments.Skip(1).ToList();
-			}
-			else
-			{
-				argumentsList = methodCall.Arguments.ToList();
-			}
-			var arguments = argumentsList.Select(a => ObtainValue(a)).ToArray();
-			string methodArguments = String.Join(", ", arguments);
-			if (columnProvider.HasDefaultValue)
-			{
-				methodArguments += ", " + columnProvider.GetDefaultValueCode();
-			}
-			return String.Format("{0}({1})", methodName, methodArguments);
-		}
-
-		public string ObtainValue(Expression expression)
-		{
-			object value = ValueFromExpression(expression);
-			//string stringValue = value.ToString();
-			//return (value is string) ? "\"" + stringValue + "\"" : stringValue;
-
-			return ReflectionHelper.ToCsharpString(value);
-		}
-
-		private string ToCsharpStringComplex(object value)
-		{
-			CodeDomProvider cs = CodeDomProvider.CreateProvider("CSharp");
-			var p = new CodeObjectCreateExpression(typeof (string[]), new CodePrimitiveExpression("a"));
-			var options = new CodeGeneratorOptions {BracingStyle = "C", IndentString = "  "};
-			var writer = new StringWriter();
-			cs.GenerateCodeFromExpression(p, writer, options);
-			return writer.ToString();
-		}
-
-		private static object ValueFromExpression(Expression expression)
-		{
-			if (expression is ConstantExpression)
-			{
-				return (expression as ConstantExpression).Value;
-			}
-			var lambda = Expression.Lambda<Func<object>>(
-				Expression.Convert(expression, typeof (object)),
-				new ParameterExpression[0]);
-			return lambda.Compile()();
 		}
 
 		[Migration(1)]

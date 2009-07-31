@@ -2,7 +2,7 @@ using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.IO;
 
-namespace DbRefactor.Tests.Integration
+namespace DbRefactor.Tools
 {
 	public class ReflectionHelper
 	{

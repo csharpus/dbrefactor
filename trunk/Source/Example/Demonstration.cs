@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Resources;
 using DbRefactor;
 
 namespace Example
@@ -118,12 +117,13 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("User").Insert(new {
-				RoleId = Table("Role").SelectScalar<int>("Id", new { Name = "Manager" }), 
-				Name = "Robert Tompson",
-				IsRegistered = true,					
-				Birthday = new DateTime(1982, 4, 20)
-			});
+			//Table("User").Insert(new {
+			//    RoleId = Table("Role").SelectScalar<int>("Id", new { Name = "Manager" }), 
+			//    Name = "Robert Tompson",
+			//    IsRegistered = true
+			//    //,					
+			//    //Birthday = new DateTime(1982, 4, 20)
+			//});
 		}
 
 		public override void Down()
@@ -252,8 +252,8 @@ namespace Example
 	{
 		public override void Up()
 		{
-			string filePath = @"D:\Projects\CSharpUs.DBRefactor\Source\Example\ScriptFiles\013\CreateProcedure_GetAllRoles.sql";
-			ExecuteFile(filePath);
+			//string filePath = @"D:\Projects\CSharpUs.DBRefactor\Source\Example\ScriptFiles\013\CreateProcedure_GetAllRoles.sql";
+			//ExecuteFile(filePath);
 		}
 
 		public override void Down()
@@ -268,14 +268,14 @@ namespace Example
 	{
 		public override void Up()
 		{
-			string filePath = @"Example.ScriptFiles._014.CreateProcedure_GetAllUsers.sql";
-            ExecuteResource(this.GetType().Assembly.FullName, filePath);
+			string filePath = @"Example.ScriptFiles._014.CreateProcedure_GetAllUsers1.sql";
+            ExecuteResource(GetType().Assembly.FullName, filePath);
 		}
 
 		public override void Down()
 		{
 			string filePath = @"Example.ScriptFiles._014.DropProcedure_GetAllUsers.sql";
-			ExecuteResource(this.GetType().Assembly.FullName, filePath);
+			ExecuteResource(GetType().Assembly.FullName, filePath);
 		}
 	}
 

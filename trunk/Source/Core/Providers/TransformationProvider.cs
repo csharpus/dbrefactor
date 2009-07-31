@@ -30,7 +30,7 @@ namespace DbRefactor.Providers
 	/// </summary>
 	public sealed class TransformationProvider
 	{
-		private Tools.Loggers.ILogger _logger = new Tools.Loggers.Logger(false);
+		private ILogger _logger = new Tools.Loggers.Logger(false);
 
 		private readonly IDatabaseEnvironment environment;
 		private readonly ColumnProviderFactory columnFactory;
@@ -38,7 +38,7 @@ namespace DbRefactor.Providers
 		internal TransformationProvider(IDatabaseEnvironment environment, ColumnProviderFactory columnProviderFactory)
 		{
 			this.environment = environment;
-			this.columnFactory = columnProviderFactory;
+			columnFactory = columnProviderFactory;
 		}
 
 		internal IDatabaseEnvironment Environment
@@ -305,30 +305,56 @@ namespace DbRefactor.Providers
 			}
 		}
 
-		private List<Relation> GetTablesRelations()
+		public class ForeignKey
+		{
+			public string Name { get; set; }
+			public string PrimaryTable { get; set; }
+			public string PrimaryColumn { get; set; }
+			public string ForeignTable { get; set; }
+			public string ForeignColumn { get; set; }
+		}
+
+		public List<ForeignKey> GetForeignKeys()
 		{
 			string query =
 				@"
-				SELECT f.name AS ForeignKey,
-				   OBJECT_NAME(f.parent_object_id) AS TableName,
-				   COL_NAME(fc.parent_object_id, 
-				   fc.parent_column_id) AS ColumnName,
-				   OBJECT_NAME (f.referenced_object_id) AS ReferenceTableName,
-				   COL_NAME(fc.referenced_object_id, 
-				   fc.referenced_column_id) AS ReferenceColumnName
+				SELECT f.name AS Name,
+				   OBJECT_NAME(f.parent_object_id) AS ForeignTable,
+				   COL_NAME(fc.parent_object_id, fc.parent_column_id) AS ForeignColumn,
+				   OBJECT_NAME (f.referenced_object_id) AS PrimaryTable,
+				   COL_NAME(fc.referenced_object_id, fc.referenced_column_id) AS PrimaryColumn
 				FROM sys.foreign_keys AS f
 				INNER JOIN sys.foreign_key_columns AS fc
-				   ON f.OBJECT_ID = fc.constraint_object_id";
-			List<Relation> relations = new List<Relation>();
+				   ON f.OBJECT_ID = fc.constraint_object_id
+				";
+			var keys = new List<ForeignKey>();
 			using (IDataReader reader = ExecuteQuery(query))
 			{
 				while (reader.Read())
 				{
-					relations.Add(
-						new Relation(
-							reader["ReferenceTableName"].ToString(),
-							reader["TableName"].ToString()));
+					keys.Add(
+						new ForeignKey
+							{
+								Name = reader["Name"].ToString(), 
+								ForeignTable = reader["ForeignTable"].ToString(),
+								ForeignColumn = reader["ForeignColumn"].ToString(),
+								PrimaryTable = reader["PrimaryTable"].ToString(),
+								PrimaryColumn = reader["PrimaryColumn"].ToString()
+							});
 				}
+			}
+			return keys;
+		}
+
+		private List<Relation> GetTablesRelations()
+		{
+			var keys = GetForeignKeys();
+			var relations = new List<Relation>();
+			foreach (var key in keys)
+			{
+				relations.Add(new Relation(
+							key.PrimaryTable,
+							key.ForeignTable));
 			}
 			return relations;
 		}
@@ -697,8 +723,8 @@ namespace DbRefactor.Providers
 		{
 			return new Dictionary<string, Func<ColumnData, ColumnProvider>>
 			       	{
-			       		{"bigint", columnFactory.CreateLong },
-			       		{"binary", columnFactory.CreateBinary },
+			       		{"bigint", columnFactory.CreateLong},
+			       		{"binary", columnFactory.CreateBinary},
 			       		{"bit", columnFactory.CreateBoolean},
 			       		{"char", columnFactory.CreateString},
 			       		{"datetime", columnFactory.CreateDateTime},
@@ -730,18 +756,26 @@ namespace DbRefactor.Providers
 
 		private bool IsUnique(string table, string column)
 		{
-			return Convert.ToBoolean(ExecuteScalar(@"SELECT COUNT(c.CONSTRAINT_NAME) 
+			return
+				Convert.ToBoolean(
+					ExecuteScalar(
+						@"SELECT COUNT(c.CONSTRAINT_NAME) 
 				FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
 				join sys.objects as s on c.CONSTRAINT_NAME = s.Name and type = 'UQ'
-				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'", table, column));
+				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
+						table, column));
 		}
 
 		private bool IsPrimaryKey(string table, string column)
 		{
-			return Convert.ToBoolean(ExecuteScalar(@"SELECT COUNT(c.CONSTRAINT_NAME) 
+			return
+				Convert.ToBoolean(
+					ExecuteScalar(
+						@"SELECT COUNT(c.CONSTRAINT_NAME) 
 				FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
 				join sys.objects as s on c.CONSTRAINT_NAME = s.Name and type = 'PK'
-				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'", table, column));
+				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
+						table, column));
 		}
 
 		internal List<ColumnProvider> GetColumnProviders(string table)
@@ -750,7 +784,9 @@ namespace DbRefactor.Providers
 
 			using (
 				IDataReader reader =
-					ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}';", table))
+					ExecuteQuery(
+						"SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}';",
+						table))
 			{
 				while (reader.Read())
 				{
@@ -759,9 +795,9 @@ namespace DbRefactor.Providers
 					           		Name = reader["COLUMN_NAME"].ToString(),
 					           		DataType = reader["DATA_TYPE"].ToString(),
 					           		Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
-									Precision = NullSafeGet<byte>(reader, "NUMERIC_PRECISION"),
-									Radix = NullSafeGet<short>(reader, "NUMERIC_PRECISION_RADIX"),
-									DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
+					           		Precision = NullSafeGet<byte>(reader, "NUMERIC_PRECISION"),
+					           		Radix = NullSafeGet<short>(reader, "NUMERIC_PRECISION_RADIX"),
+					           		DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
 					           	};
 					providers.Add(GetTypesMap(data)[data.DataType](data));
 				}
@@ -804,9 +840,9 @@ namespace DbRefactor.Providers
 		{
 			return Convert.ToBoolean(ExecuteScalar(@"SELECT COLUMNPROPERTY(OBJECT_ID('{0}'),'{1}','AllowsNull')", table, column));
 		}
-		
+
 		private static T? NullSafeGet<T>(IDataRecord reader, string name)
-			where T: struct
+			where T : struct
 		{
 			object value = reader[name];
 			if (value == DBNull.Value)
@@ -851,7 +887,6 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(sql, "sql");
 			return environment.ExecuteQuery(String.Format(sql, values));
 		}
-
 
 
 		public object ExecuteScalar(string sql, params string[] values)
@@ -1043,16 +1078,16 @@ namespace DbRefactor.Providers
 
 			System.Reflection.Assembly a = System.Reflection.Assembly.Load(assemblyName);
 			Stream stream = a.GetManifestResourceStream(filePath);
-			Check.Require(stream != null, String.Format("Could not locate embedded resource '{0}' in assembly '{1}'", filePath, assemblyName));
+			Check.Require(stream != null,
+			              String.Format("Could not locate embedded resource '{0}' in assembly '{1}'", filePath, assemblyName));
 
 			string script;
-			using (var streamReader = new StreamReader(stream)) 
+			using (var streamReader = new StreamReader(stream))
 			{
 				script = streamReader.ReadToEnd();
 			}
 			environment.ExecuteNonQuery(script);
 		}
-
 
 		#region Obsolete
 

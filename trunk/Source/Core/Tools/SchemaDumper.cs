@@ -10,19 +10,22 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
 using DbRefactor.Providers;
+using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Tools
 {
-//TODO: this class should be changed according to new changes
 	internal class SchemaDumper
 	{
-		readonly TransformationProvider _provider;
+		private readonly TransformationProvider provider;
 
-		public SchemaDumper(string connectionString)
+		public SchemaDumper(TransformationProvider transformationProvider)
 		{
-			_provider = new ProviderFactory().Create(connectionString);
+			provider = transformationProvider;
 		}
 
 		public string Dump()
@@ -37,23 +40,21 @@ namespace DbRefactor.Tools
 			writer.WriteLine("\tpublic override void Up()");
 			writer.WriteLine("\t{");
 
-			foreach (string table in _provider.GetTables())
+			foreach (string table in provider.GetTables())
 			{
-				writer.WriteLine("\t\tCreateTable(\"{0}\")", table);
-				foreach (var column in _provider.GetColumns(table))
-				{
-					writer.WriteLine("\t\t\t." + GenerateColumnCode(column));
-				}
-				writer.WriteLine("\t\t\t.Execute();");
-				writer.WriteLine();
+				writer.WriteLine(GetTableCode(table));
 			}
+
+			writer.WriteLine(GetAddForeignKeysCode());
 
 			writer.WriteLine("\t}");
 			writer.WriteLine();
 			writer.WriteLine("\tpublic override void Down()");
 			writer.WriteLine("\t{");
 
-			foreach (string table in _provider.GetTables())
+			writer.WriteLine(GetDropForeignKeysCode());
+
+			foreach (string table in provider.GetTables())
 			{
 				writer.WriteLine("\t\tDropTable(\"{0}\");", table);
 			}
@@ -62,11 +63,6 @@ namespace DbRefactor.Tools
 			writer.WriteLine("}");
 
 			return writer.ToString();
-		}
-
-		private string GenerateColumnCode(Column column)
-		{
-			throw new NotImplementedException();
 		}
 
 		public void DumpTo(string file)
@@ -81,5 +77,104 @@ namespace DbRefactor.Tools
 		{
 			writer.Write(Dump());
 		}
+
+		private string GetTableCode(string tableName)
+		{
+			var providers = provider.GetColumnProviders(tableName);
+			string values = CreateTableMethodCode(tableName);
+			foreach (var columnProvider in providers)
+			{
+				values += GetColumnCode(columnProvider);
+			}
+			values += ExecuteMethodCode();
+			return values;
+		}
+
+		private static string ExecuteMethodCode()
+		{
+			return Environment.NewLine + "\t\t\t.Execute();";
+		}
+
+		private static string CreateTableMethodCode(string tableName)
+		{
+			return String.Format("\t\tCreateTable(\"{0}\")", tableName);
+		}
+
+		private string GetColumnCode(ColumnProvider columnProvider)
+		{
+			var methodCode = GetColumnMethodCode(columnProvider);
+			var values = Environment.NewLine + "\t\t\t." + methodCode;
+			foreach (var property in columnProvider.Properties)
+			{
+				values += "." + property.MethodName() + "()";
+			}
+			return values;
+		}
+
+		private string GetAddForeignKeysCode()
+		{
+			string values = String.Empty;
+			var keys = provider.GetForeignKeys();
+			foreach (var key in keys)
+			{
+				values += String.Format("Table(\"{0}\").AddForeignKey(\"{1}\", \"{2}\").References(\"{3}\", \"{4}\")",
+										key.ForeignTable,
+										key.Name,
+										key.ForeignColumn,
+										key.PrimaryTable,
+										key.PrimaryColumn);
+				values += Environment.NewLine;
+			}
+			return values;
+		}
+
+		private string GetDropForeignKeysCode()
+		{
+			string values = String.Empty;
+			var keys = provider.GetForeignKeys();
+			foreach (var key in keys)
+			{
+				values += String.Format("Table(\"{0}\").DropForeignKey(\"{1}\")",
+										key.ForeignTable,
+										key.Name);
+				values += Environment.NewLine;
+			}
+			return values;
+		}
+
+		private string GetColumnMethodCode(ColumnProvider columnProvider)
+		{
+			var expression = columnProvider.Method();
+			string methodName = GetMethodName(expression);
+
+			List<string> methodArguments = GetMethodArguments(expression);
+			if (columnProvider.HasDefaultValue)
+			{
+				methodArguments.Add(columnProvider.GetDefaultValueCode());
+			}
+			return CodeGenerationHelper.GenerateMethodCall(methodName, methodArguments);
+		}
+
+		private List<string> GetMethodArguments(Expression<Action<NewTable>> expression)
+		{
+			var methodCall = (MethodCallExpression)expression.Body;
+			IList<Expression> argumentsList = methodCall.Method.IsStatic
+			                                  	? methodCall.Arguments.Skip(1).ToList()
+			                                  	: methodCall.Arguments.ToList();
+			return argumentsList.Select(a => ObtainValue(a)).ToList();
+		}
+
+		private static string GetMethodName(Expression<Action<NewTable>> expression)
+		{
+			var methodCall = (MethodCallExpression)expression.Body;
+			return methodCall.Method.Name;
+		}
+
+		public string ObtainValue(Expression expression)
+		{
+			object value = ExpressionHelper.ValueFromExpression(expression);
+
+			return ReflectionHelper.ToCsharpString(value);
+		}		
 	}
 }

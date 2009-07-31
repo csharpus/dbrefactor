@@ -112,14 +112,17 @@
     <Compile Include="Table\AlterColumnTable.cs" />
     <Compile Include="Table\NewTable.cs" />
     <Compile Include="Table\Table.cs" />
+    <Compile Include="Tools\CodeGenerationHelper.cs" />
     <Compile Include="Tools\DataDumper.cs" />
     <Compile Include="Tools\DesignByContract\DesignByContract.cs" />
+    <Compile Include="Tools\ExpressionHelper.cs" />
     <Compile Include="Tools\Loggers\ConsoleWriter.cs" />
     <Compile Include="Tools\Loggers\IAttachableLogger.cs" />
     <Compile Include="Tools\Loggers\ILogger.cs" />
     <Compile Include="Tools\Loggers\ILogWriter.cs" />
     <Compile Include="Tools\Loggers\Logger.cs" />
     <Compile Include="Tools\ParametersHelper.cs" />
+    <Compile Include="Tools\ReflectionHelper.cs" />
     <Compile Include="Tools\SchemaDumper.cs" />
   </ItemGroup>
   <ItemGroup>
