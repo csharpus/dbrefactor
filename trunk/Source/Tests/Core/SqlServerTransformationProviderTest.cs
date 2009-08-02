@@ -1,5 +1,6 @@
 using System;
 using DbRefactor.Providers;
+using DbRefactor.Tools.Loggers;
 using NUnit.Framework;
 using System.Data;
 using Rhino.Mocks;
@@ -11,20 +12,20 @@ namespace DbRefactor.Tests.Core
 	[TestFixture]
 	public class SqlServerTransformationProviderTest
 	{
-		private TransformationProvider _provider;
+		private TransformationProvider provider;
 		private MockRepository mockery;
-		private IDataReader Rreader;
-		private IDatabaseEnvironment Renvironment;
+		private IDataReader reader;
+		private IDatabaseEnvironment environment;
 
 		[SetUp]
 		public void SetUp()
 		{
 			mockery = new MockRepository();
-			Rreader = mockery.CreateMock<IDataReader>();
-			Renvironment = mockery.CreateMock<IDatabaseEnvironment>();
-			_provider = new TransformationProvider(Renvironment, null);
+			reader = mockery.CreateMock<IDataReader>();
+			environment = mockery.CreateMock<IDatabaseEnvironment>();
+			provider = new TransformationProvider(environment, new Logger(false), null);
 
-			Expect.Call(Rreader.Dispose).Repeat.Any();
+			Expect.Call(reader.Dispose).Repeat.Any();
 		}
 
 		[Test]
@@ -32,7 +33,7 @@ namespace DbRefactor.Tests.Core
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void	DesignByContractException()
 		{
-			_provider.AddTable(null);
+			provider.AddTable(null);
 		}
 
 		[Test]
@@ -45,7 +46,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using(mockery.Playback())
 			{
-				_provider.TableExists("Table1");
+				provider.TableExists("Table1");
 			}
 		}
 
@@ -60,7 +61,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using (mockery.Playback())
 			{
-				_provider.DropTable("Table1");
+				provider.DropTable("Table1");
 			}
 		}
 
@@ -74,7 +75,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using (mockery.Playback())
 			{
-				_provider.DropTable("Table1");
+				provider.DropTable("Table1");
 			}
 		}
 
@@ -87,7 +88,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using (mockery.Playback())
 			{
-				_provider.RenameColumn("Table", "OldName", "NewName");
+				provider.RenameColumn("Table", "OldName", "NewName");
 			}
 		}
 
@@ -100,7 +101,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using (mockery.Playback())
 			{
-				_provider.RenameTable("OldName", "NewName");
+				provider.RenameTable("OldName", "NewName");
 			}
 		}
 
@@ -115,7 +116,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using (mockery.Playback())
 			{
-				_provider.ColumnExists("Table1", "Column1");
+				provider.ColumnExists("Table1", "Column1");
 			}
 		}
 
@@ -129,7 +130,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using (mockery.Playback())
 			{
-				_provider.TableExists("Table1");
+				provider.TableExists("Table1");
 			}
 		}
 
@@ -143,7 +144,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using (mockery.Playback())
 			{
-				_provider.ConstraintExists("FK_NAME");
+				provider.ConstraintExists("FK_NAME");
 			}
 		}
 
@@ -184,7 +185,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using (mockery.Playback())
 			{
-				_provider.AddTable("Table1",
+				provider.AddTable("Table1",
 					new Column("ID", typeof(int)));
 			}
 		}
@@ -198,7 +199,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using (mockery.Playback())
 			{
-				_provider.AddTable("Table1",
+				provider.AddTable("Table1",
 					new Column("ID", typeof(int)),
 					new Column("Name", typeof(string), 10));
 			}
@@ -206,36 +207,37 @@ namespace DbRefactor.Tests.Core
 
 		private void ReaderReturnTrueOnRead()
 		{
-			Expect.Call(Rreader.Read()).Return(true).Repeat.AtLeastOnce();
+			Expect.Call(reader.Read()).Return(true).Repeat.AtLeastOnce();
 		}
 
 		private void ReaderReturnFalseOnRead()
 		{
-			Expect.Call(Rreader.Read()).Return(false);
+			Expect.Call(reader.Read()).Return(false);
 		}
 
 		private void ExpectExecuteQueryOn(string query)
 		{
-			Expect.Call(Renvironment.ExecuteQuery(query))
-				.Return(Rreader);
+			Expect.Call(environment.ExecuteQuery(query))
+				.Return(reader);
 		}
 
 		private void ExpectExecuteNonQueryOn(string query)
 		{
-			Expect.Call(Renvironment.ExecuteNonQuery(query))
+			Expect.Call(environment.ExecuteNonQuery(query))
 				.Return(1);
 		}
 
 		private void ExpectTableExistsQuery(string table)
 		{
 			ExpectExecuteQueryOn(
-				String.Format("SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}')", table));
+				String.Format("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')", table));
 		}
 
 		private void ExpectColumnExistsQuery(string table, string column)
 		{
 			ExpectExecuteQueryOn(
-				String.Format("SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}') AND name='{1}'",
+				String.Format("SELECT TOP 1 * FROM syscolumns WHERE id = object_id('{0}') AND name = '{1}'",
+				
 				table, column));
 		}
 
@@ -264,7 +266,7 @@ namespace DbRefactor.Tests.Core
 			}
 			using (mockery.Playback())
 			{
-				_provider.Insert("Table1",
+				provider.Insert("Table1",
 				string.Format("Id={0}", 1),
 				string.Format("Name='{0}'", "Èìÿ"));
 			}

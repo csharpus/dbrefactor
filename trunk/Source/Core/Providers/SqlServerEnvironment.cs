@@ -1,28 +1,29 @@
 using System.Data;
 using System.Data.SqlClient;
-using DbRefactor.Providers;
+using DbRefactor.Tools.Loggers;
 
 namespace DbRefactor.Providers
 {
 	sealed class SqlServerEnvironment : IDatabaseEnvironment
 	{
-		private readonly string _connectionString;
-		private readonly IDbConnection _connection;
-		private IDbTransaction _transaction;
+		private readonly string connectionString;
+		private readonly ILogger logger;
+		private readonly IDbConnection connection;
+		private IDbTransaction transaction;
 
-		public SqlServerEnvironment(string connectionString)
+		public SqlServerEnvironment(string connectionString, ILogger logger)
 		{
-			_connectionString = connectionString;
-			_connection = new SqlConnection();
-			_connection.ConnectionString = _connectionString;
-			_connection.Open();
+			this.connectionString = connectionString;
+			this.logger = logger;
+			connection = new SqlConnection {ConnectionString = this.connectionString};
+			connection.Open();
 		}
 
 		internal IDbConnection Connection
 		{
 			get
 			{
-				return _connection;
+				return connection;
 			}
 		}
 
@@ -30,6 +31,7 @@ namespace DbRefactor.Providers
 
 		int IDatabaseEnvironment.ExecuteNonQuery(string sql)
 		{
+			logger.Log(sql);
 			IDbCommand cmd = BuildCommand(sql);
 			cmd.CommandTimeout = 120;
 			return cmd.ExecuteNonQuery();
@@ -37,24 +39,26 @@ namespace DbRefactor.Providers
 
 		private IDbCommand BuildCommand(string sql)
 		{
-			IDbCommand cmd = _connection.CreateCommand();
+			IDbCommand cmd = connection.CreateCommand();
 			cmd.CommandText = sql;
 			cmd.CommandType = CommandType.Text;
-			if (_transaction != null)
+			if (transaction != null)
 			{
-				cmd.Transaction = _transaction;
+				cmd.Transaction = transaction;
 			}
 			return cmd;
 		}
 
 		IDataReader IDatabaseEnvironment.ExecuteQuery(string sql)
 		{
+			logger.Log(sql);
 			IDbCommand cmd = BuildCommand(sql);
 			return cmd.ExecuteReader();
 		}
 
 		object IDatabaseEnvironment.ExecuteScalar(string sql)
 		{
+			logger.Log(sql);
 			IDbCommand cmd = BuildCommand(sql);
 			return cmd.ExecuteScalar();
 		}
@@ -64,10 +68,10 @@ namespace DbRefactor.Providers
 		/// </summary>
 		public void BeginTransaction()
 		{
-			if (_transaction == null && _connection != null)
+			if (transaction == null && connection != null)
 			{
 				EnsureHasConnection();
-				_transaction = _connection.BeginTransaction(IsolationLevel.ReadCommitted);
+				transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 			}
 		}
 
@@ -75,15 +79,15 @@ namespace DbRefactor.Providers
 		{
 			get
 			{
-				return _transaction;
+				return transaction;
 			}
 		}
 
 		private void EnsureHasConnection()
 		{
-			if (_connection.State != ConnectionState.Open)
+			if (connection.State != ConnectionState.Open)
 			{
-				_connection.Open();
+				connection.Open();
 			}
 		}
 
@@ -92,18 +96,18 @@ namespace DbRefactor.Providers
 		/// </summary>
 		public void RollbackTransaction()
 		{
-			if (_transaction != null && _connection != null && _connection.State == ConnectionState.Open)
+			if (transaction != null && connection != null && connection.State == ConnectionState.Open)
 			{
 				try
 				{
-					_transaction.Rollback();
+					transaction.Rollback();
 				}
 				finally
 				{
-					_connection.Close();
+					connection.Close();
 				}
 			}
-			_transaction = null;
+			transaction = null;
 		}
 
 		/// <summary>
@@ -111,18 +115,18 @@ namespace DbRefactor.Providers
 		/// </summary>
 		public void CommitTransaction()
 		{
-			if (_transaction != null && _connection != null && _connection.State == ConnectionState.Open)
+			if (transaction != null && connection != null && connection.State == ConnectionState.Open)
 			{
 				try
 				{
-					_transaction.Commit();
+					transaction.Commit();
 				}
 				finally
 				{
-					_connection.Close();
+					connection.Close();
 				}
 			}
-			_transaction = null;
+			transaction = null;
 		}
 		#endregion
 	}

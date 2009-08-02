@@ -105,18 +105,6 @@ namespace DbRefactor
 			// Console.WriteLine("Migration.InitializeOnce()");
 		}
 
-		/// <summary>
-		/// Event logger.
-		/// </summary>
-		[Obsolete("Usage of this logger is obsolete")]
-		public ILogger Logger
-		{
-			get
-			{
-				return _transformationProvider.Logger;
-			}
-		}
-
 		[Obsolete("Please, use CreateTable(\"Name\").Int(\"ColumnName\").Execute()")]
 		protected void CreateTable(string name, ColumnsCollection columns)
 		{

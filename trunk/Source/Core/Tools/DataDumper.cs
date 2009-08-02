@@ -8,15 +8,15 @@ namespace DbRefactor.Tools
 {
 	public class DataDumper
 	{
-		readonly TransformationProvider _provider;
+		readonly TransformationProvider provider;
 
 		public DataDumper(string connectionString)
 		{
-			_provider = new ProviderFactory().Create(connectionString);
+			provider = new ProviderFactory().Create(connectionString);
 		}
 
-		private bool hasIdentity = false;
-		private bool shouldDelete = false;
+		private bool hasIdentity;
+		private bool shouldDelete;
 		private StringWriter writer;
 
 		private void DeleteStatement(string table)
@@ -68,7 +68,7 @@ namespace DbRefactor.Tools
 		{
 			shouldDelete = delete;
 			writer = new StringWriter();
-			List<string> tables = _provider.GetTablesSortedByDependency();
+			List<string> tables = provider.GetTablesSortedByDependency();
 			foreach (string table in tables)
 			{
 				DisableConstraints(table);
@@ -77,9 +77,9 @@ namespace DbRefactor.Tools
 			tables.Reverse();
 			foreach (string table in tables)
 			{
-				Column[] columns = _provider.GetColumns(table);
-				hasIdentity = _provider.TableHasIdentity(table);
-				using (IDataReader reader = _provider.Select("*", table))
+				Column[] columns = provider.GetColumns(table);
+				hasIdentity = provider.TableHasIdentity(table);
+				using (IDataReader reader = provider.Select("*", table))
 				{
 					DisableIdentity(table);
 					while (reader.Read())

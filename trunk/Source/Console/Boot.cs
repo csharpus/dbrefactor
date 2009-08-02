@@ -9,6 +9,7 @@
 //under the License.
 #endregion
 using System;
+using DbRefactor.Providers;
 using NConsoler;
 using System.Reflection;
 
@@ -42,7 +43,7 @@ namespace DbRefactor.Console
 		{
 			Assembly asm = Assembly.LoadFrom(migrationAssembly);
 
-			var migrator = new Migrator(provider, connectionString, category, asm, trace);
+			var migrator = new ProviderFactory().CreateMigrator(provider, connectionString, category, asm, trace);
 			if (version == -1)
 			{
 				migrator.MigrateToLastVersion();

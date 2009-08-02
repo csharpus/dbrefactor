@@ -15,7 +15,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using DbRefactor.Compatibility;
 using DbRefactor.Providers;
-using ILogger=DbRefactor.Tools.Loggers.ILogger;
+using DbRefactor.Tools.Loggers;
 
 namespace DbRefactor
 {
@@ -26,81 +26,60 @@ namespace DbRefactor
 	/// </summary>
 	public sealed class Migrator
 	{
-		private readonly TransformationProvider _provider;
-		private readonly List<Type> _migrationsTypes = new List<Type>();
-		private readonly bool _trace;  // show trace for debugging
-		private Tools.Loggers.ILogger _logger = new Tools.Loggers.Logger(false);
+		private readonly TransformationProvider provider;
+		private readonly List<Type> migrationsTypes = new List<Type>();
+		private readonly bool trace;  // show trace for debugging
+		private ILogger logger = new Logger(false);
 		private string[] _args;
 
-		public string[] args
-		{
-			get { return _args; }
-			set { _args = value; }
-		}
+		public string Category { get; set; }
 
-		private string _category;
-
-		public string Category
-		{
-			get
-			{
-				return _category;
-			}
-
-			set
-			{
-				_category = value;
-			}
-		}
-
-		public Migrator(string providerName, string connectionString, string category, Assembly migrationAssembly, bool trace)
-			: this(CreateProvider(connectionString), category, migrationAssembly, trace)
-		{ }
+		//public Migrator(string providerName, string connectionString, string category, Assembly migrationAssembly, bool trace)
+		//    : this(CreateProvider(connectionString), category, migrationAssembly, trace)
+		//{ }
 
 
-		public Migrator(string providerName, string connectionString, Assembly migrationAssembly, bool trace)
-			: this(CreateProvider(connectionString), null, migrationAssembly, trace)
-		{ }
+		//public Migrator(string providerName, string connectionString, Assembly migrationAssembly, bool trace)
+		//    : this(CreateProvider(connectionString), null, migrationAssembly, trace)
+		//{ }
 
-		public Migrator(string providerName, string connectionString, Assembly migrationAssembly)
-			: this(CreateProvider(connectionString), null, migrationAssembly, false)
-		{ }
+		//public Migrator(string providerName, string connectionString, Assembly migrationAssembly)
+		//    : this(CreateProvider(connectionString), null, migrationAssembly, false)
+		//{ }
 
 		private OldMigrator.Providers.SqlServerTransformationProvider _oldProvider;
 
-		internal Migrator(TransformationProvider provider, string category, Assembly migrationAssembly, bool trace)
+		internal Migrator(TransformationProvider provider, string category, Assembly migrationAssembly, ILogger logger)
 		{
-			_provider = provider;
-			_provider.Category = category;
+			this.provider = provider;
+			this.provider.Category = category;
 
-			_oldProvider = new OldMigrator.Providers.SqlServerTransformationProvider(((provider as TransformationProvider).Environment as SqlServerEnvironment).Connection as SqlConnection);
+			_oldProvider = new OldMigrator.Providers.SqlServerTransformationProvider(((SqlServerEnvironment) provider.Environment).Connection as SqlConnection);
 
-			_trace = trace;
-			Tools.Loggers.Logger logger = new Tools.Loggers.Logger(_trace);
-			logger.Attach(new Tools.Loggers.ConsoleWriter());
-			_logger = logger;
-			_category = category;
+			
+			this.logger = logger;
+			Category = category;
 
-			_migrationsTypes.AddRange(GetMigrationTypes(Assembly.GetExecutingAssembly()));
+			migrationsTypes.AddRange(GetMigrationTypes(Assembly.GetExecutingAssembly()));
 
 			if (migrationAssembly != null)
 			{
-				_migrationsTypes.AddRange(GetMigrationTypes(migrationAssembly));
+				migrationsTypes.AddRange(GetMigrationTypes(migrationAssembly));
 				_setUpMigration = GetSetUpMigrationType(migrationAssembly);
 			}
 
-			_logger.Trace("Loaded migrations:");
-			foreach (Type t in _migrationsTypes)
+			this.logger.Trace("Loaded migrations:");
+			foreach (Type t in migrationsTypes)
 			{
-				_logger.Trace("{0} {1}", GetMigrationVersion(t).ToString().PadLeft(5), ToHumanName(t.Name));
+				this.logger.Trace("{0} {1}", GetMigrationVersion(t).ToString().PadLeft(5), ToHumanName(t.Name));
 			}
 			CheckForDuplicatedVersion();
 		}
 
 		private void BeginTransaction()
 		{
-			_provider.BeginTransaction();
-			_oldProvider.Transaction = (_provider.Environment as SqlServerEnvironment).Transaction;
+			provider.BeginTransaction();
+			_oldProvider.Transaction = (provider.Environment as SqlServerEnvironment).Transaction;
 		}
 
 		/// <summary>
@@ -115,7 +94,6 @@ namespace DbRefactor
 		/// <param name="version">The version that must became the current one</param>
 		public void MigrateTo(int version)
 		{
-			_provider.Logger = _logger;
 			BeginTransaction();
 
 			if (CurrentVersion == version)
@@ -145,7 +123,7 @@ namespace DbRefactor
 				v = CurrentVersion;
 			}
 
-			_logger.Started(originalVersion, version);
+			logger.Started(originalVersion, version);
 			RunGlobalSetUp();
 
 			while (true)
@@ -167,7 +145,7 @@ namespace DbRefactor
 
 					if (migration is Migration)
 					{
-						(migration as Migration).TransformationProvider = _provider;
+						(migration as Migration).TransformationProvider = provider;
 					}
 					else
 					{
@@ -179,23 +157,23 @@ namespace DbRefactor
 						RunSetUp();
 						if (goingUp)
 						{
-							_logger.MigrateUp(v, migrationName);
+							logger.MigrateUp(v, migrationName);
 							migration.Up();
 						}
 						else
 						{
-							_logger.MigrateDown(v, migrationName);
+							logger.MigrateDown(v, migrationName);
 							migration.Down();
 						}
 						RunTearDown();
 					}
 					catch (Exception ex)
 					{
-						_logger.Exception(v, migrationName, ex);
+						logger.Exception(v, migrationName, ex);
 
 						// Oho! error! We rollback changes.
-						_logger.RollingBack(originalVersion);
-						_provider.Rollback();
+						logger.RollingBack(originalVersion);
+						provider.Rollback();
 
 						throw;
 					}
@@ -204,7 +182,7 @@ namespace DbRefactor
 				else
 				{
 					// The migration number is not found
-					_logger.Skipping(v);
+					logger.Skipping(v);
 				}
 
 				if (goingUp)
@@ -225,11 +203,11 @@ namespace DbRefactor
 			}
 
 			// Update and commit all changes
-			_provider.CurrentVersion = version;
+			provider.CurrentVersion = version;
 			
 
-			_provider.Commit();
-			_logger.Finished(originalVersion, version);
+			provider.Commit();
+			logger.Finished(originalVersion, version);
 
 			try
 			{
@@ -240,7 +218,7 @@ namespace DbRefactor
 			}
 			catch (Exception ex)
 			{
-				_logger.Exception(v, "Global Tear down", ex);
+				logger.Exception(v, "Global Tear down", ex);
 				//throw;
 			}
 		}
@@ -260,11 +238,11 @@ namespace DbRefactor
 		{
 			get
 			{
-				if (_migrationsTypes.Count == 0)
+				if (migrationsTypes.Count == 0)
 				{
 					return 0;
 				}
-				return GetMigrationVersion((Type)_migrationsTypes[_migrationsTypes.Count - 1]);
+				return GetMigrationVersion(migrationsTypes[migrationsTypes.Count - 1]);
 			}
 		}
 
@@ -275,7 +253,7 @@ namespace DbRefactor
 		{
 			get
 			{
-				return _provider.CurrentVersion;
+				return provider.CurrentVersion;
 			}
 		}
 
@@ -286,7 +264,7 @@ namespace DbRefactor
 		{
 			get
 			{
-				return _migrationsTypes;
+				return migrationsTypes;
 			}
 		}
 
@@ -297,11 +275,11 @@ namespace DbRefactor
 		{
 			get
 			{
-				return _logger;
+				return logger;
 			}
 			set
 			{
-				_logger = value;
+				logger = value;
 			}
 		}
 
@@ -323,9 +301,9 @@ namespace DbRefactor
 		/// <exception cref="CheckForDuplicatedVersion">CheckForDuplicatedVersion</exception>
 		private void CheckForDuplicatedVersion()
 		{
-			List<int> versions = new List<int>();
+			var versions = new List<int>();
 
-			foreach (Type t in _migrationsTypes)
+			foreach (Type t in migrationsTypes)
 			{
 				int version = GetMigrationVersion(t);
 
@@ -343,7 +321,7 @@ namespace DbRefactor
 		/// <returns>The migrations collection</returns>
 		private List<Type> GetMigrationTypes(Assembly asm)
 		{
-			List<Type> migrations = new List<Type>();
+			var migrations = new List<Type>();
 
 			foreach (Type t in asm.GetTypes())
 			{
@@ -370,7 +348,6 @@ namespace DbRefactor
 			return name.Substring(0, 1).ToUpper() + name.Substring(1).ToLower();
 		}
 
-
 		#region Helper methods
 		private static TransformationProvider CreateProvider(string connectionString)
 		{
@@ -379,7 +356,7 @@ namespace DbRefactor
 
 		private BaseMigration GetMigration(int version)
 		{
-			foreach (Type t in _migrationsTypes)
+			foreach (Type t in migrationsTypes)
 			{
 				if (GetMigrationVersion(t) == version)
 				{

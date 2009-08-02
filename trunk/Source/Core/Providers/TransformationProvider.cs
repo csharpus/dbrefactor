@@ -14,13 +14,12 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq.Expressions;
 using DbRefactor.Providers.Columns;
-using System.Resources;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Tools.DesignByContract;
 using System.IO;
-using ILogger=DbRefactor.Tools.Loggers.ILogger;
+using DbRefactor.Tools.Loggers;
+
 
 namespace DbRefactor.Providers
 {
@@ -30,14 +29,13 @@ namespace DbRefactor.Providers
 	/// </summary>
 	public sealed class TransformationProvider
 	{
-		private ILogger _logger = new Tools.Loggers.Logger(false);
-
 		private readonly IDatabaseEnvironment environment;
 		private readonly ColumnProviderFactory columnFactory;
 
-		internal TransformationProvider(IDatabaseEnvironment environment, ColumnProviderFactory columnProviderFactory)
+		internal TransformationProvider(IDatabaseEnvironment environment, ILogger logger, ColumnProviderFactory columnProviderFactory)
 		{
 			this.environment = environment;
+			Logger = logger;
 			columnFactory = columnProviderFactory;
 		}
 
@@ -49,11 +47,7 @@ namespace DbRefactor.Providers
 		/// <summary>
 		/// Returns the event logger
 		/// </summary>
-		public ILogger Logger
-		{
-			get { return _logger; }
-			set { _logger = value; }
-		}
+		private ILogger Logger { get; set; }
 
 		/// <summary>
 		/// Add a new table
@@ -224,7 +218,7 @@ namespace DbRefactor.Providers
 			}
 			using (IDataReader reader =
 				ExecuteQuery(
-					"SELECT TOP 1 * FROM syscolumns WHERE id=object_id('{0}') AND name='{1}'",
+					"SELECT TOP 1 * FROM syscolumns WHERE id = object_id('{0}') AND name = '{1}'",
 					table,
 					column))
 			{
@@ -265,7 +259,7 @@ namespace DbRefactor.Providers
 		private bool ObjectExists(string name)
 		{
 			Check.RequireNonEmpty(name, "name");
-			using (IDataReader reader = ExecuteQuery("SELECT TOP 1 * FROM sysobjects WHERE id LIKE object_id('{0}')", name))
+			using (IDataReader reader = ExecuteQuery("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')", name))
 			{
 				return reader.Read();
 			}

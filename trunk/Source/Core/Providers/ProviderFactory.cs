@@ -9,15 +9,16 @@
 //under the License.
 #endregion
 
-using System;
+using System.Reflection;
+using DbRefactor.Tools.Loggers;
 
 namespace DbRefactor.Providers
 {
-	class ProviderFactory
+	public class ProviderFactory
 	{
 		public TransformationProvider Create(string connectionString)
 		{
-			return new TransformationProvider(new SqlServerEnvironment(connectionString), new ColumnProviderFactory(new CodeGenerationService()));
+			return new TransformationProvider(new SqlServerEnvironment(connectionString, Logger.NullLogger), Logger.NullLogger, new ColumnProviderFactory(new CodeGenerationService()));
 			//string providerName = GuessProviderName(name);
 
 			//return (TransformationProvider)Activator.CreateInstance(
@@ -27,24 +28,33 @@ namespace DbRefactor.Providers
 			//    new object[] { connectionString });
 		}
 
+		public TransformationProvider Create(string connectionString, ILogger logger)
+		{
+			return new TransformationProvider(new SqlServerEnvironment(connectionString, logger), logger, new ColumnProviderFactory(new CodeGenerationService()));
+		}
+
+		public Migrator CreateMigrator(string provider, string connectionString, string category, Assembly assembly, bool trace)
+		{
+			var logger = new Logger(trace);
+			logger.Attach(new ConsoleWriter());
+			return new Migrator(Create(connectionString, logger), category, assembly, logger);
+		}
+
 		private string GuessProviderName(string name)
 		{
 			if (name == "NHibernate.Driver.MySqlDataDriver")
 			{
 				return "MySql";
 			}
-			else if (name == "NHibernate.Driver.NpgsqlDriver")
+			if (name == "NHibernate.Driver.NpgsqlDriver")
 			{
 				return "PostgreSQL";
 			}
-			else if (name == "NHibernate.Driver.SqlClientDriver")
+			if (name == "NHibernate.Driver.SqlClientDriver")
 			{
 				return "SqlServer";
 			}
-			else
-			{
-				return name;
-			}
+			return name;
 		}
 	}
 }

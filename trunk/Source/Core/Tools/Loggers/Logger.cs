@@ -18,29 +18,38 @@ namespace DbRefactor.Tools.Loggers
 	/// </summary>
 	public class Logger : IAttachableLogger
 	{
-		private int _widthFirstColumn = 5;
-		private bool _trace = false;
-		private List<ILogWriter> _writers = new List<ILogWriter>();
+		private const int WidthFirstColumn = 5;
+		private readonly bool trace;
+		private readonly List<ILogWriter> writers = new List<ILogWriter>();
+		private static readonly ILogger nullLogger = new Logger(false);
+
+		public static ILogger NullLogger
+		{
+			get
+			{
+				return nullLogger;
+			}
+		}
 
 		public Logger(bool trace)
 		{
-			_trace = trace;
+			this.trace = trace;
 		}
 
 		public Logger(bool trace, params ILogWriter[] writers)
 			: this(trace)
 		{
-			_writers.AddRange(writers);
+			this.writers.AddRange(writers);
 		}
 
 		public void Attach(ILogWriter writer)
 		{
-			_writers.Add(writer);
+			writers.Add(writer);
 		}
 
 		public void Detach(ILogWriter writer)
 		{
-			_writers.Remove(writer);
+			writers.Remove(writer);
 		}
 
 		public void Started(int currentVersion, int finalVersion)
@@ -50,7 +59,7 @@ namespace DbRefactor.Tools.Loggers
 
 		public void MigrateUp(int version, string migrationName)
 		{
-			WriteLine("{0} {1}", version.ToString().PadLeft(_widthFirstColumn), migrationName);
+			WriteLine("{0} {1}", version.ToString().PadLeft(WidthFirstColumn), migrationName);
 		}
 
 		public void MigrateDown(int version, string migrationName)
@@ -60,7 +69,7 @@ namespace DbRefactor.Tools.Loggers
 
 		public void Skipping(int version)
 		{
-			WriteLine("{0} {1}", version.ToString().PadLeft(_widthFirstColumn), "<Migration not found>");
+			WriteLine("{0} {1}", version.ToString().PadLeft(WidthFirstColumn), "<Migration not found>");
 		}
 
 		public void RollingBack(int originalVersion)
@@ -70,7 +79,7 @@ namespace DbRefactor.Tools.Loggers
 
 		public void Exception(int version, string migrationName, Exception ex)
 		{
-			UntracedWriteLine("{0} Error in migration {1} : {2}", "".PadLeft(_widthFirstColumn), version, ex.Message);
+			UntracedWriteLine("{0} Error in migration {1} : {2}", "".PadLeft(WidthFirstColumn), version, ex.Message);
 			UntracedWriteLine("========= Error detail =========");
 			UntracedWriteLine(ex.ToString());
 			UntracedWriteLine(ex.StackTrace);
@@ -91,13 +100,13 @@ namespace DbRefactor.Tools.Loggers
 
 		public void Log(string format, params object[] args)
 		{
-			Write("{0} ", "".PadLeft(_widthFirstColumn));
+			Write("{0} ", "".PadLeft(WidthFirstColumn));
 			WriteLine(format, args);
 		}
 
 		public void Warn(string format, params object[] args)
 		{
-			Write("{0} Warning! : ", "".PadLeft(_widthFirstColumn));
+			Write("{0} Warning! : ", "".PadLeft(WidthFirstColumn));
 			WriteLine(format, args);
 		}
 
@@ -108,7 +117,7 @@ namespace DbRefactor.Tools.Loggers
 
 		private void UntracedWrite(string message, params object[] args)
 		{
-			foreach (ILogWriter writer in _writers)
+			foreach (ILogWriter writer in writers)
 			{
 				writer.Write(message, args);
 			}
@@ -116,7 +125,7 @@ namespace DbRefactor.Tools.Loggers
 
 		private void UntracedWriteLine(string message, params object[] args)
 		{
-			foreach (ILogWriter writer in _writers)
+			foreach (ILogWriter writer in writers)
 			{
 				writer.WriteLine(message, args);
 			}
@@ -124,13 +133,13 @@ namespace DbRefactor.Tools.Loggers
 
 		private void Write(string message, params object[] args)
 		{
-			if (!_trace) return;
+			if (!trace) return;
 			UntracedWrite(message, args);
 		}
 
 		private void WriteLine(string message, params object[] args)
 		{
-			if (!_trace) return;
+			if (!trace) return;
 			UntracedWriteLine(message, args);
 		}
 

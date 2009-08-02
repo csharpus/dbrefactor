@@ -8,14 +8,12 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
-using System;
+
 using System.IO;
 using System.Reflection;
-
+using DbRefactor.Providers;
 using NAnt.Core;
 using NAnt.Core.Attributes;
-using NAnt.Core.Util;
-
 using Migrator.NAnt.Loggers;
 
 namespace DbRefactor.NAnt
@@ -26,11 +24,11 @@ namespace DbRefactor.NAnt
 	[TaskName("migrate")]
 	public class MigrateTask : Task
 	{
-		private int _to = -1; // To last revision
-		private string _provider;
-		private string _connectionString;
-		private FileInfo _migrationsAssembly;
-		private bool _trace;
+		private int to = -1; // To last revision
+		private string provider;
+		private string connectionString;
+		private FileInfo migrationsAssembly;
+		private bool trace;
 		
 		#region Attribute properties
 		[TaskAttribute("provider", Required=true)]
@@ -38,11 +36,11 @@ namespace DbRefactor.NAnt
 		{
 			set
 			{
-				_provider = value;
+				provider = value;
 			}
 			get
 			{
-				return _provider;
+				return provider;
 			}
 		}
 		
@@ -51,11 +49,11 @@ namespace DbRefactor.NAnt
 		{
 			set
 			{
-				_connectionString = value;
+				connectionString = value;
 			}
 			get
 			{
-				return _connectionString;
+				return connectionString;
 			}
 		}
 		
@@ -64,11 +62,11 @@ namespace DbRefactor.NAnt
 		{
 			set
 			{
-				_migrationsAssembly = value;
+				migrationsAssembly = value;
 			}
 			get
 			{
-				return _migrationsAssembly;
+				return migrationsAssembly;
 			}
 		}
 		
@@ -77,11 +75,11 @@ namespace DbRefactor.NAnt
 		{
 			set
 			{
-				_to = value;
+				to = value;
 			}
 			get
 			{
-				return _to;
+				return to;
 			}
 		}
 		
@@ -90,26 +88,26 @@ namespace DbRefactor.NAnt
 		{
 			set
 			{
-				_trace = value;
+				trace = value;
 			}
 			get
 			{
-				return _trace;
+				return trace;
 			}
 		}
 		#endregion
 		
 		protected override void ExecuteTask()
 		{
-			Assembly asm = Assembly.LoadFrom(_migrationsAssembly.FullName);
-			
-			Migrator mig = new Migrator(_provider, _connectionString, asm, _trace);
+			Assembly asm = Assembly.LoadFrom(migrationsAssembly.FullName);
+
+			var mig = new ProviderFactory().CreateMigrator(provider, connectionString, null, asm, trace);
 			mig.Logger = new TaskLogger(this);
 			
-			if (_to == -1)
+			if (to == -1)
 				mig.MigrateToLastVersion();
 			else
-				mig.MigrateTo(_to);
+				mig.MigrateTo(to);
 		}
 	}
 }
