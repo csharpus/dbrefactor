@@ -13,13 +13,14 @@
 
 using System;
 using System.Linq.Expressions;
+using DbRefactor.Providers.TypeToSqlProviders;
 
 namespace DbRefactor.Providers.Columns
 {
 	public class DateTimeProvider : ColumnProvider
 	{
-		public DateTimeProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService)
-			: base(name, defaultValue, codeGenerationService)
+		public DateTimeProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
+			: base(name, defaultValue, codeGenerationService, sqlTypes)
 		{
 		}
 
@@ -31,6 +32,11 @@ namespace DbRefactor.Providers.Columns
 		protected override string DefaultValueCode()
 		{
 			return CodeGenerationService.DateTimeValue((DateTime) DefaultValue);
+		}
+
+		protected override string SqlType()
+		{
+			return SQLTypes.DateTime();
 		}
 	}
 }

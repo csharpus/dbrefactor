@@ -30,13 +30,14 @@ namespace DbRefactor.Providers
 	public sealed class TransformationProvider
 	{
 		private readonly IDatabaseEnvironment environment;
-		private readonly ColumnProviderFactory columnFactory;
+		private readonly ColumnProviderFactory columnProviderFactory;
 
-		internal TransformationProvider(IDatabaseEnvironment environment, ILogger logger, ColumnProviderFactory columnProviderFactory)
+		internal TransformationProvider(IDatabaseEnvironment environment, ILogger logger,
+		                                ColumnProviderFactory columnProviderFactory)
 		{
 			this.environment = environment;
 			Logger = logger;
-			columnFactory = columnProviderFactory;
+			this.columnProviderFactory = columnProviderFactory;
 		}
 
 		internal IDatabaseEnvironment Environment
@@ -49,20 +50,6 @@ namespace DbRefactor.Providers
 		/// </summary>
 		private ILogger Logger { get; set; }
 
-		/// <summary>
-		/// Add a new table
-		/// </summary>
-		/// <param name="name">Table name</param>
-		/// <param name="columns">Columns</param>
-		/// <example>
-		/// Adds the Test table with two columns:
-		/// <code>
-		/// Database.AddTable("Test",
-		///	                  new Column("Id", typeof(int), ColumnProperties.PrimaryKey),
-		///	                  new Column("Title", typeof(string), 100)
-		///	                 );
-		/// </code>
-		/// </example>
 		public void AddTable(string name, params Column[] columns)
 		{
 			Check.RequireNonEmpty(name, "name");
@@ -94,10 +81,10 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(table, "table");
 			Check.Ensure(IsUnique(table, columnName), "column is not unique");
 
-			List<string> indexes = GetIndexs(table, columnName);
+			List<string> indexes = GetConstraints(table, columnName);
 			Check.Require(indexes.Count > 0, "Index not found.");
 
-			RemoveIndex(table, indexes[0]);
+			DropConstraint(table, indexes[0]);
 		}
 
 		public void DropPrimaryKey(string table)
@@ -105,14 +92,14 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(table, "table");
 			string primaryKeyColumn = GetPrimaryKeyColumn(table);
 			Check.RequireNonEmpty(primaryKeyColumn, "primary key");
-			
-			List<string> indexes = GetIndexs(table, primaryKeyColumn);
+
+			List<string> indexes = GetConstraints(table, primaryKeyColumn);
 			Check.Require(indexes.Count > 0, "Primary index not found.");
 
-			RemoveIndex(table, indexes[0]);
+			DropConstraint(table, indexes[0]);
 		}
 
-		private List<string> GetIndexs(string table, string column)
+		private List<string> GetConstraints(string table, string column)
 		{
 			string sql =
 				String.Format(
@@ -134,21 +121,23 @@ namespace DbRefactor.Providers
 					FROM constraint_depends as c
 					WHERE c.TABLE_NAME = '{0}' AND c.COLUMN_NAME = '{1}';",
 					table, column);
-			
-			var indexes = new List<string>();
-			using (IDataReader reader =  ExecuteQuery(sql))
+
+			var constraints = new List<string>();
+			using (IDataReader reader = ExecuteQuery(sql))
 			{
 				while (reader.Read())
 				{
-					indexes.Add(reader.GetString(0));
+					constraints.Add(reader.GetString(0));
 				}
 			}
-			return indexes;
+			return constraints;
 		}
 
 		private string GetPrimaryKeyColumn(string table)
 		{
-			string sql = @"SELECT [name]
+			const string sql =
+						@"
+						SELECT [name]
 						FROM syscolumns 
 						 WHERE [id] IN (SELECT [id] 
 										  FROM sysobjects 
@@ -158,7 +147,6 @@ namespace DbRefactor.Providers
 										   JOIN sysobjects SO ON SIK.[id] = SO.[id]  
 										  WHERE SIK.indid = 2
 											AND SO.[name] = '{0}')
-
 						";
 
 			return Convert.ToString(ExecuteScalar(sql, table));
@@ -272,42 +260,6 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("ALTER TABLE [{0}] ALTER COLUMN {1}", table, sqlColumn);
 		}
 
-		public class Relation
-		{
-			public Relation(string parent, string child)
-			{
-				_parent = parent;
-				_child = child;
-			}
-
-			private string _parent;
-
-			public string Parent
-			{
-				get { return _parent; }
-
-				set { _parent = value; }
-			}
-
-			private string _child;
-
-			public string Child
-			{
-				get { return _child; }
-
-				set { _child = value; }
-			}
-		}
-
-		public class ForeignKey
-		{
-			public string Name { get; set; }
-			public string PrimaryTable { get; set; }
-			public string PrimaryColumn { get; set; }
-			public string ForeignTable { get; set; }
-			public string ForeignColumn { get; set; }
-		}
-
 		public List<ForeignKey> GetForeignKeys()
 		{
 			string query =
@@ -329,7 +281,7 @@ namespace DbRefactor.Providers
 					keys.Add(
 						new ForeignKey
 							{
-								Name = reader["Name"].ToString(), 
+								Name = reader["Name"].ToString(),
 								ForeignTable = reader["ForeignTable"].ToString(),
 								ForeignColumn = reader["ForeignColumn"].ToString(),
 								PrimaryTable = reader["PrimaryTable"].ToString(),
@@ -347,8 +299,8 @@ namespace DbRefactor.Providers
 			foreach (var key in keys)
 			{
 				relations.Add(new Relation(
-							key.PrimaryTable,
-							key.ForeignTable));
+				              	key.PrimaryTable,
+				              	key.ForeignTable));
 			}
 			return relations;
 		}
@@ -369,7 +321,7 @@ namespace DbRefactor.Providers
 			public static List<string> Run(List<string> tables, List<Relation> relations)
 			{
 				CheckCyclicDependencyAbsence(relations);
-				List<string> sortedTables = new List<string>(tables);
+				var sortedTables = new List<string>(tables);
 				sortedTables.Sort(delegate(string a, string b)
 				                  	{
 				                  		if (a == b) return 0;
@@ -400,39 +352,10 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(column, "column");
-			string sqlContrainte =
-				String.Format(
-					@"WITH constraint_depends
-						AS
-						(
-							SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.CONSTRAINT_NAME
-							FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
-							UNION ALL
-							SELECT s.name, o.name, c.name, d.name
-							FROM sys.default_constraints AS d
-							JOIN sys.objects AS o
-								ON o.object_id = d.parent_object_id
-							JOIN sys.columns AS c
-								ON c.object_id = o.object_id AND c.column_id = d.parent_column_id
-							JOIN sys.schemas AS s
-								ON s.schema_id = o.schema_id)
-					SELECT c.CONSTRAINT_NAME
-					FROM constraint_depends as c
-					WHERE c.TABLE_NAME = '{0}' AND c.COLUMN_NAME = '{1}';",
-					table, column);
-			var constraints = new List<string>();
-
-			using (IDataReader reader = ExecuteQuery(sqlContrainte))
-			{
-				while (reader.Read())
-				{
-					constraints.Add(reader.GetString(0));
-				}
-			}
-			// Can't share the connection so two phase modif
+			var constraints = GetConstraints(table, column);
 			foreach (string constraint in constraints)
 			{
-				RemoveForeignKey(table, constraint);
+				DropConstraint(table, constraint);
 			}
 		}
 
@@ -449,7 +372,7 @@ namespace DbRefactor.Providers
 
 		private static string JoinIndexes(Column[] columns)
 		{
-			List<string> indexes = new List<string>(columns.Length);
+			var indexes = new List<string>(columns.Length);
 			foreach (Column column in columns)
 			{
 				string indexSql = column.IndexSQL();
@@ -538,7 +461,7 @@ namespace DbRefactor.Providers
 		{
 			AddColumn(table, column, type, size, property, null);
 		}
-			
+
 		/// <summary>
 		/// Add a new column to an existing table.
 		/// </summary>
@@ -634,8 +557,8 @@ namespace DbRefactor.Providers
 		public void AddForeignKey(string name, string primaryTable, string primaryColumn,
 		                          string refTable, string refColumn)
 		{
-			AddForeignKey(name, primaryTable, new string[] {primaryColumn}, refTable,
-			              new string[] {refColumn});
+			AddForeignKey(name, primaryTable, new[] {primaryColumn}, refTable,
+			              new[] {refColumn});
 		}
 
 		/// <summary>
@@ -653,8 +576,8 @@ namespace DbRefactor.Providers
 		public void AddForeignKey(string name, string primaryTable, string primaryColumn, string refTable, string refColumn,
 		                          OnDelete ondelete)
 		{
-			AddForeignKey(name, primaryTable, new string[] {primaryColumn}, refTable,
-			              new string[] {refColumn}, ondelete);
+			AddForeignKey(name, primaryTable, new[] {primaryColumn}, refTable,
+			              new[] {refColumn}, ondelete);
 		}
 
 		// Not sure how SQL server handles ON UPDATRE & ON DELETE
@@ -682,20 +605,13 @@ namespace DbRefactor.Providers
 		/// Removes a constraint.
 		/// </summary>
 		/// <param name="table">Table owning the constraint</param>
-		/// <param name="key">Constraint name</param>
-		public void RemoveForeignKey(string table, string key)
-		{
-			Check.RequireNonEmpty(key, "key");
-			Check.RequireNonEmpty(table, "table");
-			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT [{1}]", table, key);
-		}
-
-		public void RemoveIndex(string table, string index)
+		/// <param name="name">Constraint name</param>
+		public void DropConstraint(string table, string name)
 		{
 			Check.RequireNonEmpty(table, "table");
-			Check.RequireNonEmpty(index, "index");
+			Check.RequireNonEmpty(name, "name");
 
-			ExecuteNonQuery("ALTER TABLE [dbo].[{0}] DROP CONSTRAINT [{1}]", table, index);
+			ExecuteNonQuery("ALTER TABLE [dbo].[{0}] DROP CONSTRAINT [{1}]", table, name);
 		}
 
 		public string[] GetTables()
@@ -713,40 +629,40 @@ namespace DbRefactor.Providers
 			return tables.ToArray();
 		}
 
-		private Dictionary<string, Func<ColumnData, ColumnProvider>> GetTypesMap(ColumnData data)
+		private Dictionary<string, Func<ColumnData, ColumnProvider>> GetTypesMap()
 		{
 			return new Dictionary<string, Func<ColumnData, ColumnProvider>>
 			       	{
-			       		{"bigint", columnFactory.CreateLong},
-			       		{"binary", columnFactory.CreateBinary},
-			       		{"bit", columnFactory.CreateBoolean},
-			       		{"char", columnFactory.CreateString},
-			       		{"datetime", columnFactory.CreateDateTime},
-			       		{"decimal", columnFactory.CreateDecimal},
-			       		{"float", columnFactory.CreateFloat},
-			       		{"image", columnFactory.CreateBinary},
-			       		{"int", columnFactory.CreateInt},
-			       		{"money", columnFactory.CreateDecimal},
-			       		{"nchar", columnFactory.CreateString},
-			       		{"ntext", columnFactory.CreateText},
-			       		{"numeric", columnFactory.CreateDecimal},
-			       		{"nvarchar", columnFactory.CreateString},
-			       		{"real", columnFactory.CreateFloat},
-			       		{"smalldatetime", columnFactory.CreateDateTime},
-			       		{"smallint", columnFactory.CreateInt},
-			       		{"smallmoney", columnFactory.CreateDecimal},
-			       		{"sql_variant", columnFactory.CreateBinary},
-			       		{"text", columnFactory.CreateText},
-			       		{"timestamp", columnFactory.CreateDateTime},
-			       		{"tinyint", columnFactory.CreateInt},
-			       		{"uniqueidentifier", columnFactory.CreateString},
-			       		{"varbinary", columnFactory.CreateBinary},
-			       		{"varchar", columnFactory.CreateString},
-			       		{"xml", columnFactory.CreateString}
+			       		{"bigint", columnProviderFactory.CreateLong},
+			       		{"binary", columnProviderFactory.CreateBinary},
+			       		{"bit", columnProviderFactory.CreateBoolean},
+			       		{"char", columnProviderFactory.CreateString},
+			       		{"datetime", columnProviderFactory.CreateDateTime},
+			       		{"decimal", columnProviderFactory.CreateDecimal},
+			       		{"float", columnProviderFactory.CreateFloat},
+			       		{"image", columnProviderFactory.CreateBinary},
+			       		{"int", columnProviderFactory.CreateInt},
+			       		{"money", columnProviderFactory.CreateDecimal},
+			       		{"nchar", columnProviderFactory.CreateString},
+			       		{"ntext", columnProviderFactory.CreateText},
+			       		{"numeric", columnProviderFactory.CreateDecimal},
+			       		{"nvarchar", columnProviderFactory.CreateString},
+			       		{"real", columnProviderFactory.CreateFloat},
+			       		{"smalldatetime", columnProviderFactory.CreateDateTime},
+			       		{"smallint", columnProviderFactory.CreateInt},
+			       		{"smallmoney", columnProviderFactory.CreateDecimal},
+			       		{"sql_variant", columnProviderFactory.CreateBinary},
+			       		{"text", columnProviderFactory.CreateText},
+			       		{"timestamp", columnProviderFactory.CreateDateTime},
+			       		{"tinyint", columnProviderFactory.CreateInt},
+			       		{"uniqueidentifier", columnProviderFactory.CreateString},
+			       		{"varbinary", columnProviderFactory.CreateBinary},
+			       		{"varchar", columnProviderFactory.CreateString},
+			       		{"xml", columnProviderFactory.CreateString}
 			       	};
 		}
 
-		private const int GUID_LENGTH = 38; // 36 symbols in guid + 2 curly brackets
+		private const int GuidLength = 38; // 36 symbols in guid + 2 curly brackets
 
 		private bool IsUnique(string table, string column)
 		{
@@ -793,7 +709,7 @@ namespace DbRefactor.Providers
 					           		Radix = NullSafeGet<short>(reader, "NUMERIC_PRECISION_RADIX"),
 					           		DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
 					           	};
-					providers.Add(GetTypesMap(data)[data.DataType](data));
+					providers.Add(GetTypesMap()[data.DataType](data));
 				}
 			}
 			foreach (var provider in providers)
@@ -956,8 +872,8 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.Require(columnValues.Length > 0, "You have to pass at least one column value");
-			string[] columns = new string[columnValues.Length];
-			string[] values = new string[columnValues.Length];
+			var columns = new string[columnValues.Length];
+			var values = new string[columnValues.Length];
 			int i = 0;
 
 			foreach (string cs in columnValues)
@@ -998,7 +914,7 @@ namespace DbRefactor.Providers
 			environment.CommitTransaction();
 		}
 
-		private string _category;
+		private string category;
 
 		/// <summary>
 		/// Get or set the current version of the database.
@@ -1013,7 +929,7 @@ namespace DbRefactor.Providers
 			get
 			{
 				CreateSchemaInfoTable();
-				object version = SelectScalar("Version", "SchemaInfo", String.Format("Category='{0}'", _category));
+				object version = SelectScalar("Version", "SchemaInfo", String.Format("Category='{0}'", category));
 				if (version == null)
 				{
 					return 0;
@@ -1023,18 +939,18 @@ namespace DbRefactor.Providers
 			set
 			{
 				CreateSchemaInfoTable();
-				int count = Update("SchemaInfo", new[] {"Version=" + value}, String.Format("Category='{0}'", _category));
+				int count = Update("SchemaInfo", new[] {"Version=" + value}, String.Format("Category='{0}'", category));
 				if (count == 0)
 				{
-					Insert("SchemaInfo", "Version=" + value, "Category='" + _category + "'");
+					Insert("SchemaInfo", "Version=" + value, "Category='" + category + "'");
 				}
 			}
 		}
 
 		public string Category
 		{
-			get { return _category; }
-			set { _category = value ?? String.Empty; }
+			get { return category; }
+			set { category = value ?? String.Empty; }
 		}
 
 		private void CreateSchemaInfoTable()
@@ -1113,5 +1029,27 @@ namespace DbRefactor.Providers
 		public int? Radix { get; set; }
 
 		public object DefaultValue { get; set; }
+	}
+
+	public class Relation
+	{
+		public Relation(string parent, string child)
+		{
+			Parent = parent;
+			Child = child;
+		}
+
+		public string Parent { get; set; }
+
+		public string Child { get; set; }
+	}
+
+	public class ForeignKey
+	{
+		public string Name { get; set; }
+		public string PrimaryTable { get; set; }
+		public string PrimaryColumn { get; set; }
+		public string ForeignTable { get; set; }
+		public string ForeignColumn { get; set; }
 	}
 }

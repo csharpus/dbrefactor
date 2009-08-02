@@ -14,6 +14,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using DbRefactor.Providers.TypeToSqlProviders;
 
 namespace DbRefactor.Providers.Columns
 {
@@ -21,13 +22,20 @@ namespace DbRefactor.Providers.Columns
 	{
 		private readonly object defaultValue;
 		private readonly ICodeGenerationService codeGenerationService;
+		private readonly ISqlTypes sqlTypes;
 		private readonly List<PropertyProvider> properties = new List<PropertyProvider>();
 
-		protected ColumnProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService)
+		protected ColumnProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
 		{
 			this.defaultValue = defaultValue;
 			this.codeGenerationService = codeGenerationService;
+			this.sqlTypes = sqlTypes;
 			Name = name;
+		}
+
+		public ISqlTypes SQLTypes
+		{
+			get { return sqlTypes; }
 		}
 
 		public string Name { get; private set; }
@@ -77,5 +85,7 @@ namespace DbRefactor.Providers.Columns
 		{
 			return CodeGenerationService.PrimitiveValue(DefaultValue);
 		}
+
+		protected abstract string SqlType();
 	}
 }

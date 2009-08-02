@@ -10,6 +10,7 @@
 #endregion
 
 using System.Reflection;
+using DbRefactor.Providers.TypeToSqlProviders;
 using DbRefactor.Tools.Loggers;
 
 namespace DbRefactor.Providers
@@ -18,7 +19,7 @@ namespace DbRefactor.Providers
 	{
 		public TransformationProvider Create(string connectionString)
 		{
-			return new TransformationProvider(new SqlServerEnvironment(connectionString, Logger.NullLogger), Logger.NullLogger, new ColumnProviderFactory(new CodeGenerationService()));
+			return new TransformationProvider(new SqlServerEnvironment(connectionString, Logger.NullLogger), Logger.NullLogger, new ColumnProviderFactory(new CodeGenerationService(), new SqlServerTypes()));
 			//string providerName = GuessProviderName(name);
 
 			//return (TransformationProvider)Activator.CreateInstance(
@@ -30,7 +31,7 @@ namespace DbRefactor.Providers
 
 		public TransformationProvider Create(string connectionString, ILogger logger)
 		{
-			return new TransformationProvider(new SqlServerEnvironment(connectionString, logger), logger, new ColumnProviderFactory(new CodeGenerationService()));
+			return new TransformationProvider(new SqlServerEnvironment(connectionString, logger), logger, new ColumnProviderFactory(new CodeGenerationService(), new SqlServerTypes()));
 		}
 
 		public Migrator CreateMigrator(string provider, string connectionString, string category, Assembly assembly, bool trace)

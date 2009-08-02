@@ -13,6 +13,7 @@
 
 using System;
 using System.Linq.Expressions;
+using DbRefactor.Providers.TypeToSqlProviders;
 
 namespace DbRefactor.Providers.Columns
 {
@@ -20,8 +21,8 @@ namespace DbRefactor.Providers.Columns
 	{
 		private readonly int size;
 
-		public StringProvider(string name, object defaultValue, int size, ICodeGenerationService codeGenerationService)
-			: base(name, defaultValue, codeGenerationService)
+		public StringProvider(string name, object defaultValue, int size, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
+			: base(name, defaultValue, codeGenerationService, sqlTypes)
 		{
 			this.size = size;
 		}
@@ -34,6 +35,11 @@ namespace DbRefactor.Providers.Columns
 		public override Expression<Action<NewTable>> Method()
 		{
 			return t => t.String(Name, Size);
+		}
+
+		protected override string SqlType()
+		{
+			return SQLTypes.String(Size);
 		}
 	}
 }

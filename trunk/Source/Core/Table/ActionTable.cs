@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 //The contents of this file are subject to the Mozilla Public License
 //Version 1.1 (the "License"); you may not use this file except in
@@ -46,18 +46,15 @@ namespace DbRefactor
 
 		private List<string> columnValues; 
 		private ColumnsCollection columns;				// For column operations
-        
-		private const string StringParameterPattern = "{0}='{1}'";
-		private const string NotStringParameterPattern = "{0}={1}";
-        
+
 		private string newTableName;
-        private string _foreignKeyColumn;
-		private string _primaryKeyTable;
-		private string _primaryKeyColumn;
+        private string foreignKeyColumn;
+		private string primaryKeyTable;
+		private string primaryKeyColumn;
 		private OnDelete foreignKeyConstraint = OnDelete.NoAction;
 		private string keyName;
-		private string _columnName;
-		private object operationParameters = null;
+		private string columnName;
+		private object operationParameters;
         private Operation operation = Operation.None;
 		
 		public ActionTable(TransformationProvider provider, string tableName) : base(provider, tableName)
@@ -133,7 +130,7 @@ namespace DbRefactor
 		public T SelectScalar<T>(string what, object where)
 		{
 			List<string> crieriaParamList = ParametersHelper.GetParameters(where);
-			return (T)provider.SelectScalar(what, TableName, String.Join(" AND ", crieriaParamList.ToArray())); ;
+			return (T)provider.SelectScalar(what, TableName, String.Join(" AND ", crieriaParamList.ToArray()));
 		}
 
 		/// <summary>
@@ -145,7 +142,7 @@ namespace DbRefactor
 		public IDataReader Select(string what, object where)
 		{
 			List<string> crieriaParamList = ParametersHelper.GetParameters(where);
-			return provider.Select(what, TableName, String.Join(" AND ", crieriaParamList.ToArray())); ;
+			return provider.Select(what, TableName, String.Join(" AND ", crieriaParamList.ToArray()));
 		}
 
 		#region Table operations
@@ -221,9 +218,9 @@ namespace DbRefactor
 		public void AddForeignKey(string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn, OnDelete ondelete)
 		{
 			operation = Operation.AddForeignKey;
-			_foreignKeyColumn = foreignKeyColumn;
-			_primaryKeyTable = primaryKeyTable;
-			_primaryKeyColumn = primaryKeyColumn;
+			this.foreignKeyColumn = foreignKeyColumn;
+			this.primaryKeyTable = primaryKeyTable;
+			this.primaryKeyColumn = primaryKeyColumn;
 			foreignKeyConstraint = ondelete;
 			Execute();
 		}
@@ -243,7 +240,7 @@ namespace DbRefactor
 
 		public void DropUnique(string column)
 		{
-			_columnName = column;
+			columnName = column;
 			operation = Operation.DropUnique;
 			Execute();
 		}
@@ -313,20 +310,20 @@ namespace DbRefactor
 					break;
 
 				case Operation.RemoveForeignKey:
-					provider.RemoveForeignKey(TableName, keyName);
+					provider.DropConstraint(TableName, keyName);
 					break;
 
 				case Operation.AddForeignKey:
 					string key = keyName;
 					if (String.IsNullOrEmpty(keyName))
-						key = GenerateForeignKey(TableName, _primaryKeyTable);	// FK_TableName_prinaryKeyTable
-					provider.AddForeignKey(key, TableName, _foreignKeyColumn, _primaryKeyTable, _primaryKeyColumn, foreignKeyConstraint);
+						key = GenerateForeignKey(TableName, primaryKeyTable);	// FK_TableName_prinaryKeyTable
+					provider.AddForeignKey(key, TableName, foreignKeyColumn, primaryKeyTable, primaryKeyColumn, foreignKeyConstraint);
 					break;
 
 				case Operation.DropForeignKey:
 					string _key = keyName;
 					if (String.IsNullOrEmpty(_key))
-						provider.RemoveForeignKey(TableName, _key);
+						provider.DropConstraint(TableName, _key);
 					break;
 
 				case Operation.DropPrimaryKey:
@@ -334,7 +331,7 @@ namespace DbRefactor
 					break;
 
 				case Operation.DropUnique:
-					provider.DropUnique(TableName, _columnName);
+					provider.DropUnique(TableName, columnName);
 					break;
 
 				case Operation.RenameTable:

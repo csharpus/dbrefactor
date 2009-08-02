@@ -11,17 +11,13 @@
 
 #endregion
 
+using System;
 using DbRefactor.Providers.ColumnPropertiesMappers;
 
 namespace DbRefactor.Providers.TypeToSqlProviders
 {
-	sealed class SQLServerTypeToSqlProvider
+	sealed class SqlServerTypeToSqlProvider
 	{
-		public ColumnPropertiesMapper PrimaryKey
-		{
-			get { return Integer; }
-		}
-
 		public ColumnPropertiesMapper Char(byte size)
 		{
 			return new ColumnPropertiesMapper(string.Format("nchar({0})", size));
@@ -100,4 +96,72 @@ namespace DbRefactor.Providers.TypeToSqlProviders
 			get { return new ColumnPropertiesMapper("datetime"); }
 		}
 	}
+
+	public interface ISqlTypes
+	{
+		string Binary();
+		string Boolean();
+		string DateTime();
+		string Decimal(int precision, int radix);
+		string Double();
+		string Float();
+		string Int();
+		string Long();
+		string String(int size);
+		string Text();
+	}
+
+	sealed class SqlServerTypes : ISqlTypes
+	{
+		public string Binary()
+		{
+			return "varbinary(max)";
+		}
+
+		public string Boolean()
+		{
+			return "bit";
+		}
+
+		public string DateTime()
+		{
+			return "datetime";
+		}
+
+		public string Decimal(int precision, int radix)
+		{
+			return string.Format("decimal({0},{1})", precision, radix);
+		}
+
+		public string Double()
+		{
+			return "double";
+		}
+
+		public string Float()
+		{
+			return "real";
+		}
+
+		public string Int()
+		{
+			return "integer";
+		}
+
+		public string Long()
+		{
+			return "long";
+		}
+
+		public string String(int size)
+		{
+			return string.Format("varchar({0})", size);
+		}
+
+		public string Text()
+		{
+			return "text";
+		}
+	}
 }
+

@@ -15,12 +15,11 @@ namespace DbRefactor
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Text;
 
 	[Obsolete("This class will be removed in feature")]
 	public class ColumnsCollection
 	{
-		private readonly List<Column> _columns = new List<Column>();
+		private readonly List<Column> columns = new List<Column>();
 
 		private ColumnsCollection()
 		{
@@ -28,7 +27,7 @@ namespace DbRefactor
 
 		public Column[] ToArray()
 		{
-			return _columns.ToArray();
+			return columns.ToArray();
 		}
 
 		internal static ColumnsCollection Create()
@@ -38,18 +37,18 @@ namespace DbRefactor
 
 		public void Add(Column column)
 		{
-			_columns.Add(column);
+			columns.Add(column);
 		}
 
 		public Column LastColumnItem
 		{
 			get
 			{
-				if (_columns.Count == 0)
+				if (columns.Count == 0)
 				{
 					throw new InvalidOperationException("Columns does not have any columns");
 				}
-				return _columns[_columns.Count - 1];
+				return columns[columns.Count - 1];
 			}
 		}
 
@@ -89,14 +88,14 @@ namespace DbRefactor
 			return this;
 		}
 
-		private const int defaultTextLength = 1024;
+		private const int DefaultTextLength = 1024;
 
 		/// <summary>
 		/// Creates a text column for "CreateTable" method
 		/// </summary>
 		public ColumnsCollection Text(string name)
 		{
-			Add(new Column(name, typeof(string), defaultTextLength));
+			Add(new Column(name, typeof(string), DefaultTextLength));
 			return this;
 		}
 
@@ -105,7 +104,7 @@ namespace DbRefactor
 		/// </summary>
 		public ColumnsCollection Text(string name, ColumnProperties properties)
 		{
-			Add(new Column(name, typeof(string), defaultTextLength, properties));
+			Add(new Column(name, typeof(string), DefaultTextLength, properties));
 			return this;
 		}
 
@@ -114,7 +113,7 @@ namespace DbRefactor
 		/// </summary>
 		public ColumnsCollection Text(string name, string defaultValue)
 		{
-			Add(new Column(name, typeof(string), defaultTextLength,
+			Add(new Column(name, typeof(string), DefaultTextLength,
 				ColumnProperties.Null, defaultValue));
 			return this;
 		}
@@ -124,7 +123,7 @@ namespace DbRefactor
 		/// </summary>
 		public ColumnsCollection Text(string name, ColumnProperties properties, string defaultValue)
 		{
-			Add(new Column(name, typeof(string), defaultTextLength, properties, defaultValue));
+			Add(new Column(name, typeof(string), DefaultTextLength, properties, defaultValue));
 			return this;
 		}
 
@@ -236,15 +235,15 @@ namespace DbRefactor
 			return this;
 		}
 
-		private const int defaultWhole = 18;
-		private const int defaultRemainder = 0;
+		private const int DefaultWhole = 18;
+		private const int DefaultRemainder = 0;
 
 		/// <summary>
 		/// Creates a decimal column for "CreateTable" method
 		/// </summary>
 		public ColumnsCollection Decimal(string name)
 		{
-			Add(new DecimalColumn(name, defaultWhole, defaultRemainder));
+			Add(new DecimalColumn(name, DefaultWhole, DefaultRemainder));
 			return this;
 		}
 
@@ -253,7 +252,7 @@ namespace DbRefactor
 		/// </summary>
 		public ColumnsCollection Decimal(string name, ColumnProperties properties)
 		{
-			Add(new DecimalColumn(name, defaultWhole, defaultRemainder, properties));
+			Add(new DecimalColumn(name, DefaultWhole, DefaultRemainder, properties));
 			return this;
 		}
 
@@ -262,7 +261,7 @@ namespace DbRefactor
 		/// </summary>
 		public ColumnsCollection Decimal(string name, decimal defaultValue)
 		{
-			Add(new DecimalColumn(name, defaultWhole, defaultRemainder,
+			Add(new DecimalColumn(name, DefaultWhole, DefaultRemainder,
 				ColumnProperties.Null, defaultValue));
 			return this;
 		}
@@ -272,7 +271,7 @@ namespace DbRefactor
 		/// </summary>
 		public ColumnsCollection Decimal(string name, ColumnProperties properties, decimal defaultValue)
 		{
-			Add(new DecimalColumn(name, defaultWhole, defaultRemainder, properties, defaultValue));
+			Add(new DecimalColumn(name, DefaultWhole, DefaultRemainder, properties, defaultValue));
 			return this;
 		}
 
@@ -351,11 +350,11 @@ namespace DbRefactor
 
 		public void AddProperty(ColumnProperties property)
 		{
-			if (_columns.Count == 0)
+			if (columns.Count == 0)
 			{
 				throw new InvalidOperationException("Cant add property because ther are no columns");
 			}
-			_columns[_columns.Count - 1].ColumnProperty = property | _columns[_columns.Count - 1].ColumnProperty;
+			columns[columns.Count - 1].ColumnProperty = property | columns[columns.Count - 1].ColumnProperty;
 		}
 
 		/// <summary>

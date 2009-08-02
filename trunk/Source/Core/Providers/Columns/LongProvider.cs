@@ -13,19 +13,25 @@
 
 using System;
 using System.Linq.Expressions;
+using DbRefactor.Providers.TypeToSqlProviders;
 
 namespace DbRefactor.Providers.Columns
 {
 	public class LongProvider : ColumnProvider
 	{
-		public LongProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService)
-			: base(name, defaultValue, codeGenerationService)
+		public LongProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
+			: base(name, defaultValue, codeGenerationService, sqlTypes)
 		{
 		}
 
 		public override Expression<Action<NewTable>> Method()
 		{
 			return t => t.Long(Name);
+		}
+
+		protected override string SqlType()
+		{
+			return SQLTypes.Long();
 		}
 	}
 }

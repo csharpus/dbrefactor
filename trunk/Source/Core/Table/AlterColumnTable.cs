@@ -20,14 +20,12 @@ namespace DbRefactor
 	{
 		private readonly string name;
 		private readonly TransformationProvider provider;
-		private readonly IDatabaseEnvironment environment;
 		private Column column;
 
 		public AlterColumnTable(string name, TransformationProvider provider)
 		{
 			this.name = name;
 			this.provider = provider;
-			this.environment = environment;
 		}
 
 		#region Column types

@@ -145,9 +145,9 @@ namespace DbRefactor
 			}
 		}
 
-		static SQLServerTypeToSqlProvider TypeToSqlProvider
+		static SqlServerTypeToSqlProvider TypeToSqlProvider
 		{
-			get { return new SQLServerTypeToSqlProvider(); }
+			get { return new SqlServerTypeToSqlProvider(); }
 		}
 
 		internal static ColumnPropertiesMapper GetColumnMapper(Column column)
@@ -172,8 +172,6 @@ namespace DbRefactor
 
 			if (column.Type == typeof(int))
 			{
-				if ((column.ColumnProperty & ColumnProperties.PrimaryKey) == ColumnProperties.PrimaryKey)
-					return TypeToSqlProvider.PrimaryKey;
 				return TypeToSqlProvider.Integer;
 			}
 			if (column.Type == typeof(long))

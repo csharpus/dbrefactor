@@ -14,12 +14,13 @@
 using System;
 using System.Linq.Expressions;
 using DbRefactor.Extended;
+using DbRefactor.Providers.TypeToSqlProviders;
 
 namespace DbRefactor.Providers.Columns
 {
 	public class BinaryProvider : ColumnProvider
 	{
-		public BinaryProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService) : base(name, defaultValue, codeGenerationService)
+		public BinaryProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes) : base(name, defaultValue, codeGenerationService, sqlTypes)
 		{
 		}
 
@@ -32,6 +33,11 @@ namespace DbRefactor.Providers.Columns
 		{
 			return string.Empty;
 			//return CodeGenerationService.BinaryValue((byte[]) DefaultValue);
+		}
+
+		protected override string SqlType()
+		{
+			return SQLTypes.Binary();
 		}
 	}
 }

@@ -13,6 +13,7 @@
 
 using System;
 using System.Linq.Expressions;
+using DbRefactor.Providers.TypeToSqlProviders;
 
 namespace DbRefactor.Providers.Columns
 {
@@ -21,7 +22,7 @@ namespace DbRefactor.Providers.Columns
 		private readonly int precision;
 		private readonly int radix;
 		
-		public DecimalProvider(string name, object defaultValue, int precision, int radix,	ICodeGenerationService codeGenerationService) : base(name, defaultValue, codeGenerationService)
+		public DecimalProvider(string name, object defaultValue, int precision, int radix,	ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes) : base(name, defaultValue, codeGenerationService, sqlTypes)
 		{
 			this.precision = precision;
 			this.radix = radix;
@@ -40,6 +41,11 @@ namespace DbRefactor.Providers.Columns
 		public override Expression<Action<NewTable>> Method()
 		{
 			return t => t.Decimal(Name, Precision, Radix);
+		}
+
+		protected override string SqlType()
+		{
+			return SQLTypes.Decimal(precision, radix);
 		}
 	}
 }

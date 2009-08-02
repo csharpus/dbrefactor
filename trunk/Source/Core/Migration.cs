@@ -10,11 +10,8 @@
 #endregion
 
 using System;
-using System.IO;
-using System.Resources;
 using DbRefactor.Compatibility;
 using DbRefactor.Providers;
-using DbRefactor.Tools.Loggers;
 using System.Data;
 
 namespace DbRefactor
@@ -146,7 +143,7 @@ namespace DbRefactor
 
 		protected void DropForeignKey(string foreignKeyTable, string name)
 		{
-			Database.RemoveForeignKey(foreignKeyTable, name);
+			Database.DropConstraint(foreignKeyTable, name);
 		}
 
 		private void DropColumn(string table, string column)

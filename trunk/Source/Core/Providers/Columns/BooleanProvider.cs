@@ -11,18 +11,26 @@
 
 #endregion
 
+using System;
+using DbRefactor.Providers.TypeToSqlProviders;
+
 namespace DbRefactor.Providers.Columns
 {
 	public class BooleanProvider : ColumnProvider
 	{
-		public BooleanProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService)
-			: base(name, defaultValue, codeGenerationService)
+		public BooleanProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
+			: base(name, defaultValue, codeGenerationService,sqlTypes)
 		{
 		}
 
 		public override System.Linq.Expressions.Expression<System.Action<NewTable>> Method()
 		{
 			return t => t.Boolean(Name);
+		}
+
+		protected override string SqlType()
+		{
+			return SQLTypes.Boolean();
 		}
 	}
 }

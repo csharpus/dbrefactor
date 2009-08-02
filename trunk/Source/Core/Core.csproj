@@ -104,7 +104,7 @@
     <Compile Include="Providers\Columns\StringProvider.cs" />
     <Compile Include="Providers\Columns\TextProvider.cs" />
     <Compile Include="Providers\TransformationProvider.cs" />
-    <Compile Include="Providers\TypeToSqlProviders\SQLServerTypeToSqlProvider.cs" />
+    <Compile Include="Providers\TypeToSqlProviders\SqlServerTypeToSqlProvider.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Providers\Columns\UniqueProvider.cs" />
     <Compile Include="Table\ActionTable.cs" />

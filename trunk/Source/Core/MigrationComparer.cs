@@ -10,7 +10,6 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace DbRefactor
@@ -20,11 +19,11 @@ namespace DbRefactor
 	/// </summary>
 	sealed class MigrationTypeComparer : IComparer<Type>
 	{
-		private readonly bool _ascending = true;
+		private readonly bool ascending = true;
 
 		public MigrationTypeComparer(bool ascending)
 		{
-			_ascending = ascending;
+			this.ascending = ascending;
 		}
 
 		public int Compare(Type x, Type y)
@@ -32,14 +31,9 @@ namespace DbRefactor
 			int xVersion = MigrationHelper.GetMigrationVersion(x);
 			int yVersion = MigrationHelper.GetMigrationVersion(y);
 
-			if (_ascending)
-			{
-				return xVersion - yVersion;
-			}
-			else
-			{
-				return yVersion - xVersion;
-			}
+			return ascending 
+				? xVersion - yVersion 
+				: yVersion - xVersion;
 		}
 	}
 }
