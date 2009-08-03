@@ -252,13 +252,13 @@ namespace Example
 	{
 		public override void Up()
 		{
-			//string filePath = @"D:\Projects\CSharpUs.DBRefactor\Source\Example\ScriptFiles\013\CreateProcedure_GetAllRoles.sql";
-			//ExecuteFile(filePath);
+			string filePath = @"..\..\ScriptFiles\013\CreateProcedure_GetAllRoles.sql";
+			ExecuteFile(filePath);
 		}
 
 		public override void Down()
 		{
-			string filePath = @"D:\Projects\CSharpUs.DBRefactor\Source\Example\ScriptFiles\013\DropProcedure_GetAllRoles.sql";
+			string filePath = @"..\..\ScriptFiles\013\DropProcedure_GetAllRoles.sql";
 			ExecuteFile(filePath);
 		}
 	}
