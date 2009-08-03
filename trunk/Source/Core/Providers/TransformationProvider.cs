@@ -977,7 +977,8 @@ namespace DbRefactor.Providers
 		public void ExecuteFile(string fileName)
 		{
 			Check.RequireNonEmpty(fileName, "fileName");
-			Check.Require(File.Exists(fileName), "Migration file could not be found");
+			Check.Ensure(File.Exists(fileName), "Migration file could not be found");
+
 			string content = File.ReadAllText(fileName);
 			environment.ExecuteNonQuery(content);
 		}

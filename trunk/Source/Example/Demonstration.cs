@@ -258,7 +258,7 @@ namespace Example
 
 		public override void Down()
 		{
-			string filePath = @"..\..\ScriptFiles\013\DropProcedure_GetAllRoles.sql";
+			string filePath = @"..\..`\ScriptFiles\013\DropProcedure_GetAllRoles.sql";
 			ExecuteFile(filePath);
 		}
 	}
