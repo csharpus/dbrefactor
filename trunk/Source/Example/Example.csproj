@@ -68,10 +68,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="ScriptFiles\013\CreateProcedure_GetAllRoles.sql" />
-    <None Include="ScriptFiles\013\DropProcedure_GetAllRoles.sql" />
-    <EmbeddedResource Include="ScriptFiles\014\DropProcedure_GetAllUsers.sql" />
-    <EmbeddedResource Include="ScriptFiles\014\CreateProcedure_GetAllUsers.sql" />
+    <None Include="Script\013\CreateProcedure_GetAllRoles.sql" />
+    <None Include="Script\013\DropProcedure_GetAllRoles.sql" />
+    <EmbeddedResource Include="Script\014\DropProcedure_GetAllUsers.sql" />
+    <EmbeddedResource Include="Script\014\CreateProcedure_GetAllUsers.sql" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\core\Core.csproj">
@@ -114,4 +114,18 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PostBuildEvent>echo POSTBUILDSTEP for $(ProjectName)
+ 
+xcopy "$(ProjectDir)Script\" "$(ProjectDir)$(OutDir)Script" /s  /y
+if errorlevel 1 goto BuildEventFailed
+goto BuildEventOk
+
+:BuildEventFailed
+echo POSTBUILDSTEP for $(ProjectName) FAILED
+exit 1
+
+:BuildEventOk
+echo POSTBUILDSTEP for $(ProjectName) COMPLETED OK</PostBuildEvent>
+  </PropertyGroup>
 </Project>
