@@ -79,7 +79,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("User").AddForeignKey("RoleId", "Role", "Id", OnDelete.SetDefault);
+			Table("User").AddForeignKey("RoleId", "Role", "Id", OnDelete.Cascade);
 		}
 
 		public override void Down()
@@ -187,6 +187,10 @@ namespace Example
 		}
 	}
 
+	/// <summary>
+	/// dbRefactor provides the way to execute query from string
+	/// and process queried data
+	/// </summary>
 	[Migration(10)]
 	public class ExecuteQuery : Migration
 	{
@@ -219,6 +223,9 @@ namespace Example
 		}
 	}
 
+	/// <summary>
+	/// pull out scalar data that could be useful in work with IDs
+	/// </summary>
 	[Migration(11)]
 	public class ExecuteScalar : Migration
 	{
@@ -247,22 +254,36 @@ namespace Example
 		}
 	}
 
+	/// <summary>
+	/// runs script from file that could be specified as full path
+	/// or only file name (if you set only file name, make sure 
+	/// folder structure following next template <ProjectRoot\Scripts\[Migration number]>
+	/// and Scripts folder must be copied to build folder.)
+	/// Scripts coping could be automatical using post-build event that is a project options. 
+	/// Follow string will be usefull for post-build event:
+	/// "xcopy "$(ProjectDir)Scripts" "$(TargetDir)Scripts" /s /y /i" 
+	/// </summary>
 	[Migration(13)]
 	public class CreateProcedure_GetAllRoles : Migration
 	{
 		public override void Up()
 		{
-			string filePath = @"..\..\ScriptFiles\013\CreateProcedure_GetAllRoles.sql";
+			string filePath = @"CreateProcedure_GetAllRoles.sql";
 			ExecuteFile(filePath);
 		}
 
 		public override void Down()
 		{
-			string filePath = @"..\..`\ScriptFiles\013\DropProcedure_GetAllRoles.sql";
+			string filePath = @"DropProcedure_GetAllRoles.sql";
 			ExecuteFile(filePath);
 		}
 	}
 
+	/// <summary>
+	/// In case you do not want to have a deal with folders and coping files to build derectory
+	/// and want to keep single library, then just mark script file as embedded resource and
+	/// call ExecuteResource method.
+	/// </summary>
 	[Migration(14)]
 	public class CreateProcedureFromEmbeddedRsource : Migration
 	{

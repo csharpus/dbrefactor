@@ -56,7 +56,6 @@ namespace DbRefactor
 
 			_oldProvider = new OldMigrator.Providers.SqlServerTransformationProvider(((SqlServerEnvironment) provider.Environment).Connection as SqlConnection);
 
-			
 			this.logger = logger;
 			Category = category;
 
@@ -200,6 +199,7 @@ namespace DbRefactor
 					if (v == version)
 						break;
 				}
+				provider.CurrentVersion = v;
 			}
 
 			// Update and commit all changes
