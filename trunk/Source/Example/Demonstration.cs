@@ -289,14 +289,14 @@ namespace Example
 	{
 		public override void Up()
 		{
-			string filePath = @"Example.ScriptFiles._014.CreateProcedure_GetAllUsers1.sql";
-            ExecuteResource(GetType().Assembly.FullName, filePath);
+			string resourcePath = @"CreateProcedure_GetAllUsers.sql";
+			ExecuteResource(resourcePath);
 		}
 
 		public override void Down()
 		{
-			string filePath = @"Example.ScriptFiles._014.DropProcedure_GetAllUsers.sql";
-			ExecuteResource(GetType().Assembly.FullName, filePath);
+			string resourcePath = @"Example.Scripts._014.DropProcedure_GetAllUsers.sql";
+			ExecuteResource(resourcePath);
 		}
 	}
 

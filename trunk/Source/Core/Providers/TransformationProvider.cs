@@ -14,6 +14,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Tools.DesignByContract;
@@ -930,10 +932,6 @@ namespace DbRefactor.Providers
 			{
 				CreateSchemaInfoTable();
 				object version = SelectScalar("Version", "SchemaInfo", String.Format("Category='{0}'", category));
-				if (version == null)
-				{
-					return 0;
-				}
 				return Convert.ToInt32(version);
 			}
 			set
@@ -976,6 +974,7 @@ namespace DbRefactor.Providers
 
 		public void ExecuteFile(string fileName)
 		{
+			
 			Check.RequireNonEmpty(fileName, "fileName");
 			if (!File.Exists(fileName))
 			{
@@ -987,15 +986,16 @@ namespace DbRefactor.Providers
 			environment.ExecuteNonQuery(content);
 		}
 
-		public void ExecuteResource(string assemblyName, string filePath)
+		public void ExecuteResource(string assemblyName, string resourceName)
 		{
 			Check.RequireNonEmpty(assemblyName, "assemblyName");
-			Check.RequireNonEmpty(filePath, "filePath");
+			Check.RequireNonEmpty(resourceName, "resourceName");
 
-			System.Reflection.Assembly a = System.Reflection.Assembly.Load(assemblyName);
-			Stream stream = a.GetManifestResourceStream(filePath);
-			Check.Require(stream != null,
-			              String.Format("Could not locate embedded resource '{0}' in assembly '{1}'", filePath, assemblyName));
+			Assembly assembly = System.Reflection.Assembly.Load(assemblyName);
+			resourceName = GetResource(resourceName, assembly);
+
+			Stream stream = assembly.GetManifestResourceStream(resourceName);
+			Check.Require(stream != null, String.Format("Could not locate embedded resource '{0}' in assembly '{1}'", resourceName, assemblyName));
 
 			string script;
 			using (var streamReader = new StreamReader(stream))
@@ -1003,6 +1003,16 @@ namespace DbRefactor.Providers
 				script = streamReader.ReadToEnd();
 			}
 			environment.ExecuteNonQuery(script);
+		}
+
+		private string GetResource(string resourceName, Assembly assembly)
+		{
+			foreach (var resource in assembly.GetManifestResourceNames())
+			{
+				if (resource.Contains(String.Format("._{0:000}.{1}", CurrentVersion, resourceName)))
+					return resource;
+			}
+			return String.Empty;
 		}
 
 		#region Obsolete
