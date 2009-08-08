@@ -14,8 +14,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Tools.DesignByContract;
@@ -31,15 +31,23 @@ namespace DbRefactor.Providers
 	/// </summary>
 	public sealed class TransformationProvider
 	{
+		public IDatabase GetDatabase()
+		{
+			return new Database(this, ProviderFactory.ColumnProviderFactory, propertyFactory);
+		}
+
 		private readonly IDatabaseEnvironment environment;
-		private readonly ColumnProviderFactory columnProviderFactory;
+		private readonly SqlServerColumnMapper sqlServerColumnMapper;
+		internal readonly ColumnPropertyProviderFactory propertyFactory;
 
 		internal TransformationProvider(IDatabaseEnvironment environment, ILogger logger,
-		                                ColumnProviderFactory columnProviderFactory)
+		                                SqlServerColumnMapper sqlServerColumnMapper,
+		                                ColumnPropertyProviderFactory propertyFactory)
 		{
 			this.environment = environment;
 			Logger = logger;
-			this.columnProviderFactory = columnProviderFactory;
+			this.sqlServerColumnMapper = sqlServerColumnMapper;
+			this.propertyFactory = propertyFactory;
 		}
 
 		internal IDatabaseEnvironment Environment
@@ -52,12 +60,25 @@ namespace DbRefactor.Providers
 		/// </summary>
 		private ILogger Logger { get; set; }
 
-		public void AddTable(string name, params Column[] columns)
+		//public void AddTable(string name, params Column[] columns)
+		//{
+		//    Check.RequireNonEmpty(name, "name");
+		//    Check.Require(columns.Length > 0, "At least one column should be passed");
+		//    string columnsAndIndexes = ColumnsAndIndexes(columns);
+		//    AddTable(name, columnsAndIndexes);
+		//}
+
+		public void AddTable(string name, params ColumnProvider[] columns)
 		{
 			Check.RequireNonEmpty(name, "name");
 			Check.Require(columns.Length > 0, "At least one column should be passed");
-			string columnsAndIndexes = ColumnsAndIndexes(columns);
-			AddTable(name, columnsAndIndexes);
+			var columnsSql = GetColumnsSql(columns);
+			AddTable(name, columnsSql);
+		}
+
+		private static string GetColumnsSql(IEnumerable<ColumnProvider> columns)
+		{
+			return columns.Select(col => col.GetColumnSql()).ComaSeparated();
 		}
 
 		/// <summary>
@@ -138,7 +159,7 @@ namespace DbRefactor.Providers
 		private string GetPrimaryKeyColumn(string table)
 		{
 			const string sql =
-						@"
+				@"
 						SELECT [name]
 						FROM syscolumns 
 						 WHERE [id] IN (SELECT [id] 
@@ -264,7 +285,7 @@ namespace DbRefactor.Providers
 
 		public List<ForeignKey> GetForeignKeys()
 		{
-			string query =
+			const string query =
 				@"
 				SELECT f.name AS Name,
 				   OBJECT_NAME(f.parent_object_id) AS ForeignTable,
@@ -635,32 +656,32 @@ namespace DbRefactor.Providers
 		{
 			return new Dictionary<string, Func<ColumnData, ColumnProvider>>
 			       	{
-			       		{"bigint", columnProviderFactory.CreateLong},
-			       		{"binary", columnProviderFactory.CreateBinary},
-			       		{"bit", columnProviderFactory.CreateBoolean},
-			       		{"char", columnProviderFactory.CreateString},
-			       		{"datetime", columnProviderFactory.CreateDateTime},
-			       		{"decimal", columnProviderFactory.CreateDecimal},
-			       		{"float", columnProviderFactory.CreateFloat},
-			       		{"image", columnProviderFactory.CreateBinary},
-			       		{"int", columnProviderFactory.CreateInt},
-			       		{"money", columnProviderFactory.CreateDecimal},
-			       		{"nchar", columnProviderFactory.CreateString},
-			       		{"ntext", columnProviderFactory.CreateText},
-			       		{"numeric", columnProviderFactory.CreateDecimal},
-			       		{"nvarchar", columnProviderFactory.CreateString},
-			       		{"real", columnProviderFactory.CreateFloat},
-			       		{"smalldatetime", columnProviderFactory.CreateDateTime},
-			       		{"smallint", columnProviderFactory.CreateInt},
-			       		{"smallmoney", columnProviderFactory.CreateDecimal},
-			       		{"sql_variant", columnProviderFactory.CreateBinary},
-			       		{"text", columnProviderFactory.CreateText},
-			       		{"timestamp", columnProviderFactory.CreateDateTime},
-			       		{"tinyint", columnProviderFactory.CreateInt},
-			       		{"uniqueidentifier", columnProviderFactory.CreateString},
-			       		{"varbinary", columnProviderFactory.CreateBinary},
-			       		{"varchar", columnProviderFactory.CreateString},
-			       		{"xml", columnProviderFactory.CreateString}
+			       		{"bigint", sqlServerColumnMapper.CreateLong},
+			       		{"binary", sqlServerColumnMapper.CreateBinary},
+			       		{"bit", sqlServerColumnMapper.CreateBoolean},
+			       		{"char", sqlServerColumnMapper.CreateString},
+			       		{"datetime", sqlServerColumnMapper.CreateDateTime},
+			       		{"decimal", sqlServerColumnMapper.CreateDecimal},
+			       		{"float", sqlServerColumnMapper.CreateFloat},
+			       		{"image", sqlServerColumnMapper.CreateBinary},
+			       		{"int", sqlServerColumnMapper.CreateInt},
+			       		{"money", sqlServerColumnMapper.CreateDecimal},
+			       		{"nchar", sqlServerColumnMapper.CreateString},
+			       		{"ntext", sqlServerColumnMapper.CreateText},
+			       		{"numeric", sqlServerColumnMapper.CreateDecimal},
+			       		{"nvarchar", sqlServerColumnMapper.CreateString},
+			       		{"real", sqlServerColumnMapper.CreateFloat},
+			       		{"smalldatetime", sqlServerColumnMapper.CreateDateTime},
+			       		{"smallint", sqlServerColumnMapper.CreateInt},
+			       		{"smallmoney", sqlServerColumnMapper.CreateDecimal},
+			       		{"sql_variant", sqlServerColumnMapper.CreateBinary},
+			       		{"text", sqlServerColumnMapper.CreateText},
+			       		{"timestamp", sqlServerColumnMapper.CreateDateTime},
+			       		{"tinyint", sqlServerColumnMapper.CreateInt},
+			       		{"uniqueidentifier", sqlServerColumnMapper.CreateString},
+			       		{"varbinary", sqlServerColumnMapper.CreateBinary},
+			       		{"varchar", sqlServerColumnMapper.CreateString},
+			       		{"xml", sqlServerColumnMapper.CreateString}
 			       	};
 		}
 
@@ -718,27 +739,27 @@ namespace DbRefactor.Providers
 			{
 				if (IsPrimaryKey(table, provider.Name))
 				{
-					provider.AddProperty(new PrimaryKeyProvider());
+					provider.AddProperty(propertyFactory.CreatePrimaryKey());
 				}
 				else if (!IsNull(table, provider.Name))
 				{
-					provider.AddProperty(new NotNullProvider());
+					provider.AddProperty(propertyFactory.CreateNotNull());
 				}
 
 				if (IsIdentity(table, provider.Name))
 				{
-					provider.AddProperty(new IdentityProvider());
+					provider.AddProperty(propertyFactory.CreateIdentity());
 				}
 
 				if (IsUnique(table, provider.Name))
 				{
-					provider.AddProperty(new UniqueProvider());
+					provider.AddProperty(propertyFactory.CreateUnique());
 				}
 			}
 			return providers;
 		}
 
-		private object GetDefaultValue(object databaseValue)
+		private static object GetDefaultValue(object databaseValue)
 		{
 			return databaseValue == DBNull.Value ? null : databaseValue;
 		}
@@ -954,16 +975,18 @@ namespace DbRefactor.Providers
 		private void CreateSchemaInfoTable()
 		{
 			//EnsureHasConnection();
-			if (!TableExists("SchemaInfo"))
-			{
-				AddTable("SchemaInfo",
-				         new Column("Version", typeof (int), ColumnProperties.PrimaryKey));
-			}
-			if (!ColumnExists("SchemaInfo", "Category"))
-			{
-				AddColumn("SchemaInfo", new Column("Category", typeof (string), 50, ColumnProperties.Null));
-				Update("SchemaInfo", "Category=''");
-			}
+			if (TableExists("SchemaInfo")) return;
+			GetDatabase().CreateTable("SchemaInfo")
+				.Int("Version").PrimaryKey()
+				.String("Category", 50, String.Empty)
+				.Execute();
+			//AddTable("SchemaInfo",
+			//         new Column("Version", typeof (int), ColumnProperties.PrimaryKey));
+			//if (!ColumnExists("SchemaInfo", "Category"))
+			//{
+			//    AddColumn("SchemaInfo", new Column("Category", typeof (string), 50, ColumnProperties.Null));
+			//    Update("SchemaInfo", "Category=''");
+			//}
 		}
 
 		public bool TableHasIdentity(string table)
@@ -974,11 +997,11 @@ namespace DbRefactor.Providers
 
 		public void ExecuteFile(string fileName)
 		{
-			
 			Check.RequireNonEmpty(fileName, "fileName");
 			if (!File.Exists(fileName))
 			{
-				string migrationScriptPath = String.Format(@"{0}\Scripts\{1:000}\{2}", Directory.GetCurrentDirectory(), CurrentVersion, fileName);
+				string migrationScriptPath = String.Format(@"{0}\Scripts\{1:000}\{2}", Directory.GetCurrentDirectory(),
+				                                           CurrentVersion, fileName);
 				Check.Ensure(File.Exists(migrationScriptPath), String.Format("Script file '{0}' has not found.", fileName));
 				fileName = migrationScriptPath;
 			}
@@ -991,11 +1014,12 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(assemblyName, "assemblyName");
 			Check.RequireNonEmpty(resourceName, "resourceName");
 
-			Assembly assembly = System.Reflection.Assembly.Load(assemblyName);
+			Assembly assembly = Assembly.Load(assemblyName);
 			resourceName = GetResource(resourceName, assembly);
 
 			Stream stream = assembly.GetManifestResourceStream(resourceName);
-			Check.Require(stream != null, String.Format("Could not locate embedded resource '{0}' in assembly '{1}'", resourceName, assemblyName));
+			Check.Require(stream != null,
+			              String.Format("Could not locate embedded resource '{0}' in assembly '{1}'", resourceName, assemblyName));
 
 			string script;
 			using (var streamReader = new StreamReader(stream))
@@ -1067,5 +1091,13 @@ namespace DbRefactor.Providers
 		public string PrimaryColumn { get; set; }
 		public string ForeignTable { get; set; }
 		public string ForeignColumn { get; set; }
+	}
+
+	public static class StringListExtensions
+	{
+		public static string ComaSeparated(this IEnumerable<string> list)
+		{
+			return String.Join(", ", list.ToArray());
+		}
 	}
 }

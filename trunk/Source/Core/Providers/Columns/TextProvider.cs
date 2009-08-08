@@ -19,8 +19,8 @@ namespace DbRefactor.Providers.Columns
 {
 	public class TextProvider : ColumnProvider
 	{
-		public TextProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
-			: base(name, defaultValue, codeGenerationService, sqlTypes)
+		public TextProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
+			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
 		{
 		}
 
@@ -29,9 +29,14 @@ namespace DbRefactor.Providers.Columns
 			return t => t.Text(Name);
 		}
 
-		protected override string SqlType()
+		public override string SqlType()
 		{
 			return SQLTypes.Text();
+		}
+
+		protected override string DefaultValueSql()
+		{
+			return SQLTypes.TextValue((string)DefaultValue);
 		}
 	}
 }

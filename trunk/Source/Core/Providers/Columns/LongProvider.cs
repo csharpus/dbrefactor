@@ -19,8 +19,8 @@ namespace DbRefactor.Providers.Columns
 {
 	public class LongProvider : ColumnProvider
 	{
-		public LongProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
-			: base(name, defaultValue, codeGenerationService, sqlTypes)
+		public LongProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
+			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
 		{
 		}
 
@@ -29,7 +29,7 @@ namespace DbRefactor.Providers.Columns
 			return t => t.Long(Name);
 		}
 
-		protected override string SqlType()
+		public override string SqlType()
 		{
 			return SQLTypes.Long();
 		}

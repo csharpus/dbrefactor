@@ -21,8 +21,9 @@ namespace DbRefactor.Providers.Columns
 	{
 		private readonly int precision;
 		private readonly int radix;
-		
-		public DecimalProvider(string name, object defaultValue, int precision, int radix,	ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes) : base(name, defaultValue, codeGenerationService, sqlTypes)
+
+		public DecimalProvider(string name, object defaultValue, int precision, int radix, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
+			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
 		{
 			this.precision = precision;
 			this.radix = radix;
@@ -43,7 +44,7 @@ namespace DbRefactor.Providers.Columns
 			return t => t.Decimal(Name, Precision, Radix);
 		}
 
-		protected override string SqlType()
+		public override string SqlType()
 		{
 			return SQLTypes.Decimal(precision, radix);
 		}

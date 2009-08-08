@@ -16,7 +16,7 @@ namespace Example
 		public override void Up()
 		{
 			CreateTable("Role")
-				.Int("Id").PrimaryKeyWithIdentity()
+				.Int("Id").PrimaryKey().Identity()
 				.String("Name", 30).Unique().NotNull()
 				.Execute();
 		}
@@ -41,7 +41,7 @@ namespace Example
 				.String("Name", 70).NotNull().Unique()
 				.Boolean("IsRegistered", false)
 				.DateTime("Birthday").NotNull()
-				.Text("Description").Null()
+				.Text("Description")
 				.Int("Age")
 				.Decimal("Salary", 10, 2)
 				.Execute();

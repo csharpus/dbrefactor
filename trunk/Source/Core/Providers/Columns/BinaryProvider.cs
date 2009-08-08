@@ -20,7 +20,7 @@ namespace DbRefactor.Providers.Columns
 {
 	public class BinaryProvider : ColumnProvider
 	{
-		public BinaryProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes) : base(name, defaultValue, codeGenerationService, sqlTypes)
+		public BinaryProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService) : base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
 		{
 		}
 
@@ -35,7 +35,12 @@ namespace DbRefactor.Providers.Columns
 			//return CodeGenerationService.BinaryValue((byte[]) DefaultValue);
 		}
 
-		protected override string SqlType()
+		protected override string DefaultValueSql()
+		{
+			return SQLTypes.BinaryValue((byte[])DefaultValue);
+		}
+
+		public override string SqlType()
 		{
 			return SQLTypes.Binary();
 		}

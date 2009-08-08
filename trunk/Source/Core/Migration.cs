@@ -72,20 +72,9 @@ namespace DbRefactor
 	
 	public abstract class Migration : BaseMigration
 	{
-		private Providers.TransformationProvider _transformationProvider;
-
-		internal Providers.TransformationProvider TransformationProvider
-		{
-			get
-			{
-				return _transformationProvider;
-			}
-
-			set
-			{
-				_transformationProvider = value;
-			}
-		}
+		internal TransformationProvider TransformationProvider { get; set; }
+		internal ColumnProviderFactory ColumnProviderFactory { get; set; }
+		internal ColumnPropertyProviderFactory ColumnPropertyProviderFactory { get; set; }
 
 		private TransformationProvider Database
 		{
@@ -103,11 +92,11 @@ namespace DbRefactor
 			// Console.WriteLine("Migration.InitializeOnce()");
 		}
 
-		[Obsolete("Please, use CreateTable(\"Name\").Int(\"ColumnName\").Execute()")]
-		protected void CreateTable(string name, ColumnsCollection columns)
-		{
-			Database.AddTable(name, columns.ToArray());
-		}
+		//[Obsolete("Please, use CreateTable(\"Name\").Int(\"ColumnName\").Execute()")]
+		//protected void CreateTable(string name, ColumnsCollection columns)
+		//{
+		//    Database.AddTable(name, columns.ToArray());
+		//}
 
 		[Obsolete("This collection is obsolete. Perviously used for CreateTable")]
 		protected static ColumnsCollection Columns
@@ -178,7 +167,7 @@ namespace DbRefactor
 		/// <returns>A stream containing the file data.</returns>
 		protected void ExecuteResource(string resourcePath)
 		{
-			Database.ExecuteResource(System.Reflection.Assembly.GetCallingAssembly().FullName, resourcePath);
+			Database.ExecuteResource(Assembly.GetCallingAssembly().FullName, resourcePath);
 		}
 
 		/// <param name="sql">Supports format items to <see cref="string.Format(string,object)"/></param>
@@ -243,7 +232,7 @@ namespace DbRefactor
 
 		public override NewTable CreateTable(string tableName)
 		{
-			return new NewTable(TransformationProvider, tableName);
+			return new NewTable(TransformationProvider, ColumnProviderFactory, ColumnPropertyProviderFactory, tableName);
 		}
 
 		public override ActionTable Table(string tableName)

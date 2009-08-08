@@ -13,11 +13,21 @@
 
 using System;
 using System.Linq.Expressions;
+using DbRefactor.Providers.TypeToSqlProviders;
 
 namespace DbRefactor.Providers.Columns
 {
 	public class NotNullProvider : PropertyProvider
 	{
+		public NotNullProvider(IColumnProperties columnProperties) : base(columnProperties)
+		{
+		}
+
+		public override string PropertySql()
+		{
+			return ColumnProperties.NotNull();
+		}
+
 		public override Expression<Action<NewTable>> Method()
 		{
 			return t => t.NotNull();

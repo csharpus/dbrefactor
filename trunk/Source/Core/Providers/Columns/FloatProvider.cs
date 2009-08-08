@@ -20,8 +20,8 @@ namespace DbRefactor.Providers.Columns
 {
 	public class FloatProvider : ColumnProvider
 	{
-		public FloatProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
-			: base(name, defaultValue, codeGenerationService, sqlTypes)
+		public FloatProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
+			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
 		{
 		}
 
@@ -30,7 +30,7 @@ namespace DbRefactor.Providers.Columns
 			return t => t.Float(Name);
 		}
 
-		protected override string SqlType()
+		public override string SqlType()
 		{
 			return SQLTypes.Float();
 		}

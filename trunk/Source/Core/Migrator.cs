@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using DbRefactor.Compatibility;
+using DbRefactor.Exceptions;
 using DbRefactor.Providers;
 using DbRefactor.Tools.Loggers;
 
@@ -145,6 +146,8 @@ namespace DbRefactor
 					if (migration is Migration)
 					{
 						(migration as Migration).TransformationProvider = provider;
+						(migration as Migration).ColumnProviderFactory = ProviderFactory.ColumnProviderFactory;
+						(migration as Migration).ColumnPropertyProviderFactory = provider.propertyFactory;
 					}
 					else
 					{

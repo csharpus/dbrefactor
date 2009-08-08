@@ -11,17 +11,16 @@
 
 using System;
 
-namespace DbRefactor
+namespace DbRefactor.Exceptions
 {
 	/// <summary>
-	/// Exception thrown in a migration <c>Down()</c> method
-	/// when changes can't be undone.
+	/// Exception thrown when a migration number is not unique.
 	/// </summary>
-	public class IrreversibleMigrationException : Exception
+	public class DuplicatedVersionException : Exception
 	{
-		public IrreversibleMigrationException() : base("Irreversible migration")
+		public DuplicatedVersionException(int version)
+			: base(String.Format("Migration version #{0} is duplicated", version))
 		{
-			
 		}
 	}
 }

@@ -11,14 +11,17 @@
 
 using System;
 
-namespace DbRefactor
+namespace DbRefactor.Exceptions
 {
 	/// <summary>
-	/// Base class for migration errors.
+	/// Exception thrown in a migration <c>Down()</c> method
+	/// when changes can't be undone.
 	/// </summary>
-	public class MigrationException : Exception
+	public class IrreversibleMigrationException : Exception
 	{
-		public MigrationException(string migration, int version, Exception innerException)
-			: base(String.Format("Exception in migration {0} (#{1})", migration, version), innerException) {}
+		public IrreversibleMigrationException() : base("Irreversible migration")
+		{
+			
+		}
 	}
 }

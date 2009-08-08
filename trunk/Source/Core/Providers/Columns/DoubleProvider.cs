@@ -20,8 +20,8 @@ namespace DbRefactor.Providers.Columns
 {
 	public class DoubleProvider : ColumnProvider
 	{
-		public DoubleProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
-			: base(name, defaultValue, codeGenerationService, sqlTypes)
+		public DoubleProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
+			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
 		{
 		}
 
@@ -30,7 +30,7 @@ namespace DbRefactor.Providers.Columns
 			return t => t.Double(Name);
 		}
 
-		protected override string SqlType()
+		public override string SqlType()
 		{
 			return SQLTypes.Double();
 		}

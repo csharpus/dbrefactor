@@ -21,8 +21,8 @@ namespace DbRefactor.Providers.Columns
 	{
 		private readonly int size;
 
-		public StringProvider(string name, object defaultValue, int size, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
-			: base(name, defaultValue, codeGenerationService, sqlTypes)
+		public StringProvider(string name, object defaultValue, int size, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
+			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
 		{
 			this.size = size;
 		}
@@ -37,9 +37,14 @@ namespace DbRefactor.Providers.Columns
 			return t => t.String(Name, Size);
 		}
 
-		protected override string SqlType()
+		public override string SqlType()
 		{
 			return SQLTypes.String(Size);
+		}
+
+		protected override string DefaultValueSql()
+		{
+			return SQLTypes.StringValue((string)DefaultValue);
 		}
 	}
 }

@@ -13,11 +13,21 @@
 
 using System;
 using System.Linq.Expressions;
+using DbRefactor.Providers.TypeToSqlProviders;
 
 namespace DbRefactor.Providers.Columns
 {
 	public class UniqueProvider : PropertyProvider
 	{
+		public UniqueProvider(IColumnProperties columnProperties) : base(columnProperties)
+		{
+		}
+
+		public override string PropertySql()
+		{
+			return ColumnProperties.Unique();
+		}
+
 		public override Expression<Action<NewTable>> Method()
 		{
 			return t => t.Unique();
@@ -26,6 +36,15 @@ namespace DbRefactor.Providers.Columns
 
 	public class IdentityProvider : PropertyProvider
 	{
+		public IdentityProvider(IColumnProperties columnProperties) : base(columnProperties)
+		{
+		}
+
+		public override string PropertySql()
+		{
+			return ColumnProperties.Identity();
+		}
+
 		public override Expression<Action<NewTable>> Method()
 		{
 			return t => t.Identity();
@@ -34,6 +53,15 @@ namespace DbRefactor.Providers.Columns
 
 	public class PrimaryKeyProvider : PropertyProvider
 	{
+		public PrimaryKeyProvider(IColumnProperties columnProperties) : base(columnProperties)
+		{
+		}
+
+		public override string PropertySql()
+		{
+			return ColumnProperties.PrimaryKey();
+		}
+
 		public override Expression<Action<NewTable>> Method()
 		{
 			return t => t.PrimaryKey();
@@ -42,6 +70,20 @@ namespace DbRefactor.Providers.Columns
 
 	public abstract class PropertyProvider
 	{
+		private readonly IColumnProperties columnProperties;
+
+		protected PropertyProvider(IColumnProperties columnProperties)
+		{
+			this.columnProperties = columnProperties;
+		}
+
+		protected IColumnProperties ColumnProperties
+		{
+			get { return columnProperties; }
+		}
+
+		public abstract string PropertySql();
+
 		public abstract Expression<Action<NewTable>> Method();
 
 		public string MethodName()

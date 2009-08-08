@@ -12,120 +12,128 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using DbRefactor.Providers;
+using DbRefactor.Providers.Columns;
 
 namespace DbRefactor
 {
 	public class NewTable : Table
 	{
-		private readonly ColumnsCollection columns;
+		private readonly ColumnProviderFactory factory;
+		private readonly ColumnPropertyProviderFactory propertyFactory;
+		private readonly List<ColumnProvider> columns;
+		private ColumnProvider currentColumn;
 
-		public NewTable(TransformationProvider provider, string tableName): base(provider, tableName)
+		public NewTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory propertyFactory, string tableName): base(provider, tableName)
 		{
-			columns = ColumnsCollection.Create();
+			this.factory = columnProviderFactory;
+			this.propertyFactory = propertyFactory;
+			columns = new List<ColumnProvider>();
 		}
 
-		internal ColumnsCollection Columns
+		internal void AddColumn(ColumnProvider provider)
 		{
-			get { return columns; }
+			columns.Add(provider);
+			currentColumn = provider;
 		}
 
 		#region Column types
 
 		public NewTable String(string columnName, int size)
 		{
-			Columns.String(columnName, size);
+			AddColumn(factory.CreateString(columnName, null, size));
 			return this;
 		}
 
 		public NewTable String(string columnName, int size, string defaultValue)
 		{
-			Columns.String(columnName, size, defaultValue);
+			AddColumn(factory.CreateString(columnName, defaultValue, size));
 			return this;
 		}
 
 		public NewTable Text(string columnName)
 		{
-			Columns.Text(columnName);
+			AddColumn(factory.CreateText(columnName, null));
 			return this;
 		}
 
 		public NewTable Text(string columnName, string defaultValue)
 		{
-			Columns.Text(columnName, defaultValue);
+			AddColumn(factory.CreateText(columnName, defaultValue));
 			return this;
 		}
 
 		public NewTable Int(string columnName)
 		{
-			Columns.Int(columnName);
+			AddColumn(factory.CreateInt(columnName, null));
 			return this;
 		}
 
 		public NewTable Int(string columnName, int defaultValue)
 		{
-			Columns.Int(columnName, defaultValue);
+			AddColumn(factory.CreateInt(columnName, defaultValue));
 			return this;
 		}
 
 		public NewTable Long(string columnName)
 		{
-			Columns.Long(columnName);
+			AddColumn(factory.CreateLong(columnName, null));
 			return this;
 		}
 
 		public NewTable Long(string columnName, long defaultValue)
 		{
-			Columns.Long(columnName, defaultValue);
+			AddColumn(factory.CreateLong(columnName, defaultValue));
 			return this;
 		}
 
 		public NewTable DateTime(string columnName)
 		{
-			Columns.DateTime(columnName);
+			AddColumn(factory.CreateDateTime(columnName, null));
 			return this;
 		}
 
 		public NewTable DateTime(string columnName, DateTime defaultValue)
 		{
-			Columns.DateTime(columnName, defaultValue);
+			AddColumn(factory.CreateDateTime(columnName, defaultValue));
 			return this;
 		}
 
 
 		public NewTable Decimal(string columnName)
 		{
-			Columns.Decimal(columnName);
+			AddColumn(factory.CreateDecimal(columnName, null, 18, 9)); // change this value
 			return this;
 		}
 
 		public NewTable Decimal(string columnName, int whole, int remainder)
 		{
-			Columns.Decimal(columnName, whole, remainder);
+			AddColumn(factory.CreateDecimal(columnName, null, whole, remainder));
 			return this;
 		}
 
 		public NewTable Decimal(string columnName, decimal defaultValue)
 		{
-			Columns.Decimal(columnName, defaultValue);
+			AddColumn(factory.CreateDecimal(columnName, defaultValue, 18, 9)); // change this value
 			return this;
 		}
 
 		public NewTable Decimal(string columnName, int whole, int remainder, decimal defaultValue)
 		{
-			Columns.Decimal(columnName, whole, remainder, defaultValue);
+			AddColumn(factory.CreateDecimal(columnName, null, whole, remainder));
 			return this;
 		}
 
 		public NewTable Boolean(string columnName)
 		{
-			Columns.Boolean(columnName);
+			AddColumn(factory.CreateBoolean(columnName, null));
 			return this;
 		}
 
 		public NewTable Boolean(string columnName, bool defaultValue)
 		{
-			Columns.Boolean(columnName, defaultValue);
+			AddColumn(factory.CreateBoolean(columnName, defaultValue));
 			return this;
 		}
 
@@ -135,37 +143,25 @@ namespace DbRefactor
 
 		public NewTable Identity()
 		{
-			Columns.AddProperty(ColumnProperties.Identity);
+			currentColumn.AddProperty(propertyFactory.CreateIdentity());
 			return this;
 		}
 
 		public NewTable NotNull()
 		{
-			Columns.AddProperty(ColumnProperties.NotNull);
-			return this;
-		}
-
-		public NewTable Null()
-		{
-			Columns.AddProperty(ColumnProperties.Null);
+			currentColumn.AddProperty(propertyFactory.CreateNotNull());
 			return this;
 		}
 
 		public NewTable PrimaryKey()
 		{
-			Columns.AddProperty(ColumnProperties.PrimaryKey);
-			return this;
-		}
-
-		public NewTable PrimaryKeyWithIdentity()
-		{
-			Columns.AddProperty(ColumnProperties.PrimaryKeyWithIdentity);
+			currentColumn.AddProperty(propertyFactory.CreatePrimaryKey());
 			return this;
 		}
 
 		public NewTable Unique()
 		{
-			Columns.AddProperty(ColumnProperties.Unique);
+			currentColumn.AddProperty(propertyFactory.CreateUnique());
 			return this;
 		}
 
@@ -173,7 +169,7 @@ namespace DbRefactor
 
 		public void Execute()
 		{
-			Provider.AddTable(TableName, Columns.ToArray());
+			Provider.AddTable(TableName, columns.ToArray());
 		}
 	}
 }

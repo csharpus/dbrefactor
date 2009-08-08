@@ -11,16 +11,14 @@
 
 using System;
 
-namespace DbRefactor
+namespace DbRefactor.Exceptions
 {
 	/// <summary>
-	/// Exception thrown when a migration number is not unique.
+	/// Base class for migration errors.
 	/// </summary>
-	public class DuplicatedVersionException : Exception
+	public class MigrationException : Exception
 	{
-		public DuplicatedVersionException(int version)
-			: base(String.Format("Migration version #{0} is duplicated", version))
-		{
-		}
+		public MigrationException(string migration, int version, Exception innerException)
+			: base(String.Format("Exception in migration {0} (#{1})", migration, version), innerException) {}
 	}
 }

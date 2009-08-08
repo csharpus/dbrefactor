@@ -19,8 +19,8 @@ namespace DbRefactor.Providers.Columns
 {
 	public class DateTimeProvider : ColumnProvider
 	{
-		public DateTimeProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
-			: base(name, defaultValue, codeGenerationService, sqlTypes)
+		public DateTimeProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
+			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
 		{
 		}
 
@@ -34,9 +34,14 @@ namespace DbRefactor.Providers.Columns
 			return CodeGenerationService.DateTimeValue((DateTime) DefaultValue);
 		}
 
-		protected override string SqlType()
+		public override string SqlType()
 		{
 			return SQLTypes.DateTime();
+		}
+
+		protected override string DefaultValueSql()
+		{
+			return SQLTypes.DateTimeValue((DateTime) DefaultValue);
 		}
 	}
 }

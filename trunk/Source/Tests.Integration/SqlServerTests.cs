@@ -1,24 +1,55 @@
 ﻿using System;
+using DbRefactor.Extended;
 using DbRefactor.Providers;
-using DbRefactor.Providers.Columns;
 using DbRefactor.Tools;
+using DbRefactor.Tools.Loggers;
 using NUnit.Framework;
-using Rhino.Mocks;
 
 namespace DbRefactor.Tests.Integration
 {
-	[TestFixture]
-	public class SqlServerTests
+	public class ProviderTests
 	{
-		private TransformationProvider provider;
+		protected TransformationProvider Provider;
+		protected IDatabase Database;
+
+		[SetUp]
+		public void Setup()
+		{
+			CreateProvider();
+			DropAllTables();
+		}
+
+		private void DropAllTables()
+		{
+			foreach (var table in Provider.GetTables())
+			{
+				Provider.DropTable(table);
+			}
+		}
+
+		private const string ConnectionString =
+			@"Data Source=.\SQLEXPRESS;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI";
+
+		private void CreateProvider()
+		{
+			Provider =
+				new ProviderFactory().Create(ConnectionString, new ConsoleLogger());
+			Database = Provider.GetDatabase();
+		}
+	}
+
+	[TestFixture]
+	public class SqlServerTests : ProviderTests
+	{
+		
 
 		[Test]
 		public void should_create_table()
 		{
 			CreateMigration<CreateTableMigration>().Up();
 
-			Assert.That(provider.TableExists("Test"), Is.True);
-			Assert.That(provider.ColumnExists("Test", "Id"));
+			Assert.That(Provider.TableExists("Test"), Is.True);
+			Assert.That(Provider.ColumnExists("Test", "Id"));
 		}
 
 		[Migration(1)]
@@ -35,7 +66,7 @@ namespace DbRefactor.Tests.Integration
 		{
 			CreateMigration<CreateTableMigration>().Up();
 			CreateMigration<DropTableMigration>().Up();
-			Assert.That(provider.TableExists("Test"), Is.False);
+			Assert.That(Provider.TableExists("Test"), Is.False);
 		}
 
 		[Migration(1)]
@@ -53,7 +84,7 @@ namespace DbRefactor.Tests.Integration
 			CreateMigration<CreateTableMigration>().Up();
 			CreateMigration<AddColumnMigration>().Up();
 
-			Assert.That(provider.ColumnExists("Test", "Name"), Is.True);
+			Assert.That(Provider.ColumnExists("Test", "Name"), Is.True);
 		}
 
 		[Migration(1)]
@@ -71,7 +102,7 @@ namespace DbRefactor.Tests.Integration
 			CreateMigration<CreateTableMigration>().Up();
 			CreateMigration<CreateForeignKeyMigration>().Up();
 
-			Assert.That(provider.ConstraintExists("FK_Dependent_Test"), Is.True);
+			Assert.That(Provider.ConstraintExists("FK_Dependent_Test"), Is.True);
 		}
 
 		[Test]
@@ -82,7 +113,7 @@ namespace DbRefactor.Tests.Integration
 
 			#region CreateTable
 
-			provider.ExecuteNonQuery(
+			Provider.ExecuteNonQuery(
 				@"CREATE TABLE [dbo].[Table1](
 	[BI] [bigint] NULL,
 	[BN] [binary](50) NULL,
@@ -117,8 +148,7 @@ namespace DbRefactor.Tests.Integration
 
 			#endregion
 
-			var tableName = "Table1";
-			string values = new SchemaDumper(provider).Dump();
+			string values = new SchemaDumper(Provider).Dump();
 			Console.Write(values);
 		}
 
@@ -148,31 +178,123 @@ namespace DbRefactor.Tests.Integration
 		private TMigration CreateMigration<TMigration>()
 			where TMigration : Migration, new()
 		{
-			return new TMigration {TransformationProvider = provider};
+			return new TMigration {TransformationProvider = Provider};
 		}
 
-		[SetUp]
-		public void Setup()
+		
+
+		[Test]
+		public void Can_create_table_using_column_providers()
 		{
-			CreateProvider();
-			DropAllTables();
+			Assert.False(Provider.TableExists("A"));
+			Assert.False(Provider.ColumnExists("A", "B"));
+			
+			Database.CreateTable("A").Int("B").Execute();
+
+			Assert.True(Provider.TableExists("A"));
+			Assert.True(Provider.ColumnExists("A", "B"));
 		}
 
-		private void DropAllTables()
+		[Test]
+		public void Can_create_not_null_column()
 		{
-			foreach (var table in provider.GetTables())
-			{
-				provider.DropTable(table);
-			}
+			Database.CreateTable("A").Int("B").NotNull().Execute();
 		}
 
-		private void CreateProvider()
+		[Test]
+		public void Can_create_primary_key_column()
 		{
-			provider =
-				new ProviderFactory().Create(@"Data Source=.\SQLEXPRESS;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
+			Database.CreateTable("A").Int("B").PrimaryKey().Execute();
 		}
 
-		// private Migration CreateMigration(Func<)
+		[Test]
+		public void Can_create_unique_column()
+		{
+			Database.CreateTable("A").Int("B").Unique().Execute();
+		}
+
+		[Test]
+		public void Can_create_identity_column()
+		{
+			Database.CreateTable("A").Int("B").Identity().Execute();
+		}
+
+		[Test]
+		public void Can_create_default_value_column()
+		{
+			Database.CreateTable("A").Int("B", 1).Execute();
+		}
+	}
+
+	[TestFixture]
+	public class SqlGenerationVerificationTests : ProviderTests
+	{
+		[Test]
+		public void Can_generate_boolean_sql()
+		{
+			Database.CreateTable("A").Boolean("B", true).Execute();
+		}
+
+		[Test]
+		[Ignore("This value can be inserted - 0xC9CBBBCCCEB9C8CABCCCCEB9C9CBBB, but we need to check order of numbers when converting bytes to hex. It is better to insert and select one pixel png file")]
+		public void Can_generate_binary_sql()
+		{
+			Database.CreateTable("A").Binary("B", new byte[] {1}).Execute();
+		}
+
+		[Test]
+		public void Can_generate_datetime_sql()
+		{
+			Database.CreateTable("A").DateTime("B", new DateTime(2000, 1, 2, 12, 34, 56)).Execute();
+		}
+
+		[Test]
+		public void Can_generate_decimal_sql()
+		{
+			Database.CreateTable("A").Decimal("B", 1.5M).Execute();
+		}
+
+		[Test]
+		public void Can_generate_double_sql()
+		{
+			Database.CreateTable("A").Double("B", 1.5).Execute();
+		}
+
+		[Test]
+		public void Can_generate_float_sql()
+		{
+			Database.CreateTable("A").Float("B", 1.5f).Execute();
+		}
+
+		[Test]
+		public void Can_generate_int_sql()
+		{
+			Database.CreateTable("A").Int("B", 1).Execute();
+		}
+
+		[Test]
+		public void Can_generate_long_sql()
+		{
+			Database.CreateTable("A").Long("B", 1).Execute();
+		}
+
+		[Test]
+		public void Can_generate_string_sql()
+		{
+			Database.CreateTable("A").String("B", 5, "hello").Execute();
+		}
+
+		[Test]
+		public void Can_generate_string_sql_for_empty_string()
+		{
+			Database.CreateTable("A").String("B", 1, string.Empty).Execute();
+		}
+		
+		[Test]
+		public void Can_generate_text_sql()
+		{
+			Database.CreateTable("A").Text("B", "hello").Execute();
+		}
 	}
 
 	public abstract class UpMigration : Migration

@@ -19,7 +19,7 @@ namespace DbRefactor.Providers
 	{
 		public TransformationProvider Create(string connectionString)
 		{
-			return new TransformationProvider(new SqlServerEnvironment(connectionString, Logger.NullLogger), Logger.NullLogger, new ColumnProviderFactory(new CodeGenerationService(), new SqlServerTypes()));
+			return Create(connectionString, Logger.NullLogger);
 			//string providerName = GuessProviderName(name);
 
 			//return (TransformationProvider)Activator.CreateInstance(
@@ -29,9 +29,26 @@ namespace DbRefactor.Providers
 			//    new object[] { connectionString });
 		}
 
+		internal static ColumnProviderFactory ColumnProviderFactory
+		{
+			get
+			{
+				return columnProviderFactory;
+			}
+		}
+
+		private static ColumnProviderFactory columnProviderFactory;
+
 		public TransformationProvider Create(string connectionString, ILogger logger)
 		{
-			return new TransformationProvider(new SqlServerEnvironment(connectionString, logger), logger, new ColumnProviderFactory(new CodeGenerationService(), new SqlServerTypes()));
+			var sqlServerEnvironment = new SqlServerEnvironment(connectionString, logger);
+			var codeGenerationService = new CodeGenerationService();
+			var sqlGenerationService = new SQLGenerationService();
+			var sqlServerTypes = new SqlServerTypes();
+			var sqlServerColumnMapper = new SqlServerColumnMapper(codeGenerationService, sqlServerTypes, sqlGenerationService);
+			var columnPropertyProviderFactory = new ColumnPropertyProviderFactory(new SqlServerColumnProperties());
+			columnProviderFactory = new ColumnProviderFactory(codeGenerationService, sqlServerTypes, sqlGenerationService);
+			return new TransformationProvider(sqlServerEnvironment, logger, sqlServerColumnMapper, columnPropertyProviderFactory);
 		}
 
 		public Migrator CreateMigrator(string provider, string connectionString, string category, Assembly assembly, bool trace)

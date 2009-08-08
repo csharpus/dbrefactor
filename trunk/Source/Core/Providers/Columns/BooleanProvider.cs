@@ -18,19 +18,25 @@ namespace DbRefactor.Providers.Columns
 {
 	public class BooleanProvider : ColumnProvider
 	{
-		public BooleanProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes)
-			: base(name, defaultValue, codeGenerationService,sqlTypes)
+		public BooleanProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService,
+							   ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
+			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
 		{
 		}
 
-		public override System.Linq.Expressions.Expression<System.Action<NewTable>> Method()
+		public override System.Linq.Expressions.Expression<Action<NewTable>> Method()
 		{
 			return t => t.Boolean(Name);
 		}
 
-		protected override string SqlType()
+		public override string SqlType()
 		{
 			return SQLTypes.Boolean();
+		}
+
+		protected override string DefaultValueSql()
+		{
+			return SQLTypes.BooleanValue((bool) DefaultValue);
 		}
 	}
 }

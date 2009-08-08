@@ -11,26 +11,51 @@
 
 #endregion
 
+using DbRefactor.Providers;
+
 namespace DbRefactor.Extended
 {
 	public static class TypeExtensions
 	{
 		public static NewTable Binary(this NewTable newTable, string name)
 		{
-			newTable.Columns.Add(new Column(name, typeof(byte[])));
+			newTable.AddColumn(Factory.CreateBinary(name));
+			return newTable;
+		}
+
+		public static NewTable Binary(this NewTable newTable, string name, byte[] defaultValue)
+		{
+			newTable.AddColumn(Factory.CreateBinary(name, defaultValue));
 			return newTable;
 		}
 
 		public static NewTable Float(this NewTable newTable, string name)
 		{
-			newTable.Columns.Add(new Column(name, typeof(float)));
+			newTable.AddColumn(Factory.CreateFloat(name, null));
+			return newTable;
+		}
+
+		public static NewTable Float(this NewTable newTable, string name, float defaultValue)
+		{
+			newTable.AddColumn(Factory.CreateFloat(name, defaultValue));
 			return newTable;
 		}
 
 		public static NewTable Double(this NewTable newTable, string name)
 		{
-			newTable.Columns.Add(new Column(name, typeof(double)));
+			newTable.AddColumn(Factory.CreateDouble(name, null));
 			return newTable;
+		}
+
+		public static NewTable Double(this NewTable newTable, string name, double defaultValue)
+		{
+			newTable.AddColumn(Factory.CreateDouble(name, defaultValue));
+			return newTable;
+		}
+
+		private static ColumnProviderFactory Factory
+		{
+			get { return ProviderFactory.ColumnProviderFactory; }
 		}
 	}
 }
