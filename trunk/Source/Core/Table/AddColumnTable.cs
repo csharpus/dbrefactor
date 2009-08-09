@@ -13,116 +13,129 @@
 
 using System;
 using DbRefactor.Providers;
+using DbRefactor.Providers.Columns;
 
 namespace DbRefactor
 {
 	public class AddColumnTable
 	{
-		private readonly string name;
+		private readonly string tableName;
 		private readonly TransformationProvider provider;
-		private Column column;
+		private readonly ColumnProviderFactory factory;
+		private readonly ColumnPropertyProviderFactory propertyFactory;
+		private ColumnProvider currentColumn;
 
-		public AddColumnTable(string name, TransformationProvider provider)
+		public AddColumnTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory propertyFactory, string tableName)
 		{
-			this.name = name;
+			this.tableName = tableName;
 			this.provider = provider;
+			factory = columnProviderFactory;
+			this.propertyFactory = propertyFactory;
 		}
 
 		#region Column types
 
 		public AddColumnTable String(string columnName, int size)
 		{
-			column = Column.String(columnName, size);
+			AddColumn(factory.CreateString(columnName, null, size));
 			return this;
+		}
+
+		private void AddColumn(ColumnProvider columnProvider)
+		{
+			if (currentColumn != null)
+				throw new DbRefactorException("You can add only one column at one time");
+			currentColumn = columnProvider;
 		}
 
 		public AddColumnTable String(string columnName, int size, string defaultValue)
 		{
-			column = Column.String(columnName, size, defaultValue);
+			AddColumn(factory.CreateString(columnName, defaultValue, size));
 			return this;
 		}
 
 		public AddColumnTable Text(string columnName)
 		{
-			column = Column.Text(columnName);
+			AddColumn(factory.CreateText(columnName, null));
 			return this;
 		}
 
 		public AddColumnTable Text(string columnName, string defaultValue)
 		{
-			column = Column.Text(columnName, defaultValue);
+			AddColumn(factory.CreateText(columnName, defaultValue));
 			return this;
 		}
 
 		public AddColumnTable Int(string columnName)
 		{
-			column = Column.Int(columnName);
+			AddColumn(factory.CreateInt(columnName, null));
 			return this;
 		}
 
 		public AddColumnTable Int(string columnName, int defaultValue)
 		{
-			column = Column.Int(columnName, defaultValue);
+			AddColumn(factory.CreateInt(columnName, defaultValue));
 			return this;
 		}
 
 		public AddColumnTable Long(string columnName)
 		{
-			column = Column.Long(columnName);
+			AddColumn(factory.CreateLong(columnName, null));
 			return this;
 		}
 
 		public AddColumnTable Long(string columnName, long defaultValue)
 		{
-			column = Column.Long(columnName, defaultValue);
+			AddColumn(factory.CreateLong(columnName, defaultValue));
 			return this;
 		}
 
 		public AddColumnTable DateTime(string columnName)
 		{
-			column = Column.DateTime(columnName);
+			AddColumn(factory.CreateDateTime(columnName, null));
 			return this;
 		}
 
 		public AddColumnTable DateTime(string columnName, DateTime defaultValue)
 		{
-			column = Column.DateTime(columnName, defaultValue);
+			AddColumn(factory.CreateDateTime(columnName, defaultValue));
 			return this;
 		}
 
+
 		public AddColumnTable Decimal(string columnName)
 		{
-			column = Column.Decimal(columnName);
+			AddColumn(factory.CreateDecimal(columnName, null, 18, 9)); // change this value
 			return this;
 		}
 
 		public AddColumnTable Decimal(string columnName, int whole, int remainder)
 		{
-			column = Column.Decimal(columnName, whole, remainder);
+			AddColumn(factory.CreateDecimal(columnName, null, whole, remainder));
 			return this;
 		}
 
 		public AddColumnTable Decimal(string columnName, decimal defaultValue)
 		{
-			column = Column.Decimal(columnName, defaultValue);
+			AddColumn(factory.CreateDecimal(columnName, defaultValue, 18, 9)); // change this value
 			return this;
 		}
 
 		public AddColumnTable Decimal(string columnName, int whole, int remainder, decimal defaultValue)
 		{
-			column = Column.Decimal(columnName, whole, remainder, defaultValue);
+			AddColumn(factory.CreateDecimal(columnName, null, whole, remainder));
 			return this;
 		}
 
 		public AddColumnTable Boolean(string columnName)
 		{
-			column = Column.Boolean(columnName);
+			AddColumn(factory.CreateBoolean(columnName, null));
 			return this;
 		}
 
 		public AddColumnTable Boolean(string columnName, bool defaultValue)
 		{
-			column = Column.Boolean(columnName, defaultValue);
+			AddColumn(factory.CreateBoolean(columnName, defaultValue));
 			return this;
 		}
 
@@ -132,43 +145,25 @@ namespace DbRefactor
 
 		public AddColumnTable Identity()
 		{
-			column.ColumnProperty |= ColumnProperties.Identity;
-			return this;
-		}
-
-		public AddColumnTable Indexed()
-		{
-			column.ColumnProperty |= ColumnProperties.Indexed;
+			currentColumn.AddProperty(propertyFactory.CreateIdentity());
 			return this;
 		}
 
 		public AddColumnTable NotNull()
 		{
-			column.ColumnProperty |= ColumnProperties.NotNull;
-			return this;
-		}
-
-		public AddColumnTable Null()
-		{
-			column.ColumnProperty |= ColumnProperties.Null;
+			currentColumn.AddProperty(propertyFactory.CreateNotNull());
 			return this;
 		}
 
 		public AddColumnTable PrimaryKey()
 		{
-			column.ColumnProperty |= ColumnProperties.PrimaryKey;
-			return this;
-		}
-
-		public AddColumnTable PrimaryKeyWithIdentity()
-		{
-			column.ColumnProperty |= ColumnProperties.PrimaryKeyWithIdentity;
+			currentColumn.AddProperty(propertyFactory.CreatePrimaryKey());
 			return this;
 		}
 
 		public AddColumnTable Unique()
 		{
-			column.ColumnProperty |= ColumnProperties.Unique;
+			currentColumn.AddProperty(propertyFactory.CreateUnique());
 			return this;
 		}
 
@@ -176,7 +171,7 @@ namespace DbRefactor
 
 		public void Execute()
 		{
-			provider.AddColumn(name, column);
+			provider.AddColumn(tableName, currentColumn);
 		}
 	}
 }

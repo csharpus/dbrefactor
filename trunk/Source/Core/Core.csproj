@@ -109,9 +109,9 @@
     <Compile Include="Providers\TypeToSqlProviders\SqlServerTypeToSqlProvider.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Providers\Columns\UniqueProvider.cs" />
+    <Compile Include="Table\ActionColumn.cs" />
     <Compile Include="Table\ActionTable.cs" />
     <Compile Include="Table\AddColumnTable.cs" />
-    <Compile Include="Table\AlterColumnTable.cs" />
     <Compile Include="Table\NewTable.cs" />
     <Compile Include="Table\Table.cs" />
     <Compile Include="Tools\CodeGenerationHelper.cs" />

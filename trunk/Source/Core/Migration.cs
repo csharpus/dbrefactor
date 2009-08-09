@@ -120,11 +120,11 @@ namespace DbRefactor
 			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, primaryKeyTable, primaryKeyColumn, ondelete);
 		}
 
-		[Obsolete("Please, use Table(...).AddColumn")]
-		protected void AddTo(string table, Column column)
-		{
-			Database.AddColumn(table, column);
-		}
+		//[Obsolete("Please, use Table(...).AddColumn")]
+		//protected void AddTo(string table, Column column)
+		//{
+		//    Database.AddColumn(table, column);
+		//}
 
 		protected void DropTable(string name)
 		{
@@ -207,11 +207,11 @@ namespace DbRefactor
 			return Database.Update(table, columnValues);
 		}
 
-		[Obsolete("Please, use Table.AlterColumn(...")]
-		protected void AlterColumn(string table, Column column)
-		{
-			Database.AlterColumn(table, column);
-		}
+		//[Obsolete("Please, use Table.AlterColumn(...")]
+		//protected void AlterColumn(string table, Column column)
+		//{
+		//    Database.AlterColumn(table, column);
+		//}
 
 		protected void RemoveColumnConstraints(string table, string column)
 		{
@@ -237,7 +237,7 @@ namespace DbRefactor
 
 		public override ActionTable Table(string tableName)
 		{
-			return new ActionTable(TransformationProvider, tableName);
+			return new ActionTable(TransformationProvider, tableName, ColumnProviderFactory, ColumnPropertyProviderFactory);
 		}
 	}
 }

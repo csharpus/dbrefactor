@@ -23,14 +23,24 @@ namespace DbRefactor.Providers.Columns
 		{
 		}
 
-		public override string PropertySql()
+		public override Expression<Action<NewTable>> Method()
+		{
+			return t => t.NotNull();
+		}
+
+		public override string CreateTableSql()
 		{
 			return ColumnProperties.NotNull();
 		}
 
-		public override Expression<Action<NewTable>> Method()
+		public override string AlterTableSql()
 		{
-			return t => t.NotNull();
+			return ColumnProperties.NotNull();
+		}
+
+		public override string AddTableSql()
+		{
+			return ColumnProperties.NotNull();
 		}
 	}
 }

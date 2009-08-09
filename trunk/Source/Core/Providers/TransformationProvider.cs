@@ -72,13 +72,13 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(name, "name");
 			Check.Require(columns.Length > 0, "At least one column should be passed");
-			var columnsSql = GetColumnsSql(columns);
+			var columnsSql = GetCreateColumnSql(columns);
 			AddTable(name, columnsSql);
 		}
 
-		private static string GetColumnsSql(IEnumerable<ColumnProvider> columns)
+		private static string GetCreateColumnSql(IEnumerable<ColumnProvider> columns)
 		{
-			return columns.Select(col => col.GetColumnSql()).ComaSeparated();
+			return columns.Select(col => col.GetCreateColumnSql()).ComaSeparated();
 		}
 
 		/// <summary>
@@ -90,23 +90,25 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(column, "column");
-			if (!ColumnExists(table, column))
-			{
-				Logger.Warn("Column {0} does not exists", column);
-				return;
-			}
+			//if (!ColumnExists(table, column))
+			//{
+			//    Logger.Warn("Column {0} does not exists", column);
+			//    return;
+			//}
 			DeleteColumnConstraints(table, column);
 			ExecuteNonQuery("ALTER TABLE {0} DROP COLUMN {1} ", table, column);
 		}
 
-		internal void DropUnique(string table, string columnName)
+		internal void DropUnique(string table, params string[] columnNames)
 		{
 			Check.RequireNonEmpty(table, "table");
-			Check.Ensure(IsUnique(table, columnName), "column is not unique");
 
-			List<string> indexes = GetConstraints(table, columnName);
-			Check.Require(indexes.Count > 0, "Index not found.");
-
+			foreach (var name in columnNames)
+			{
+				Check.Ensure(IsUnique(table, name), String.Format("column {0} is not unique", columnNames));
+			}
+#warning fix this (should foreach each column and check constraint name + select only unique constraint)
+			List<string> indexes = GetConstraints(table, columnNames[0]);
 			DropConstraint(table, indexes[0]);
 		}
 
@@ -122,7 +124,24 @@ namespace DbRefactor.Providers
 			DropConstraint(table, indexes[0]);
 		}
 
-		private List<string> GetConstraints(string table, string column)
+		private List<string> GetConstraintsByType(string table, string column, string type)
+		{
+			string sql =
+				String.Format(
+					@"SELECT d.name
+							FROM sys.default_constraints AS d
+							JOIN sys.objects AS o
+								ON o.object_id = d.parent_object_id
+							JOIN sys.columns AS c
+								ON c.object_id = o.object_id AND c.column_id = d.parent_column_id
+							JOIN sys.schemas AS s
+								ON s.schema_id = o.schema_id
+							where o.Name = '{0}' and c.name = '{1}' and d.Type = '{2}'",
+					table, column, type);
+			return ExecuteQuery(sql).AsReadable().Select(r => r.GetString(0)).ToList();
+		}
+
+		public List<string> GetConstraints(string table, string column)
 		{
 			string sql =
 				String.Format(
@@ -145,15 +164,7 @@ namespace DbRefactor.Providers
 					WHERE c.TABLE_NAME = '{0}' AND c.COLUMN_NAME = '{1}';",
 					table, column);
 
-			var constraints = new List<string>();
-			using (IDataReader reader = ExecuteQuery(sql))
-			{
-				while (reader.Read())
-				{
-					constraints.Add(reader.GetString(0));
-				}
-			}
-			return constraints;
+			return ExecuteQuery(sql).AsReadable().Select(r => r.GetString(0)).ToList();
 		}
 
 		private string GetPrimaryKeyColumn(string table)
@@ -182,11 +193,11 @@ namespace DbRefactor.Providers
 		public void DropTable(string name)
 		{
 			Check.RequireNonEmpty(name, "name");
-			if (!TableExists(name))
-			{
-				Logger.Warn("Table {0} does not exist", name);
-				return;
-			}
+			//if (!TableExists(name))
+			//{
+			//    Logger.Warn("Table {0} does not exist", name);
+			//    return;
+			//}
 			ExecuteNonQuery("DROP TABLE [{0}]", name);
 		}
 
@@ -227,14 +238,10 @@ namespace DbRefactor.Providers
 				Logger.Warn("Table {0} does not exists", table);
 				return false;
 			}
-			using (IDataReader reader =
-				ExecuteQuery(
-					"SELECT TOP 1 * FROM syscolumns WHERE id = object_id('{0}') AND name = '{1}'",
-					table,
-					column))
-			{
-				return reader.Read();
-			}
+			var query = String.Format("SELECT TOP 1 * FROM syscolumns WHERE id = object_id('{0}') AND name = '{1}'",
+			                          table,
+			                          column);
+			return ExecuteQuery(query).AsReadable().Any();
 		}
 
 		/// <summary>
@@ -270,10 +277,8 @@ namespace DbRefactor.Providers
 		private bool ObjectExists(string name)
 		{
 			Check.RequireNonEmpty(name, "name");
-			using (IDataReader reader = ExecuteQuery("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')", name))
-			{
-				return reader.Read();
-			}
+			var query = String.Format("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')", name);
+			return ExecuteQuery(query).AsReadable().Any();
 		}
 
 		public void AlterColumn(string table, string sqlColumn)
@@ -296,23 +301,15 @@ namespace DbRefactor.Providers
 				INNER JOIN sys.foreign_key_columns AS fc
 				   ON f.OBJECT_ID = fc.constraint_object_id
 				";
-			var keys = new List<ForeignKey>();
-			using (IDataReader reader = ExecuteQuery(query))
-			{
-				while (reader.Read())
-				{
-					keys.Add(
-						new ForeignKey
-							{
-								Name = reader["Name"].ToString(),
-								ForeignTable = reader["ForeignTable"].ToString(),
-								ForeignColumn = reader["ForeignColumn"].ToString(),
-								PrimaryTable = reader["PrimaryTable"].ToString(),
-								PrimaryColumn = reader["PrimaryColumn"].ToString()
-							});
-				}
-			}
-			return keys;
+			return ExecuteQuery(query).AsReadable()
+				.Select(r => new ForeignKey
+				             	{
+				             		Name = r["Name"].ToString(),
+				             		ForeignTable = r["ForeignTable"].ToString(),
+				             		ForeignColumn = r["ForeignColumn"].ToString(),
+				             		PrimaryTable = r["PrimaryTable"].ToString(),
+				             		PrimaryColumn = r["PrimaryColumn"].ToString()
+				             	}).ToList();
 		}
 
 		private List<Relation> GetTablesRelations()
@@ -387,118 +384,111 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("CREATE TABLE [{0}] ({1})", name, columns);
 		}
 
-		private static string ColumnsAndIndexes(Column[] columns)
-		{
-			string indexes = JoinIndexes(columns);
-			return JoinColumns(columns) + (indexes != null ? "," + indexes : string.Empty);
-		}
+		//private static string ColumnsAndIndexes(Column[] columns)
+		//{
+		//    string indexes = JoinIndexes(columns);
+		//    return JoinColumns(columns) + (indexes != null ? "," + indexes : string.Empty);
+		//}
 
-		private static string JoinIndexes(Column[] columns)
-		{
-			var indexes = new List<string>(columns.Length);
-			foreach (Column column in columns)
-			{
-				string indexSql = column.IndexSQL();
-				if (indexSql != null)
-				{
-					indexes.Add(indexSql);
-				}
-			}
+		//private static string JoinIndexes(Column[] columns)
+		//{
+		//    var indexes = new List<string>(columns.Length);
+		//    foreach (Column column in columns)
+		//    {
+		//        string indexSql = column.IndexSQL();
+		//        if (indexSql != null)
+		//        {
+		//            indexes.Add(indexSql);
+		//        }
+		//    }
 
-			if (indexes.Count == 0)
-			{
-				return null;
-			}
+		//    if (indexes.Count == 0)
+		//    {
+		//        return null;
+		//    }
 
-			return String.Join(", ", indexes.ToArray());
-		}
+		//    return String.Join(", ", indexes.ToArray());
+		//}
 
 
-		private static string JoinColumns(Column[] columns)
-		{
-			var columnStrings = new string[columns.Length];
-			int i = 0;
-			foreach (Column column in columns)
-			{
-				columnStrings[i++] = column.ColumnSQL();
-			}
-			return String.Join(", ", columnStrings);
-		}
+		//private static string JoinColumns(Column[] columns)
+		//{
+		//    var columnStrings = new string[columns.Length];
+		//    int i = 0;
+		//    foreach (Column column in columns)
+		//    {
+		//        columnStrings[i++] = column.ColumnSQL();
+		//    }
+		//    return String.Join(", ", columnStrings);
+		//}
 
-		public void AlterColumn(string table, Column column)
-		{
-			//if (!ColumnExists(table, column.Name))
-			//{
-			//    Logger.Warn("Column {0}.{1} does not exists", table, column.Name);
-			//    return;
-			//}
-			AlterColumn(table, column.ColumnSQL());
-		}
+		//public void AlterColumn(string table, Column column)
+		//{
+		//    //if (!ColumnExists(table, column.Name))
+		//    //{
+		//    //    Logger.Warn("Column {0}.{1} does not exists", table, column.Name);
+		//    //    return;
+		//    //}
+		//    AlterColumn(table, column.ColumnSQL());
+		//}
 
-		public void AddColumn(string table, Column column)
-		{
-			//if (ColumnExists(table, column.Name))
-			//{
-			//    Logger.Warn("Column {0}.{1} already exists", table, column.Name);
-			//    return;
-			//}
-			AddColumn(table, column.ColumnSQL());
-		}
+		//public void AddColumn(string table, Column column)
+		//{
+		//    //if (ColumnExists(table, column.Name))
+		//    //{
+		//    //    Logger.Warn("Column {0}.{1} already exists", table, column.Name);
+		//    //    return;
+		//    //}
+		//    AddColumn(table, column.ColumnSQL());
+		//}
 
-		/// <summary>
-		/// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
-		/// AddColumn(string, string, Type, int, ColumnProperties, object)
-		/// </see>
-		/// </summary>
-		public void AddColumn(string table, string column, Type type)
-		{
-			AddColumn(table, column, type, 0, ColumnProperties.Null, null);
-		}
+		///// <summary>
+		///// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
+		///// AddColumn(string, string, Type, int, ColumnProperties, object)
+		///// </see>
+		///// </summary>
+		//public void AddColumn(string table, string column, Type type)
+		//{
+		//    AddColumn(table, column, type, 0, ColumnProperties.Null, null);
+		//}
 
-		/// <summary>
-		/// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
-		/// AddColumn(string, string, Type, int, ColumnProperties, object)
-		/// </see>
-		/// </summary>
-		public void AddColumn(string table, string column, Type type, int size)
-		{
-			AddColumn(table, column, type, size, ColumnProperties.Null, null);
-		}
+		///// <summary>
+		///// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
+		///// AddColumn(string, string, Type, int, ColumnProperties, object)
+		///// </see>
+		///// </summary>
+		//public void AddColumn(string table, string column, Type type, int size)
+		//{
+		//    AddColumn(table, column, type, size, ColumnProperties.Null, null);
+		//}
 
-		/// <summary>
-		/// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
-		/// AddColumn(string, string, Type, int, ColumnProperties, object)
-		/// </see>
-		/// </summary>
-		public void AddColumn(string table, string column, Type type, ColumnProperties property)
-		{
-			AddColumn(table, column, type, 0, property, null);
-		}
+		///// <summary>
+		///// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
+		///// AddColumn(string, string, Type, int, ColumnProperties, object)
+		///// </see>
+		///// </summary>
+		//public void AddColumn(string table, string column, Type type, ColumnProperties property)
+		//{
+		//    AddColumn(table, column, type, 0, property, null);
+		//}
 
-		/// <summary>
-		/// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
-		/// AddColumn(string, string, Type, int, ColumnProperties, object)
-		/// </see>
-		/// </summary>
-		public void AddColumn(string table, string column, Type type, int size, ColumnProperties property)
-		{
-			AddColumn(table, column, type, size, property, null);
-		}
+		///// <summary>
+		///// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
+		///// AddColumn(string, string, Type, int, ColumnProperties, object)
+		///// </see>
+		///// </summary>
+		//public void AddColumn(string table, string column, Type type, int size, ColumnProperties property)
+		//{
+		//    AddColumn(table, column, type, size, property, null);
+		//}
 
 		/// <summary>
 		/// Add a new column to an existing table.
 		/// </summary>
-		/// <param name="table">Table to which to add the column</param>
-		/// <param name="column">Column name</param>
-		/// <param name="type">Date type of the column</param>
-		/// <param name="size">Max length of the column</param>
-		/// <param name="property">Properties of the column, see <see cref="ColumnProperties">ColumnProperties</see>,</param>
-		/// <param name="defaultValue">Default value</param>
-		public void AddColumn(string table, string column, Type type, int size, ColumnProperties property, object defaultValue)
-		{
-			AddColumn(table, new Column(column, type, size, property, defaultValue));
-		}
-
+		//public void AddColumn(string table, string column, Type type, int size, ColumnProperties property, object defaultValue)
+		//{
+		//    AddColumn(table, new Column(column, type, size, property, defaultValue));
+		//}
 		public void AddColumn(string table, string sqlColumn)
 		{
 			Check.RequireNonEmpty(table, "table");
@@ -634,22 +624,13 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(name, "name");
 
-			ExecuteNonQuery("ALTER TABLE [dbo].[{0}] DROP CONSTRAINT [{1}]", table, name);
+			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT [{1}]", table, name);
 		}
 
 		public string[] GetTables()
 		{
-			var tables = new List<string>();
-
-			using (IDataReader reader =
-				ExecuteQuery("SELECT name FROM sysobjects WHERE xtype = 'U'"))
-			{
-				while (reader.Read())
-				{
-					tables.Add(reader[0].ToString());
-				}
-			}
-			return tables.ToArray();
+			const string query = "SELECT name FROM sysobjects WHERE xtype = 'U'";
+			return ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
 		}
 
 		private Dictionary<string, Func<ColumnData, ColumnProvider>> GetTypesMap()
@@ -723,40 +704,51 @@ namespace DbRefactor.Providers
 			{
 				while (reader.Read())
 				{
-					var data = new ColumnData
-					           	{
-					           		Name = reader["COLUMN_NAME"].ToString(),
-					           		DataType = reader["DATA_TYPE"].ToString(),
-					           		Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
-					           		Precision = NullSafeGet<byte>(reader, "NUMERIC_PRECISION"),
-					           		Radix = NullSafeGet<short>(reader, "NUMERIC_PRECISION_RADIX"),
-					           		DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
-					           	};
-					providers.Add(GetTypesMap()[data.DataType](data));
+					ColumnProvider provider = GetProvider(reader);
+					providers.Add(provider);
 				}
 			}
 			foreach (var provider in providers)
 			{
-				if (IsPrimaryKey(table, provider.Name))
-				{
-					provider.AddProperty(propertyFactory.CreatePrimaryKey());
-				}
-				else if (!IsNull(table, provider.Name))
-				{
-					provider.AddProperty(propertyFactory.CreateNotNull());
-				}
-
-				if (IsIdentity(table, provider.Name))
-				{
-					provider.AddProperty(propertyFactory.CreateIdentity());
-				}
-
-				if (IsUnique(table, provider.Name))
-				{
-					provider.AddProperty(propertyFactory.CreateUnique());
-				}
+				AddProviderProperties(table, provider);
 			}
 			return providers;
+		}
+
+		private ColumnProvider GetProvider(IDataRecord reader)
+		{
+			var data = new ColumnData
+			           	{
+			           		Name = reader["COLUMN_NAME"].ToString(),
+			           		DataType = reader["DATA_TYPE"].ToString(),
+			           		Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
+			           		Precision = NullSafeGet<byte>(reader, "NUMERIC_PRECISION"),
+			           		Radix = NullSafeGet<short>(reader, "NUMERIC_PRECISION_RADIX"),
+			           		DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
+			           	};
+			return GetTypesMap()[data.DataType](data);
+		}
+
+		private void AddProviderProperties(string table, ColumnProvider provider)
+		{
+			if (IsPrimaryKey(table, provider.Name))
+			{
+				provider.AddProperty(propertyFactory.CreatePrimaryKey());
+			}
+			else if (!IsNull(table, provider.Name))
+			{
+				provider.AddProperty(propertyFactory.CreateNotNull());
+			}
+
+			if (IsIdentity(table, provider.Name))
+			{
+				provider.AddProperty(propertyFactory.CreateIdentity());
+			}
+
+			if (IsUnique(table, provider.Name))
+			{
+				provider.AddProperty(propertyFactory.CreateUnique());
+			}
 		}
 
 		private static object GetDefaultValue(object databaseValue)
@@ -785,23 +777,23 @@ namespace DbRefactor.Providers
 			return (T) value;
 		}
 
-		public Column[] GetColumns(string table)
-		{
-			Check.RequireNonEmpty(table, "table");
-			List<Column> columns = new List<Column>();
+		//public Column[] GetColumns(string table)
+		//{
+		//    Check.RequireNonEmpty(table, "table");
+		//    List<Column> columns = new List<Column>();
 
-			using (
-				IDataReader reader =
-					ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME FROM information_schema.columns WHERE table_name = '{0}';", table))
-			{
-				while (reader.Read())
-				{
-					Type t = reader["DATA_TYPE"].ToString() == "datetime" ? typeof (DateTime) : typeof (string);
-					columns.Add(new Column(reader["COLUMN_NAME"].ToString(), t));
-				}
-			}
-			return columns.ToArray();
-		}
+		//    using (
+		//        IDataReader reader =
+		//            ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME FROM information_schema.columns WHERE table_name = '{0}';", table))
+		//    {
+		//        while (reader.Read())
+		//        {
+		//            Type t = reader["DATA_TYPE"].ToString() == "datetime" ? typeof (DateTime) : typeof (string);
+		//            columns.Add(new Column(reader["COLUMN_NAME"].ToString(), t));
+		//        }
+		//    }
+		//    return columns.ToArray();
+		//}
 
 		public int ExecuteNonQuery(string sql, params string[] values)
 		{
@@ -1018,9 +1010,8 @@ namespace DbRefactor.Providers
 			resourceName = GetResource(resourceName, assembly);
 
 			Stream stream = assembly.GetManifestResourceStream(resourceName);
-			Check.Require(stream != null,
-			              String.Format("Could not locate embedded resource '{0}' in assembly '{1}'", resourceName, assemblyName));
-
+			if (stream == null)
+				throw new DbRefactorException(String.Format("Could not locate embedded resource '{0}' in assembly '{1}'", resourceName, assemblyName));
 			string script;
 			using (var streamReader = new StreamReader(stream))
 			{
@@ -1039,21 +1030,169 @@ namespace DbRefactor.Providers
 			return String.Empty;
 		}
 
-		#region Obsolete
+		//#region Obsolete
 
-		[Obsolete("Use DropTable instead")]
-		public void RemoveTable(string name)
+		//[Obsolete("Use DropTable instead")]
+		//public void RemoveTable(string name)
+		//{
+		//    DropTable(name);
+		//}
+
+		//[Obsolete("Use DropColumn instead")]
+		//public void RemoveColumn(string table, string column)
+		//{
+		//    DropColumn(table, column);
+		//}
+
+		//#endregion
+
+		public void AddUnique(string name, string table, params string[] columns)
 		{
-			DropTable(name);
+			Check.RequireNonEmpty(name, "name");
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columns.Length > 0, "You have to pass at least one column");
+			ExecuteNonQuery("ALTER TABLE [{0}] ADD CONSTRAINT {1} UNIQUE ({2}) ",
+			                table, name, String.Join(",", columns));
 		}
 
-		[Obsolete("Use DropColumn instead")]
-		public void RemoveColumn(string table, string column)
+		public void AddIndex(string name, string table, params string[] columns)
 		{
-			DropColumn(table, column);
+			Check.RequireNonEmpty(name, "name");
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columns.Length > 0, "You have to pass at least one column");
+			ExecuteNonQuery("CREATE NONCLUSTERED INDEX {0} ON [{1}] ({2}) ",
+			                name, table, String.Join(",", columns));
 		}
 
-		#endregion
+		private List<string> FindIndexes(string tableName, string columnName)
+		{
+			var query =
+				String.Format(
+					@"SELECT o.name as [TableName], i.name as [IndexName], c.name as [ColumnName]
+							FROM sysobjects o
+							JOIN sysindexes i ON i.id = o.id
+							JOIN sysindexkeys ik ON ik.id = i.id
+								AND ik.indid = i.indid
+							JOIN syscolumns c ON c.id = ik.id
+								AND c.colid = ik.colid
+							WHERE i.indid BETWEEN 2 AND 254
+								AND indexproperty(o.id, i.name, 'IsStatistics') = 0
+								AND indexproperty(o.id, i.name, 'IsHypothetical') = 0
+								AND o.Name = '{0}' and c.Name = '{1}'",
+					tableName, columnName);
+			return ExecuteQuery(query, tableName, columnName).AsReadable()
+				.Select(r => r["IndexName"].ToString()).ToList();
+		}
+
+		public void DropIndex(string table, params string[] columns)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columns.Length > 0, "You have to pass at least one column");
+			var indexesList = new List<List<string>>();
+			foreach (var column in columns)
+			{
+				var indexes = FindIndexes(table, column);
+				indexesList.Add(indexes);
+			}
+			var indexesPresentInAllColumns = GetIndexesPresentInAllColumns(indexesList);
+			if (indexesPresentInAllColumns.Count == 0)
+			{
+				throw new DbRefactorException("Couldn't find any indexes mutual for all passed columns");
+			}
+			foreach (var index in indexesPresentInAllColumns)
+			{
+				ExecuteNonQuery("DROP INDEX {0}.{1}", table, index);
+			}
+		}
+
+		private static List<string> GetIndexesPresentInAllColumns(IList<List<string>> list)
+		{
+			var startIndexes = list[0];
+			foreach (var indexList in list)
+			{
+				var indexesThatExists = indexList.Intersect(startIndexes).ToList();
+				startIndexes = indexesThatExists;
+			}
+			return startIndexes;
+		}
+
+		public void AddColumn(string table, ColumnProvider columnProvider)
+		{
+			ExecuteNonQuery("ALTER TABLE [{0}] ADD {1}", table, columnProvider.GetAddColumnSql());
+		}
+
+		public void SetNull(string tableName, string columnName)
+		{
+			var provider = GetColumnProvider(tableName, columnName);
+			if (provider.Properties.Select(p => p.GetType() == typeof (NotNullProvider)).Any())
+			{
+				// TODO: remove typeof
+				provider.Properties.Remove(provider.Properties.Where(p => p.GetType() == typeof (NotNullProvider)).Single());
+			}
+			AlterColumn(tableName, provider.GetAlterColumnSql());
+		}
+
+		private ColumnProvider GetColumnProvider(string tableName, string columnName)
+		{
+			ColumnProvider provider;
+			using (
+				IDataReader reader =
+					ExecuteQuery(
+						"SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}' and column_name = '{1}'",
+						tableName, columnName))
+			{
+				if (!reader.Read())
+				{
+					throw new DbRefactorException(String.Format("Couldn't find column '{0}' in table '{1}'", columnName, tableName));
+				}
+				provider = GetProvider(reader);
+			}
+			AddProviderProperties(tableName, provider);
+			return provider;
+		}
+
+		public void SetNotNull(string tableName, string columnName)
+		{
+			var provider = GetColumnProvider(tableName, columnName);
+			// TODO: remove typeof
+			bool isNotNull = provider.Properties.Where(t => t.GetType() == typeof (NotNullProvider)).Any();
+			if (isNotNull) return;
+			provider.AddProperty(propertyFactory.CreateNotNull());
+			AlterColumn(tableName, provider.GetAlterColumnSql());
+		}
+
+		public void SetDefault(string constraintName, string tableName, string columnName, object value)
+		{
+			var provider = GetColumnProvider(tableName, columnName);
+			provider.DefaultValue = value;
+			var query = String.Format("ALTER TABLE [{0}] ADD CONSTRAINT {1} DEFAULT {2} FOR [{3}]", tableName, constraintName,
+			                          provider.GetDefaultValueSql(), columnName);
+			ExecuteNonQuery(query);
+		}
+
+		public void DropDefault(string tableName, string columnName)
+		{
+			List<string> defaultConstraints = GetConstraintsByType(tableName, columnName, "D");
+			foreach (var constraint in defaultConstraints)
+			{
+				DropConstraint(tableName, constraint);
+			}
+		}
+
+		public void AlterColumn(string tableName, ColumnProvider columnProvider)
+		{
+			var provider = GetColumnProvider(tableName, columnProvider.Name);
+			CopyProperties(provider, columnProvider);
+			AlterColumn(tableName, columnProvider.GetAlterColumnSql());
+		}
+
+		public void CopyProperties(ColumnProvider source, ColumnProvider destination)
+		{
+			foreach (var property in source.Properties)
+			{
+				destination.AddProperty(property);
+			}
+		}
 	}
 
 	public class ColumnData
@@ -1098,6 +1237,25 @@ namespace DbRefactor.Providers
 		public static string ComaSeparated(this IEnumerable<string> list)
 		{
 			return String.Join(", ", list.ToArray());
+		}
+
+		public static string SpaceSeparated(this IEnumerable<string> list)
+		{
+			return String.Join(" ", list.ToArray());
+		}
+	}
+
+	public static class DataReaderExtensions
+	{
+		public static IEnumerable<IDataReader> AsReadable(this IDataReader reader)
+		{
+			using (reader)
+			{
+				while (reader.Read())
+				{
+					yield return reader;
+				}
+			}
 		}
 	}
 }

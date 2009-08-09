@@ -16,6 +16,7 @@ using System.Data;
 using System.IO;
 using DbRefactor.Providers;
 using System;
+using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Tools
 {
@@ -90,7 +91,8 @@ namespace DbRefactor.Tools
 			tables.Reverse();
 			foreach (string table in tables)
 			{
-				Column[] columns = provider.GetColumns(table);
+				//Column[] columns = provider.GetColumns(table);
+				var columnProviders = provider.GetColumnProviders(table);
 				hasIdentity = provider.TableHasIdentity(table);
 				using (IDataReader reader = provider.Select("*", table))
 				{
@@ -98,30 +100,26 @@ namespace DbRefactor.Tools
 					while (reader.Read())
 					{
 						writer.Write("\tinsert into [{0}] (", table);
-						foreach (Column column in columns)
+						foreach (ColumnProvider columnProvider in columnProviders)
 						{
-							writer.Write("[{0}]", column.Name);
-							if (column != columns[columns.Length - 1])
+							writer.Write("[{0}]", columnProvider.Name);
+							if (columnProvider != columnProviders[columnProviders.Count - 1])
 							{
 								writer.Write(", ");
 							}
 						}
 						writer.Write(") values (");
-						foreach (Column column in columns)
+						foreach (ColumnProvider columnProvider in columnProviders)
 						{
-							if (reader[column.Name] == DBNull.Value)
+							if (reader[columnProvider.Name] == DBNull.Value)
 							{
 								writer.Write("NULL");
 							}
-							else if (column.Type == typeof(DateTime))
-							{
-								writer.Write("'{0}'", FormatDateTime((DateTime)reader[column.Name]));
-							}
 							else
 							{
-								writer.Write("'{0}'", reader[column.Name].ToString().Replace("'", "''"));
+								columnProvider.GetValueSql(reader[columnProvider.Name]);
 							}
-							if (column != columns[columns.Length - 1])
+							if (columnProvider != columnProviders[columnProviders.Count - 1])
 							{
 								writer.Write(", ");
 							}

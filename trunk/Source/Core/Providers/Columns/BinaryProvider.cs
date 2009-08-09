@@ -35,9 +35,9 @@ namespace DbRefactor.Providers.Columns
 			//return CodeGenerationService.BinaryValue((byte[]) DefaultValue);
 		}
 
-		protected override string DefaultValueSql()
+		public override string GetValueSql(object value)
 		{
-			return SQLTypes.BinaryValue((byte[])DefaultValue);
+			return SQLTypes.BinaryValue((byte[])value);
 		}
 
 		public override string SqlType()

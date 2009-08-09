@@ -23,6 +23,8 @@ namespace DbRefactor
 	public partial class ActionTable: Table
 	{
 		private readonly TransformationProvider provider;
+		private readonly ColumnProviderFactory columnProviderFactory;
+		private readonly ColumnPropertyProviderFactory columnPropertyProviderFactory;
 
 		private enum Operation
 		{
@@ -57,11 +59,18 @@ namespace DbRefactor
 		private object operationParameters;
         private Operation operation = Operation.None;
 		
-		public ActionTable(TransformationProvider provider, string tableName) : base(provider, tableName)
+		public ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory columnPropertyProviderFactory) : base(provider, tableName)
 		{
 			this.provider = provider;
+			this.columnProviderFactory = columnProviderFactory;
+			this.columnPropertyProviderFactory = columnPropertyProviderFactory;
 			columnValues = new List<string>();
 			columns = ColumnsCollection.Create();
+		}
+
+		public ActionColumn Column(string name)
+		{
+			return new ActionColumn(provider, TableName, name, columnProviderFactory);
 		}
 
 		/// <summary>
@@ -178,14 +187,9 @@ namespace DbRefactor
 			Execute();
 		}
 
-		public AlterColumnTable AlterColumn()
-		{
-			return new AlterColumnTable(TableName, provider);
-		}
-
 		public AddColumnTable AddColumn()
 		{
-			return new AddColumnTable(TableName, provider);
+			return new AddColumnTable(provider, columnProviderFactory, columnPropertyProviderFactory, TableName);
 		}
 
 		public void RemoveColumnConstraints(string column)
@@ -281,13 +285,6 @@ namespace DbRefactor
 
 			switch (operation)
 			{
-				case Operation.AlterColumn:
-					Check.Ensure(columns.ToArray().Length != 0, "Colmn for the operation has not set.");
-					Check.Ensure(columns.ToArray().Length < 2, "Currently, we do not support cascade alter colmn operations.");
-
-					provider.AlterColumn(TableName, columns.LastColumnItem);	
-					break;
-
 				case Operation.RemoveColumnConstraints:
 					Check.Ensure(columns.ToArray().Length != 0, "Colmn for the operation has not set.");
 					Check.Ensure(columns.ToArray().Length < 2, "Currently, we do not support cascade remove constraints colmn operations.");

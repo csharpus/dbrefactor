@@ -39,6 +39,16 @@ namespace DbRefactor.Providers
 
 		private static ColumnProviderFactory columnProviderFactory;
 
+		internal static ColumnPropertyProviderFactory columnPropertyProviderFactory;
+
+		internal static ColumnPropertyProviderFactory ColumnPropertyProviderFactory
+		{
+			get
+			{
+				return columnPropertyProviderFactory;
+			}
+		}
+
 		public TransformationProvider Create(string connectionString, ILogger logger)
 		{
 			var sqlServerEnvironment = new SqlServerEnvironment(connectionString, logger);

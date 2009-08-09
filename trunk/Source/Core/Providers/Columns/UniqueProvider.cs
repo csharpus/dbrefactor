@@ -23,14 +23,24 @@ namespace DbRefactor.Providers.Columns
 		{
 		}
 
-		public override string PropertySql()
+		public override Expression<Action<NewTable>> Method()
+		{
+			return t => t.Unique();
+		}
+
+		public override string CreateTableSql()
 		{
 			return ColumnProperties.Unique();
 		}
 
-		public override Expression<Action<NewTable>> Method()
+		public override string AlterTableSql()
 		{
-			return t => t.Unique();
+			return String.Empty;
+		}
+
+		public override string AddTableSql()
+		{
+			return String.Empty;
 		}
 	}
 
@@ -39,15 +49,25 @@ namespace DbRefactor.Providers.Columns
 		public IdentityProvider(IColumnProperties columnProperties) : base(columnProperties)
 		{
 		}
+		
+		public override Expression<Action<NewTable>> Method()
+		{
+			return t => t.Identity();
+		}
 
-		public override string PropertySql()
+		public override string CreateTableSql()
 		{
 			return ColumnProperties.Identity();
 		}
 
-		public override Expression<Action<NewTable>> Method()
+		public override string AlterTableSql()
 		{
-			return t => t.Identity();
+			return String.Empty;
+		}
+
+		public override string AddTableSql()
+		{
+			return String.Empty;
 		}
 	}
 
@@ -56,15 +76,25 @@ namespace DbRefactor.Providers.Columns
 		public PrimaryKeyProvider(IColumnProperties columnProperties) : base(columnProperties)
 		{
 		}
+		
+		public override Expression<Action<NewTable>> Method()
+		{
+			return t => t.PrimaryKey();
+		}
 
-		public override string PropertySql()
+		public override string CreateTableSql()
 		{
 			return ColumnProperties.PrimaryKey();
 		}
 
-		public override Expression<Action<NewTable>> Method()
+		public override string AlterTableSql()
 		{
-			return t => t.PrimaryKey();
+			return String.Empty;
+		}
+
+		public override string AddTableSql()
+		{
+			return String.Empty;
 		}
 	}
 
@@ -82,13 +112,15 @@ namespace DbRefactor.Providers.Columns
 			get { return columnProperties; }
 		}
 
-		public abstract string PropertySql();
-
 		public abstract Expression<Action<NewTable>> Method();
 
 		public string MethodName()
 		{
 			return ((MethodCallExpression)Method().Body).Method.Name;
 		}
+
+		public abstract string CreateTableSql();
+		public abstract string AlterTableSql();
+		public abstract string AddTableSql();
 	}
 }

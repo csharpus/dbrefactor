@@ -34,9 +34,9 @@ namespace DbRefactor.Providers.Columns
 			return SQLTypes.Text();
 		}
 
-		protected override string DefaultValueSql()
+		public override string GetValueSql(object value)
 		{
-			return SQLTypes.TextValue((string)DefaultValue);
+			return SQLTypes.TextValue((string)value);
 		}
 	}
 }

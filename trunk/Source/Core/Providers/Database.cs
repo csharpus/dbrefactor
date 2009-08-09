@@ -3,6 +3,7 @@
 	public interface IDatabase
 	{
 		NewTable CreateTable(string name);
+		ActionTable Table(string name);
 	}
 
 	public class Database : IDatabase
@@ -22,6 +23,11 @@
 		public NewTable CreateTable(string name)
 		{
 			return new NewTable(transformationProvider, columnProviderFactory, columnPropertyProviderFactory, name);
+		}
+
+		public ActionTable Table(string name)
+		{
+			return new ActionTable(transformationProvider, name, columnProviderFactory, columnPropertyProviderFactory);
 		}
 	}
 }

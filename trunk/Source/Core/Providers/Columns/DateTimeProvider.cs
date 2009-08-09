@@ -39,9 +39,9 @@ namespace DbRefactor.Providers.Columns
 			return SQLTypes.DateTime();
 		}
 
-		protected override string DefaultValueSql()
+		public override string GetValueSql(object value)
 		{
-			return SQLTypes.DateTimeValue((DateTime) DefaultValue);
+			return SQLTypes.DateTimeValue((DateTime) value);
 		}
 	}
 }

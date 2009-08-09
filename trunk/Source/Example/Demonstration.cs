@@ -160,12 +160,14 @@ namespace Example
 		{
 			Table("User").Update(new {PersonalInformation = "none..."}).Where(new {PersonalInformation = DBNull.Value});
 
-			Table("User").AlterColumn().String("PersonalInformation", 1000).NotNull().Execute();
+			Table("User").Column("PersonalInformation").ConvertTo().String(1000);
+			Table("User").Column("PersonalInformation").SetNull();
 		}
 
 		public override void Down()
 		{
-			Table("User").AlterColumn().Text("PersonalInformation").Null().Execute();
+			Table("User").Column("PersonalInformation").ConvertTo().Text();
+			Table("User").Column("PersonalInformation").SetNotNull();
 			Table("User").Update(new { PersonalInformation = DBNull.Value }).Where(new { PersonalInformation = "none..." });
 		}
 	}
@@ -310,7 +312,7 @@ namespace Example
 
 		public override void Down()
 		{
-			Table("ActorType").AlterColumn().Int("Name").PrimaryKeyWithIdentity().Execute();
+			Table("ActorType").Column("Name").AddUnique();
 		}
 	}
 
@@ -324,7 +326,7 @@ namespace Example
 
 		public override void Down()
 		{
-			Table("User").AlterColumn().String("Name", 30).Unique().NotNull().Execute();
+			Table("User").Column("Id").AddPrimaryKey();
 		}
 	}
 }

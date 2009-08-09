@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using DbRefactor.Extended;
 using DbRefactor.Providers;
 using DbRefactor.Tools;
@@ -152,6 +153,8 @@ namespace DbRefactor.Tests.Integration
 			Console.Write(values);
 		}
 
+		
+
 
 
 		[Test]
@@ -178,10 +181,8 @@ namespace DbRefactor.Tests.Integration
 		private TMigration CreateMigration<TMigration>()
 			where TMigration : Migration, new()
 		{
-			return new TMigration {TransformationProvider = Provider};
+			return new TMigration {TransformationProvider = Provider, ColumnPropertyProviderFactory = ProviderFactory.ColumnPropertyProviderFactory, ColumnProviderFactory = ProviderFactory.ColumnProviderFactory};
 		}
-
-		
 
 		[Test]
 		public void Can_create_table_using_column_providers()
@@ -294,6 +295,142 @@ namespace DbRefactor.Tests.Integration
 		public void Can_generate_text_sql()
 		{
 			Database.CreateTable("A").Text("B", "hello").Execute();
+		}
+
+		[Test]
+		public void Can_add_unique_constraint()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").Column("B").AddUnique();
+		}
+
+		[Test]
+		public void Can_add_unique_for_several_columns()
+		{
+			Database.CreateTable("A").Int("B").Int("C").Execute();
+			Database.Table("A").Column("B").Column("C").AddUnique();
+		}
+
+		[Test]
+		public void Can_add_index()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").Column("B").AddIndex();
+		}
+
+		[Test]
+		public void Can_add_index_for_several_columns()
+		{
+			Database.CreateTable("A").Int("B").Int("C").Execute();
+			Database.Table("A").Column("B").Column("C").AddIndex();
+		}
+
+		[Test]
+		public void Can_drop_index_for_column()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").Column("B").AddIndex();
+			Database.Table("A").Column("B").DropIndex();
+		}
+
+		[Test]
+		public void Can_drop_index_for_several_columns()
+		{
+			Database.CreateTable("A").Int("B").Int("C").Execute();
+			Database.Table("A").Column("B").Column("C").AddIndex();
+			Database.Table("A").Column("B").Column("C").DropIndex();
+		}
+
+		[Test]
+		[ExpectedException(typeof(DbRefactorException))]
+		public void Should_not_delete_any_indexes_if_they_are_not_for_all_columns()
+		{
+			Database.CreateTable("A").Int("B").Int("C").Execute();
+			Database.Table("A").Column("B").AddIndex();
+			Database.Table("A").Column("B").Column("C").DropIndex();
+		}
+
+		[Test]
+		public void Can_add_column_to_table()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").AddColumn().Int("C").Execute();
+		}
+
+		[Test]
+		public void Can_add_not_null_column_to_table()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").AddColumn().Int("C").NotNull().Execute();
+		}
+
+		[Test]
+		public void Can_add_primary_key_column_to_table()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").AddColumn().Int("C").PrimaryKey().Execute();
+		}
+
+		[Test]
+		public void Can_add_unique_column_to_table()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").AddColumn().Int("C").Unique().Execute();
+		}
+
+		[Test]
+		public void Can_add_identity_column_to_table()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").AddColumn().Int("C").NotNull().Identity().Execute();
+		}
+
+		[Test]
+		public void Can_add_column_with_default_value()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").AddColumn().Int("C", 1).Execute();
+		}
+
+		[Test]
+		public void Can_create_column_with_several_properties()
+		{
+			Database.CreateTable("A").Int("B").Unique().NotNull().Execute();
+		}
+
+		[Test]
+		public void Can_make_column_nullable()
+		{
+			Database.CreateTable("A").Int("B").NotNull().Execute();
+			Database.Table("A").Column("B").SetNull();
+		}
+
+		[Test]
+		public void Can_make_column_not_null()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").Column("B").SetNotNull();
+		}
+
+		[Test]
+		public void Can_set_default_value()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").Column("B").SetDefault(1);
+		}
+
+		[Test]
+		public void Can_drop_default_value()
+		{
+			Database.CreateTable("A").Int("B", 1).Execute();
+			Database.Table("A").Column("B").DropDefault();
+		}
+
+		[Test]
+		public void Can_change_type()
+		{
+			Database.CreateTable("A").Int("B").NotNull().Execute();
+			Database.Table("A").Column("B").ConvertTo().Long();
 		}
 	}
 

@@ -21,7 +21,7 @@ namespace DbRefactor.Providers.Columns
 {
 	public abstract class ColumnProvider
 	{
-		private readonly object defaultValue;
+		private object defaultValue;
 		private readonly ICodeGenerationService codeGenerationService;
 		private readonly ISqlTypes sqlTypes;
 		private readonly ISqlGenerationService sqlGenerationService;
@@ -48,9 +48,10 @@ namespace DbRefactor.Providers.Columns
 			get { return properties; }
 		}
 
-		protected object DefaultValue
+		public object DefaultValue
 		{
 			get { return defaultValue; }
+			set { defaultValue = value; }
 		}
 
 		public bool HasDefaultValue
@@ -84,9 +85,9 @@ namespace DbRefactor.Providers.Columns
 			return DefaultValueSql();
 		}
 
-		protected virtual string DefaultValueSql()
+		protected string DefaultValueSql()
 		{
-			return Convert.ToString(defaultValue, CultureInfo.InvariantCulture);
+			return GetValueSql(defaultValue);
 		}
 
 		public string GetDefaultValueCode()
@@ -105,9 +106,24 @@ namespace DbRefactor.Providers.Columns
 
 		public abstract string SqlType();
 
-		public string GetColumnSql()
+		public string GetCreateColumnSql()
 		{
-			return sqlGenerationService.GenerateColumnSql(this);
+			return sqlGenerationService.GenerateCreateColumnSql(this);
+		}
+
+		public string GetAddColumnSql()
+		{
+			return sqlGenerationService.GenerateAddColumnSql(this);
+		}
+
+		public string GetAlterColumnSql()
+		{
+			return sqlGenerationService.GenerateCreateColumnSql(this);
+		}
+
+		public virtual string GetValueSql(object value)
+		{
+			return Convert.ToString(value, CultureInfo.InvariantCulture);
 		}
 	}
 }
