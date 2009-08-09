@@ -47,7 +47,7 @@ namespace DbRefactor
 		} ;
 
 		private List<string> columnValues; 
-		private ColumnsCollection columns;				// For column operations
+		//private ColumnsCollection columns;				// For column operations
 
 		private string newTableName;
         private string foreignKeyColumn;
@@ -65,7 +65,6 @@ namespace DbRefactor
 			this.columnProviderFactory = columnProviderFactory;
 			this.columnPropertyProviderFactory = columnPropertyProviderFactory;
 			columnValues = new List<string>();
-			columns = ColumnsCollection.Create();
 		}
 
 		public ActionColumn Column(string name)
@@ -180,13 +179,6 @@ namespace DbRefactor
 
 		#region Column operations
 
-		public void AlterColumn(Column column)
-		{
-			operation = Operation.AlterColumn;
-			columns.Add(column);
-			Execute();
-		}
-
 		public AddColumnTable AddColumn()
 		{
 			return new AddColumnTable(provider, columnProviderFactory, columnPropertyProviderFactory, TableName);
@@ -194,24 +186,17 @@ namespace DbRefactor
 
 		public void RemoveColumnConstraints(string column)
 		{
-			operation = Operation.RemoveColumnConstraints;
-			columns.Int(column);
-			Execute();
+			provider.DeleteColumnConstraints(TableName, column);
 		}
 
 		public void RenameColumn(string oldName, string newName)
 		{
-			operation = Operation.RenameColumn;
-			columns.Int(oldName);
-			columns.Int(newName);
-			Execute();
+			provider.RenameColumn(TableName, oldName, newName);
 		}
 
 		public void DropColumn(string column)
 		{
-			operation = Operation.DropColumn;
-			columns.Int(column);
-			Execute();
+			provider.DropColumn(TableName, column);
 		}
 
 		public void AddForeignKey(string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)
@@ -285,27 +270,6 @@ namespace DbRefactor
 
 			switch (operation)
 			{
-				case Operation.RemoveColumnConstraints:
-					Check.Ensure(columns.ToArray().Length != 0, "Colmn for the operation has not set.");
-					Check.Ensure(columns.ToArray().Length < 2, "Currently, we do not support cascade remove constraints colmn operations.");
-
-					provider.DeleteColumnConstraints(TableName, columns.LastColumnItem.Name);
-					break;
-
-				case Operation.RenameColumn:
-					Check.Ensure(columns.ToArray().Length != 0, "Colmns for the operation have not set.");
-					Check.Ensure(columns.ToArray().Length < 3, "Rename operation required 2 columns");
-					var columnsArray = columns.ToArray();
-					provider.RenameColumn(TableName, columnsArray[0].Name, columnsArray[1].Name);
-					break;
-
-				case Operation.DropColumn:
-					Check.Ensure(columns.ToArray().Length != 0, "Colmn for the operation has not set.");
-					Check.Ensure(columns.ToArray().Length < 2, "Currently, we do not support cascade drop colmn operations.");
-
-					provider.DropColumn(TableName, columns.LastColumnItem.Name);
-					break;
-
 				case Operation.RemoveForeignKey:
 					provider.DropConstraint(TableName, keyName);
 					break;

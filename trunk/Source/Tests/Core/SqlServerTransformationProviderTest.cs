@@ -140,33 +140,33 @@ namespace DbRefactor.Tests.Core
 			}
 		}
 
-		[Test]
-		public void StringColumn()
-		{
-			var column = new Column("Column1", typeof (string), 10);
-			Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] nvarchar(10) NULL"));
-		}
+		//[Test]
+		//public void StringColumn()
+		//{
+		//    var column = new Column("Column1", typeof (string), 10);
+		//    Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] nvarchar(10) NULL"));
+		//}
 
-		[Test]
-		public void IntNotNullColumn()
-		{
-			var column = new Column("Column1", typeof(int), ColumnProperties.NotNull);
-			Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] int NOT NULL"));
-		}
+		//[Test]
+		//public void IntNotNullColumn()
+		//{
+		//    var column = new Column("Column1", typeof(int), ColumnProperties.NotNull);
+		//    Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] int NOT NULL"));
+		//}
 
-		[Test]
-		public void BooleanColumnWithDefaultValue()
-		{
-			var column = new Column("Column1", typeof(bool), ColumnProperties.NotNull, true);
-			Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] bit NOT NULL DEFAULT 1"));
-		}
+		//[Test]
+		//public void BooleanColumnWithDefaultValue()
+		//{
+		//    var column = new Column("Column1", typeof(bool), ColumnProperties.NotNull, true);
+		//    Assert.That(column.ColumnSQL(), Is.EqualTo("[Column1] bit NOT NULL DEFAULT 1"));
+		//}
 
-		[Test]
-		public void PrimaryKeyColumn()
-		{
-			var column = new Column("ID", typeof(int), ColumnProperties.PrimaryKeyWithIdentity);
-			Assert.That(column.ColumnSQL(), Is.EqualTo("[ID] int NOT NULL IDENTITY PRIMARY KEY"));
-		}
+		//[Test]
+		//public void PrimaryKeyColumn()
+		//{
+		//    var column = new Column("ID", typeof(int), ColumnProperties.PrimaryKeyWithIdentity);
+		//    Assert.That(column.ColumnSQL(), Is.EqualTo("[ID] int NOT NULL IDENTITY PRIMARY KEY"));
+		//}
 
 		//[Test]
 		//public void CreateTableWithOneColumn()

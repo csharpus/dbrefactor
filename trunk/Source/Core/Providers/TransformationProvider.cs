@@ -18,6 +18,7 @@ using System.Linq;
 using System.Reflection;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Providers.ForeignKeys;
+using DbRefactor.Providers.Properties;
 using DbRefactor.Tools.DesignByContract;
 using System.IO;
 using DbRefactor.Tools.Loggers;
@@ -60,14 +61,6 @@ namespace DbRefactor.Providers
 		/// </summary>
 		private ILogger Logger { get; set; }
 
-		//public void AddTable(string name, params Column[] columns)
-		//{
-		//    Check.RequireNonEmpty(name, "name");
-		//    Check.Require(columns.Length > 0, "At least one column should be passed");
-		//    string columnsAndIndexes = ColumnsAndIndexes(columns);
-		//    AddTable(name, columnsAndIndexes);
-		//}
-
 		public void AddTable(string name, params ColumnProvider[] columns)
 		{
 			Check.RequireNonEmpty(name, "name");
@@ -90,11 +83,6 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(column, "column");
-			//if (!ColumnExists(table, column))
-			//{
-			//    Logger.Warn("Column {0} does not exists", column);
-			//    return;
-			//}
 			DeleteColumnConstraints(table, column);
 			ExecuteNonQuery("ALTER TABLE {0} DROP COLUMN {1} ", table, column);
 		}
@@ -193,11 +181,6 @@ namespace DbRefactor.Providers
 		public void DropTable(string name)
 		{
 			Check.RequireNonEmpty(name, "name");
-			//if (!TableExists(name))
-			//{
-			//    Logger.Warn("Table {0} does not exist", name);
-			//    return;
-			//}
 			ExecuteNonQuery("DROP TABLE [{0}]", name);
 		}
 
@@ -384,111 +367,6 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("CREATE TABLE [{0}] ({1})", name, columns);
 		}
 
-		//private static string ColumnsAndIndexes(Column[] columns)
-		//{
-		//    string indexes = JoinIndexes(columns);
-		//    return JoinColumns(columns) + (indexes != null ? "," + indexes : string.Empty);
-		//}
-
-		//private static string JoinIndexes(Column[] columns)
-		//{
-		//    var indexes = new List<string>(columns.Length);
-		//    foreach (Column column in columns)
-		//    {
-		//        string indexSql = column.IndexSQL();
-		//        if (indexSql != null)
-		//        {
-		//            indexes.Add(indexSql);
-		//        }
-		//    }
-
-		//    if (indexes.Count == 0)
-		//    {
-		//        return null;
-		//    }
-
-		//    return String.Join(", ", indexes.ToArray());
-		//}
-
-
-		//private static string JoinColumns(Column[] columns)
-		//{
-		//    var columnStrings = new string[columns.Length];
-		//    int i = 0;
-		//    foreach (Column column in columns)
-		//    {
-		//        columnStrings[i++] = column.ColumnSQL();
-		//    }
-		//    return String.Join(", ", columnStrings);
-		//}
-
-		//public void AlterColumn(string table, Column column)
-		//{
-		//    //if (!ColumnExists(table, column.Name))
-		//    //{
-		//    //    Logger.Warn("Column {0}.{1} does not exists", table, column.Name);
-		//    //    return;
-		//    //}
-		//    AlterColumn(table, column.ColumnSQL());
-		//}
-
-		//public void AddColumn(string table, Column column)
-		//{
-		//    //if (ColumnExists(table, column.Name))
-		//    //{
-		//    //    Logger.Warn("Column {0}.{1} already exists", table, column.Name);
-		//    //    return;
-		//    //}
-		//    AddColumn(table, column.ColumnSQL());
-		//}
-
-		///// <summary>
-		///// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
-		///// AddColumn(string, string, Type, int, ColumnProperties, object)
-		///// </see>
-		///// </summary>
-		//public void AddColumn(string table, string column, Type type)
-		//{
-		//    AddColumn(table, column, type, 0, ColumnProperties.Null, null);
-		//}
-
-		///// <summary>
-		///// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
-		///// AddColumn(string, string, Type, int, ColumnProperties, object)
-		///// </see>
-		///// </summary>
-		//public void AddColumn(string table, string column, Type type, int size)
-		//{
-		//    AddColumn(table, column, type, size, ColumnProperties.Null, null);
-		//}
-
-		///// <summary>
-		///// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
-		///// AddColumn(string, string, Type, int, ColumnProperties, object)
-		///// </see>
-		///// </summary>
-		//public void AddColumn(string table, string column, Type type, ColumnProperties property)
-		//{
-		//    AddColumn(table, column, type, 0, property, null);
-		//}
-
-		///// <summary>
-		///// <see cref="TransformationProvider.AddColumn(string, string, Type, int, ColumnProperties, object)">
-		///// AddColumn(string, string, Type, int, ColumnProperties, object)
-		///// </see>
-		///// </summary>
-		//public void AddColumn(string table, string column, Type type, int size, ColumnProperties property)
-		//{
-		//    AddColumn(table, column, type, size, property, null);
-		//}
-
-		/// <summary>
-		/// Add a new column to an existing table.
-		/// </summary>
-		//public void AddColumn(string table, string column, Type type, int size, ColumnProperties property, object defaultValue)
-		//{
-		//    AddColumn(table, new Column(column, type, size, property, defaultValue));
-		//}
 		public void AddColumn(string table, string sqlColumn)
 		{
 			Check.RequireNonEmpty(table, "table");
@@ -507,11 +385,6 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(name, "name");
 			Check.RequireNonEmpty(table, "table");
 			Check.Require(columns.Length > 0, "You have to pass at least one column");
-			//if (ConstraintExists(name, table))
-			//{
-			//    Logger.Warn("Primary key {0} already exists", name);
-			//    return;
-			//}
 			ExecuteNonQuery("ALTER TABLE [{0}] ADD CONSTRAINT {1} PRIMARY KEY ({2}) ",
 			                table, name, String.Join(",", columns));
 		}
@@ -602,11 +475,6 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(refTable, "refTable");
 			Check.Require(primaryColumns.Length > 0, "You have to pass at least one primary column");
 			Check.Require(refColumns.Length > 0, "You have to pass at least one ref column");
-			//if (ConstraintExists(name, primaryTable))
-			//{
-			//    Logger.Warn("The contraint {0} already exists", name);
-			//    return;
-			//}
 			ExecuteNonQuery(
 				"ALTER TABLE [{0}] ADD CONSTRAINT [{1}] FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5}",
 				primaryTable, name, String.Join(",", primaryColumns),
@@ -776,24 +644,6 @@ namespace DbRefactor.Providers
 			}
 			return (T) value;
 		}
-
-		//public Column[] GetColumns(string table)
-		//{
-		//    Check.RequireNonEmpty(table, "table");
-		//    List<Column> columns = new List<Column>();
-
-		//    using (
-		//        IDataReader reader =
-		//            ExecuteQuery("SELECT DATA_TYPE, COLUMN_NAME FROM information_schema.columns WHERE table_name = '{0}';", table))
-		//    {
-		//        while (reader.Read())
-		//        {
-		//            Type t = reader["DATA_TYPE"].ToString() == "datetime" ? typeof (DateTime) : typeof (string);
-		//            columns.Add(new Column(reader["COLUMN_NAME"].ToString(), t));
-		//        }
-		//    }
-		//    return columns.ToArray();
-		//}
 
 		public int ExecuteNonQuery(string sql, params string[] values)
 		{
@@ -966,19 +816,11 @@ namespace DbRefactor.Providers
 
 		private void CreateSchemaInfoTable()
 		{
-			//EnsureHasConnection();
 			if (TableExists("SchemaInfo")) return;
 			GetDatabase().CreateTable("SchemaInfo")
 				.Int("Version").PrimaryKey()
 				.String("Category", 50, String.Empty)
 				.Execute();
-			//AddTable("SchemaInfo",
-			//         new Column("Version", typeof (int), ColumnProperties.PrimaryKey));
-			//if (!ColumnExists("SchemaInfo", "Category"))
-			//{
-			//    AddColumn("SchemaInfo", new Column("Category", typeof (string), 50, ColumnProperties.Null));
-			//    Update("SchemaInfo", "Category=''");
-			//}
 		}
 
 		public bool TableHasIdentity(string table)
@@ -1029,22 +871,6 @@ namespace DbRefactor.Providers
 			}
 			return String.Empty;
 		}
-
-		//#region Obsolete
-
-		//[Obsolete("Use DropTable instead")]
-		//public void RemoveTable(string name)
-		//{
-		//    DropTable(name);
-		//}
-
-		//[Obsolete("Use DropColumn instead")]
-		//public void RemoveColumn(string table, string column)
-		//{
-		//    DropColumn(table, column);
-		//}
-
-		//#endregion
 
 		public void AddUnique(string name, string table, params string[] columns)
 		{

@@ -15,32 +15,32 @@ using System;
 using System.Linq.Expressions;
 using DbRefactor.Providers.TypeToSqlProviders;
 
-namespace DbRefactor.Providers.Columns
+namespace DbRefactor.Providers.Properties
 {
-	public class NotNullProvider : PropertyProvider
+	public class UniqueProvider : PropertyProvider
 	{
-		public NotNullProvider(IColumnProperties columnProperties) : base(columnProperties)
+		public UniqueProvider(IColumnProperties columnProperties) : base(columnProperties)
 		{
 		}
 
 		public override Expression<Action<NewTable>> Method()
 		{
-			return t => t.NotNull();
+			return t => t.Unique();
 		}
 
 		public override string CreateTableSql()
 		{
-			return ColumnProperties.NotNull();
+			return ColumnProperties.Unique();
 		}
 
 		public override string AlterTableSql()
 		{
-			return ColumnProperties.NotNull();
+			return String.Empty;
 		}
 
 		public override string AddTableSql()
 		{
-			return ColumnProperties.NotNull();
+			return String.Empty;
 		}
 	}
 }

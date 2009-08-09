@@ -98,14 +98,14 @@ namespace DbRefactor
 		//    Database.AddTable(name, columns.ToArray());
 		//}
 
-		[Obsolete("This collection is obsolete. Perviously used for CreateTable")]
-		protected static ColumnsCollection Columns
-		{
-			get
-			{
-				return ColumnsCollection.Create();
-			}
-		}
+		//[Obsolete("This collection is obsolete. Perviously used for CreateTable")]
+		//protected static ColumnsCollection Columns
+		//{
+		//    get
+		//    {
+		//        return ColumnsCollection.Create();
+		//    }
+		//}
 
 		protected void AddForeignKey(string name, string foreignKeyTable,
 			string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)

@@ -13,6 +13,7 @@
 
 using System;
 using DbRefactor.Providers.Columns;
+using DbRefactor.Providers.Properties;
 using DbRefactor.Providers.TypeToSqlProviders;
 
 namespace DbRefactor.Providers

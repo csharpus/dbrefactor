@@ -1,7 +1,3 @@
-using DbRefactor.Tools;
-using DbRefactor.Tools;
-using DbRefactor.Tools;
-
 namespace DbRefactor.Tests.Tools
 {
 	using NUnit.Framework;
