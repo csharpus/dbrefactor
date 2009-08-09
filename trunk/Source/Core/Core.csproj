@@ -50,6 +50,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\ActionColumn.cs" />
+    <Compile Include="Api\ActionTable.cs" />
+    <Compile Include="Api\AddColumnTable.cs" />
+    <Compile Include="Api\DeleteTable.cs" />
+    <Compile Include="Api\NewTable.cs" />
+    <Compile Include="Api\QueryTable.cs" />
+    <Compile Include="Api\SelectTable.cs" />
+    <Compile Include="Api\Table.cs" />
+    <Compile Include="Api\UpdateTable.cs" />
     <Compile Include="Compatibility\BaseMigration.cs" />
     <Compile Include="Compatibility\BaseMigrationAttribute.cs" />
     <Compile Include="Extended\TypeExtensions.cs" />
@@ -94,7 +103,7 @@
     <Compile Include="Providers\Columns\DoubleProvider.cs" />
     <Compile Include="Providers\Columns\FloatProvider.cs" />
     <Compile Include="Providers\ICodeGenerationService.cs" />
-    <Compile Include="Providers\ForeignKeys\ForeignKeyConstraint.cs" />
+    <Compile Include="OnDelete.cs" />
     <Compile Include="Providers\ForeignKeys\ForeignKeyConstraintMapper.cs" />
     <Compile Include="Providers\IDatabaseEnvironment.cs" />
     <Compile Include="Providers\Columns\IntProvider.cs" />
@@ -108,11 +117,6 @@
     <Compile Include="Providers\TypeToSqlProviders\SqlServerTypeToSqlProvider.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Providers\Properties\UniqueProvider.cs" />
-    <Compile Include="Table\ActionColumn.cs" />
-    <Compile Include="Table\ActionTable.cs" />
-    <Compile Include="Table\AddColumnTable.cs" />
-    <Compile Include="Table\NewTable.cs" />
-    <Compile Include="Table\Table.cs" />
     <Compile Include="Tools\CodeGenerationHelper.cs" />
     <Compile Include="Tools\DataDumper.cs" />
     <Compile Include="Tools\DesignByContract\DesignByContract.cs" />

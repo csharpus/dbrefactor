@@ -1,4 +1,6 @@
-﻿namespace DbRefactor.Providers
+using DbRefactor.Api;
+
+namespace DbRefactor.Providers
 {
 	public interface IDatabase
 	{

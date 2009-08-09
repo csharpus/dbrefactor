@@ -11,7 +11,6 @@
 using System;
 using System.Collections;
 using System.Data;
-using System.Data.SqlClient;
 
 namespace Migrator.Providers
 {
@@ -20,9 +19,7 @@ namespace Migrator.Providers
 	/// </summary>
 	public class SqlServerTransformationProvider : TransformationProvider
 	{
-		private string _connectionString;
-		
-		public SqlServerTransformationProvider(SqlConnection connection)
+		public SqlServerTransformationProvider(IDbConnection connection)
 		{
 			_connection = connection;
 

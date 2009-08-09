@@ -13,7 +13,7 @@
 
 using DbRefactor.Providers;
 
-namespace DbRefactor
+namespace DbRefactor.Api
 {
 	public abstract class Table
 	{

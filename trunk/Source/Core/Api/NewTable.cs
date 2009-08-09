@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 //The contents of this file are subject to the Mozilla Public License
 //Version 1.1 (the "License"); you may not use this file except in
@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 
-namespace DbRefactor
+namespace DbRefactor.Api
 {
 	public class NewTable : Table
 	{

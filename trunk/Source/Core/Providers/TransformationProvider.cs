@@ -19,6 +19,7 @@ using System.Reflection;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Providers.Properties;
+using DbRefactor.Tools;
 using DbRefactor.Tools.DesignByContract;
 using System.IO;
 using DbRefactor.Tools.Loggers;
@@ -87,7 +88,7 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("ALTER TABLE {0} DROP COLUMN {1} ", table, column);
 		}
 
-		internal void DropUnique(string table, params string[] columnNames)
+		public void DropUnique(string table, params string[] columnNames)
 		{
 			Check.RequireNonEmpty(table, "table");
 
@@ -264,7 +265,7 @@ namespace DbRefactor.Providers
 			return ExecuteQuery(query).AsReadable().Any();
 		}
 
-		public void AlterColumn(string table, string sqlColumn)
+		private void AlterColumn(string table, string sqlColumn)
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(sqlColumn, "sqlColumn");
@@ -367,13 +368,6 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("CREATE TABLE [{0}] ({1})", name, columns);
 		}
 
-		public void AddColumn(string table, string sqlColumn)
-		{
-			Check.RequireNonEmpty(table, "table");
-			Check.RequireNonEmpty(sqlColumn, "sqlColumn");
-			ExecuteNonQuery("ALTER TABLE [{0}] ADD {1}", table, sqlColumn);
-		}
-
 		/// <summary>
 		/// Append a primary key to a table.
 		/// </summary>
@@ -466,7 +460,6 @@ namespace DbRefactor.Providers
 			              new[] {refColumn}, ondelete);
 		}
 
-		// Not sure how SQL server handles ON UPDATRE & ON DELETE
 		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns,
 		                          string refTable, string[] refColumns, OnDelete constraint)
 		{
@@ -669,21 +662,6 @@ namespace DbRefactor.Providers
 			return environment.ExecuteScalar(String.Format(sql, values));
 		}
 
-		public IDataReader Select(string what, string from)
-		{
-			Check.RequireNonEmpty(what, "what");
-			Check.RequireNonEmpty(from, "from");
-			return Select(what, from, "1=1");
-		}
-
-		public IDataReader Select(string what, string from, string where)
-		{
-			Check.RequireNonEmpty(what, "what");
-			Check.RequireNonEmpty(from, "from");
-			Check.RequireNonEmpty(where, "where");
-			return ExecuteQuery("SELECT {0} FROM {1} WHERE {2}", what, from, where);
-		}
-
 		public object SelectScalar(string what, string from)
 		{
 			Check.RequireNonEmpty(what, "what");
@@ -699,39 +677,12 @@ namespace DbRefactor.Providers
 			return ExecuteScalar("SELECT {0} FROM {1} WHERE {2}", what, from, where);
 		}
 
-
-		public int Update(string table, params string[] columnValues)
-		{
-			Check.RequireNonEmpty(table, "table");
-			Check.Require(columnValues.Length > 0, "You have to pass at least one column value");
-			return ExecuteNonQuery("UPDATE [{0}] SET {1}", table, String.Join(", ", columnValues));
-		}
-
-		public int Update(string table, string[] columnValues, string[] where)
-		{
-			Check.RequireNonEmpty(table, "table");
-			Check.Require(columnValues.Length > 0, "You have to pass at least one column value");
-			Check.Require(where.Length > 0, "You have to pass at least one criteria for update");
-			return ExecuteNonQuery("UPDATE [{0}] SET {1} WHERE {2}", table, String.Join(", ", columnValues),
-			                       String.Join(" AND ", where));
-		}
-
-		[Obsolete("Old method will be removed in a feature")]
-		public int Update(string table, string[] columnValues, string where)
-		{
-			Check.RequireNonEmpty(table, "table");
-			Check.Require(columnValues.Length > 0, "You have to pass at least one column value");
-			Check.RequireNonEmpty(where, "where");
-			return ExecuteNonQuery("UPDATE [{0}] SET {1} WHERE {2}", table, String.Join(", ", columnValues), where);
-		}
-
 		public int Delete(string table, string[] where)
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.Require(where.Length > 0, "You have to pass at least one criteria for delete");
 			return ExecuteNonQuery("DELETE FROM [{0}] WHERE {1}", table, String.Join(" AND ", where));
 		}
-
 
 		public int Insert(string table, params string[] columnValues)
 		{
@@ -853,7 +804,8 @@ namespace DbRefactor.Providers
 
 			Stream stream = assembly.GetManifestResourceStream(resourceName);
 			if (stream == null)
-				throw new DbRefactorException(String.Format("Could not locate embedded resource '{0}' in assembly '{1}'", resourceName, assemblyName));
+				throw new DbRefactorException(String.Format("Could not locate embedded resource '{0}' in assembly '{1}'",
+				                                            resourceName, assemblyName));
 			string script;
 			using (var streamReader = new StreamReader(stream))
 			{
@@ -1012,12 +964,48 @@ namespace DbRefactor.Providers
 			AlterColumn(tableName, columnProvider.GetAlterColumnSql());
 		}
 
-		public void CopyProperties(ColumnProvider source, ColumnProvider destination)
+		private void CopyProperties(ColumnProvider source, ColumnProvider destination)
 		{
 			foreach (var property in source.Properties)
 			{
 				destination.AddProperty(property);
 			}
+		}
+
+		public IDataReader Select(string tableName, string[] columns, object whereParameters)
+		{
+			string query = String.Format("SELECT {0} FROM {1}", columns.ComaSeparated(), tableName);
+			string whereClause = String.Join(" AND ", ParametersHelper.GetParameters(whereParameters).ToArray());
+			if (whereClause != String.Empty)
+			{
+				query += String.Format(" WHERE {0}", whereClause);
+			}
+			return ExecuteQuery(query);
+		}
+
+		public int Update(string tableName, object updateObject, object whereParameters)
+		{
+			string operation = String.Join(", ", ParametersHelper.GetParameters(updateObject).ToArray());
+			var query = String.Format("UPDATE [{0}] SET {1}", tableName, operation);
+			
+			string whereClause = String.Join(" AND ", ParametersHelper.GetParameters(whereParameters).ToArray());
+			if (whereClause != String.Empty)
+			{
+				query += String.Format(" WHERE {0}", whereClause);
+			}
+			
+			return ExecuteNonQuery(query);
+		}
+
+		public int Delete(string tableName, object whereParameters)
+		{
+			string whereClause = String.Join(" AND ", ParametersHelper.GetParameters(whereParameters).ToArray());
+			if (whereClause == String.Empty)
+			{
+				throw new DbRefactorException("Couldn't execute delete without where clause");
+			}
+			var query = String.Format("DELETE FROM [{0}] WHERE {1}", tableName, whereClause);
+			return ExecuteNonQuery(query);
 		}
 	}
 

@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using DbRefactor.Api;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 

@@ -307,7 +307,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("ActorType").DropUnique("Name");
+			Table("ActorType").Column("Name").DropUnique();
 		}
 
 		public override void Down()
@@ -327,6 +327,20 @@ namespace Example
 		public override void Down()
 		{
 			Table("User").Column("Id").AddPrimaryKey();
+		}
+	}
+
+	[Migration(17)]
+	public class SelectFields : Migration
+	{
+		public override void Up()
+		{
+			Table("User").Select("Id", "Name").Where(new {Id = 1, Name = "John"}).Execute();
+		}
+
+		public override void Down()
+		{
+			
 		}
 	}
 }

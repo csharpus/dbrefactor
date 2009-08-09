@@ -15,7 +15,7 @@ using System;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 
-namespace DbRefactor
+namespace DbRefactor.Api
 {
 	public class AddColumnTable
 	{

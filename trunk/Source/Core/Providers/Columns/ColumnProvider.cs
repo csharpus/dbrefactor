@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq.Expressions;
+using DbRefactor.Api;
 using DbRefactor.Providers.Properties;
 using DbRefactor.Providers.TypeToSqlProviders;
 

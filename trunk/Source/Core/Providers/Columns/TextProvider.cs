@@ -13,6 +13,7 @@
 
 using System;
 using System.Linq.Expressions;
+using DbRefactor.Api;
 using DbRefactor.Providers.TypeToSqlProviders;
 
 namespace DbRefactor.Providers.Columns

@@ -13,14 +13,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using DbRefactor.Providers;
 using DbRefactor.Tools;
 using DbRefactor.Tools.DesignByContract;
 
-namespace DbRefactor
+namespace DbRefactor.Api
 {
-	public partial class ActionTable: Table
+	public class ActionTable: Table
 	{
 		private readonly TransformationProvider provider;
 		private readonly ColumnProviderFactory columnProviderFactory;
@@ -29,42 +28,23 @@ namespace DbRefactor
 		private enum Operation
 		{
 			None,
-			Insert,
-			Update,
-			Delete,
-			AlterColumn,
-			RemoveColumnConstraints,
-			RenameColumn,
-			RenameTable,
-			DropColumn,
-			DropTable,
 			RemoveForeignKey,
 			AddForeignKey,
-			DropForeignKey,
-			SelectScalar,
-			DropPrimaryKey,
-			DropUnique
-		} ;
+			DropForeignKey
+		}
 
-		private List<string> columnValues; 
-		//private ColumnsCollection columns;				// For column operations
-
-		private string newTableName;
-        private string foreignKeyColumn;
+		private string foreignKeyColumn;
 		private string primaryKeyTable;
 		private string primaryKeyColumn;
 		private OnDelete foreignKeyConstraint = OnDelete.NoAction;
 		private string keyName;
-		private string columnName;
-		private object operationParameters;
-        private Operation operation = Operation.None;
+		private Operation operation = Operation.None;
 		
 		public ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory columnPropertyProviderFactory) : base(provider, tableName)
 		{
 			this.provider = provider;
 			this.columnProviderFactory = columnProviderFactory;
 			this.columnPropertyProviderFactory = columnPropertyProviderFactory;
-			columnValues = new List<string>();
 		}
 
 		public ActionColumn Column(string name)
@@ -80,13 +60,10 @@ namespace DbRefactor
 		/// Table(TableName).Insert(new {ColumnName1=Parameter1, ColumName2="StringParameter2", ...})
 		/// </param>
 		/// <returns></returns>
-		public ActionTable Insert(object parameters)
+		public void Insert(object parameters)
 		{
-			Check.Ensure(operation == Operation.None || operation == Operation.None, "Only One type of operation allowed.");
-			operation = Operation.Insert;
-			operationParameters = parameters;
-			Execute(operationParameters, null);
-			return this;
+			List<string> operationParamList = ParametersHelper.GetParameters(parameters);
+			provider.Insert(TableName, operationParamList.ToArray());
 		}
 
 		/// <summary>
@@ -97,12 +74,9 @@ namespace DbRefactor
 		/// Table(TableName).Update(new {ColumnName1=Parameter1, ColumName2="StringParameter2", ...})
 		/// </param>
 		/// <returns></returns>
-		public ActionTable Update(object parameters)
+		public UpdateTable Update(object parameters)
 		{
-			Check.Ensure(operation == Operation.None, "Please specify criteria for previous update operation.");
-			operationParameters = parameters;
-			operation = Operation.Update;
-			return this;
+			return new UpdateTable(provider, TableName, parameters);
 		}
 
 		/// <summary>
@@ -110,22 +84,9 @@ namespace DbRefactor
 		/// To filter deleted rows use method Where
 		/// </summary>
 		/// <returns></returns>
-		public ActionTable Delete()
+		public DeleteTable Delete()
 		{
-			Check.Ensure(operation == Operation.None, "Please specify criteria for previous operation.");
-			operation = Operation.Update;
-			return this;
-		}
-		 
-		/// <summary>
-		/// This method is a filter for group operations on table records
-		/// </summary>
-		/// <param name="parameters"></param>
-		/// <returns></returns>
-		public ActionTable Where(object parameters)
-		{
-			Execute(operationParameters, parameters);
-			return this;
+			return new DeleteTable(provider, TableName);
 		}
 
 		/// <summary>
@@ -144,13 +105,11 @@ namespace DbRefactor
 		/// <summary>
 		/// Select multiple values from database table
 		/// </summary>
-		/// <param name="what">Data table field</param>
-		/// <param name="where">Filter</param>
+		/// <param name="what">Data table columns</param>
 		/// <returns></returns>
-		public IDataReader Select(string what, object where)
+		public SelectTable Select(params string[] what)
 		{
-			List<string> crieriaParamList = ParametersHelper.GetParameters(where);
-			return provider.Select(what, TableName, String.Join(" AND ", crieriaParamList.ToArray()));
+			return new SelectTable(provider, TableName, what);
 		}
 
 		#region Table operations
@@ -161,9 +120,7 @@ namespace DbRefactor
 		/// <param name="newName">New table name</param>
 		public void RenameTo(string newName)
 		{
-			newTableName = newName;
-			operation = Operation.RenameTable;
-			Execute();
+			provider.RenameTable(TableName, newName);
 		}
 
 		/// <summary>
@@ -171,8 +128,7 @@ namespace DbRefactor
 		/// </summary>
 		public void DropTable()
 		{
-			operation = Operation.DropTable;
-			Execute();
+			provider.DropTable(TableName);
 		}
 
 		#endregion Table operations
@@ -223,45 +179,10 @@ namespace DbRefactor
 
 		public void DropPrimaryKey()
 		{
-			operation = Operation.DropPrimaryKey;
-			Execute();
-		}
-
-		public void DropUnique(string column)
-		{
-			columnName = column;
-			operation = Operation.DropUnique;
-			Execute();
+			provider.DropPrimaryKey(TableName);
 		}
 
 		#endregion Column operations
-
-		private void Execute(object operationParams, object criteriaParameters)
-		{
-			List<string> operationParamList = ParametersHelper.GetParameters(operationParams);
-			AddParameters(operationParamList);
-
-			Check.Ensure(operation != Operation.None, "The operation has not been set.");
-			Check.Ensure(columnValues.Count != 0, "Values have not been set.");
-
-			if (operation == Operation.Insert)
-			{
-				provider.Insert(TableName, columnValues.ToArray());
-			}
-			else if (operation == Operation.Update)
-			{
-				List<string> crieriaParamList = ParametersHelper.GetParameters(criteriaParameters);
-				provider.Update(TableName, columnValues.ToArray(), crieriaParamList.ToArray());
-			}
-			else
-			{
-				List<string> crieriaParamList = ParametersHelper.GetParameters(criteriaParameters);
-				provider.Delete(TableName, crieriaParamList.ToArray());
-
-			}
-			operation = Operation.None;
-			columnValues = new List<string>();
-		}
 
 		// does it make sense to use kind of Operation Strategy
 		private void Execute()
@@ -286,35 +207,12 @@ namespace DbRefactor
 					if (String.IsNullOrEmpty(_key))
 						provider.DropConstraint(TableName, _key);
 					break;
-
-				case Operation.DropPrimaryKey:
-					provider.DropPrimaryKey(TableName);
-					break;
-
-				case Operation.DropUnique:
-					provider.DropUnique(TableName, columnName);
-					break;
-
-				case Operation.RenameTable:
-					Check.Ensure(!String.IsNullOrEmpty(newTableName), "New table name has not set");
-					provider.RenameTable(TableName, newTableName);
-					break;
-
-				case Operation.DropTable:
-					provider.DropTable(TableName);
-					break;
 			}
 		}
 
 		private string GenerateForeignKey(string tableName, string primaryKeyTable)
 		{
 			return String.Format("FK_{0}_{1}", tableName, primaryKeyTable);
-		}
-
-		private void AddParameters(IEnumerable<string> parameters)
-		{
-			foreach (var parameter in parameters)
-				columnValues.Add(parameter);
 		}
 	}
 }

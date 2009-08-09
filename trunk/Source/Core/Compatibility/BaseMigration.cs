@@ -12,6 +12,7 @@
 #endregion
 
 using System;
+using DbRefactor.Api;
 
 namespace DbRefactor.Compatibility
 {

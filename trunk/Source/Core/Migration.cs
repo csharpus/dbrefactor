@@ -11,6 +11,7 @@
 
 using System;
 using System.Reflection;
+using DbRefactor.Api;
 using DbRefactor.Compatibility;
 using DbRefactor.Providers;
 using System.Data;
@@ -92,21 +93,6 @@ namespace DbRefactor
 			// Console.WriteLine("Migration.InitializeOnce()");
 		}
 
-		//[Obsolete("Please, use CreateTable(\"Name\").Int(\"ColumnName\").Execute()")]
-		//protected void CreateTable(string name, ColumnsCollection columns)
-		//{
-		//    Database.AddTable(name, columns.ToArray());
-		//}
-
-		//[Obsolete("This collection is obsolete. Perviously used for CreateTable")]
-		//protected static ColumnsCollection Columns
-		//{
-		//    get
-		//    {
-		//        return ColumnsCollection.Create();
-		//    }
-		//}
-
 		protected void AddForeignKey(string name, string foreignKeyTable,
 			string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)
 		{
@@ -120,12 +106,6 @@ namespace DbRefactor
 			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, primaryKeyTable, primaryKeyColumn, ondelete);
 		}
 
-		//[Obsolete("Please, use Table(...).AddColumn")]
-		//protected void AddTo(string table, Column column)
-		//{
-		//    Database.AddColumn(table, column);
-		//}
-
 		protected void DropTable(string name)
 		{
 			Database.DropTable(name);
@@ -134,11 +114,6 @@ namespace DbRefactor
 		protected void DropForeignKey(string foreignKeyTable, string name)
 		{
 			Database.DropConstraint(foreignKeyTable, name);
-		}
-
-		private void DropColumn(string table, string column)
-		{
-			Database.DropColumn(table, column);
 		}
 
 		/// <param name="sql">Supports format items to <see cref="string.Format(string,object)"/></param>
@@ -177,58 +152,10 @@ namespace DbRefactor
 			return Database.ExecuteScalar(sql, values);
 		}
 
-		[Obsolete("Please, use Table.SelectScalar(...)")]
-		protected object SelectScalar(string what, string from, string where)
-		{
-			return Database.SelectScalar(what, from, where);
-		}
-
-		/// <summary>
-		/// Example:
-		/// <code>Insert("Table", "column1='value1'", "column2=10");</code>
-		/// </summary>
-		/// <example><code>Insert("Table", "column1='value1'", "column2=10");</code></example>
-		/// <returns>Number of rows inserted</returns>
-		[Obsolete("Please, use Table.Insert(...)")]
-		protected int Insert(string table, params string[] columnValues)
-		{
-			return Database.Insert(table, columnValues);
-		}
-
-		/// <summary>
-		/// Example:
-		/// <code>Update("Table", "column1='value1'");</code> - updates all rows in the table,
-		/// sets value of the column1 to 'value1'
-		/// </summary>
-		/// <returns>Number of rows updated</returns>
-		[Obsolete("Please, use Table.Update(...)")]
-		protected int Update(string table, params string[] columnValues) 
-		{
-			return Database.Update(table, columnValues);
-		}
-
-		//[Obsolete("Please, use Table.AlterColumn(...")]
-		//protected void AlterColumn(string table, Column column)
-		//{
-		//    Database.AlterColumn(table, column);
-		//}
-
 		protected void RemoveColumnConstraints(string table, string column)
 		{
 			Database.DeleteColumnConstraints(table, column);
 		}
-
-		[Obsolete("Please, use Table(...).RenameTo")]
-        protected void RenameTable(string oldName, string newName)
-        {
-            Database.RenameTable(oldName, newName);
-        }
-
-		[Obsolete("Please, use Table(...).RenameColumn")]
-        protected void RenameColumn(string table, string oldName, string newName)
-        {
-            Database.RenameColumn(table, oldName, newName);
-        }
 
 		public override NewTable CreateTable(string tableName)
 		{

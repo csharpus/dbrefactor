@@ -94,7 +94,7 @@ namespace DbRefactor.Tools
 				//Column[] columns = provider.GetColumns(table);
 				var columnProviders = provider.GetColumnProviders(table);
 				hasIdentity = provider.TableHasIdentity(table);
-				using (IDataReader reader = provider.Select("*", table))
+				using (IDataReader reader = provider.ExecuteQuery("select * from [{0}]", table))
 				{
 					DisableIdentity(table);
 					while (reader.Read())
