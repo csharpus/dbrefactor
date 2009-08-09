@@ -18,17 +18,18 @@ namespace DbRefactor.Tools
 {
 	internal class ParametersHelper
 	{
+// TODO: refactor this helper: retrieve table structure first and then generate values using ColumnMappers
 		public static List<string> GetParameters(object obj)
 		{
 			const string stringPropertyType = "{0}='{1}'";
 			const string customPropertyType = "{0}={1}";
 			const string nullPropertyType = "{0} is {1}";
 
-			List<string> parameters = new List<string>();
+			var parameters = new List<string>();
 
 			foreach (var property in obj.GetType().GetProperties())
 			{
-				object value = null;
+				object value;
 				string propertyType;
 				// set specific value
 				if (property.PropertyType.Name == "Boolean")
