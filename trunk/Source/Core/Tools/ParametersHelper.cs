@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DbRefactor.Tools
 {
@@ -50,6 +51,11 @@ namespace DbRefactor.Tools
 				parameters.Add(String.Format(propertyType, property.Name, value));
 			}
 			return parameters;
+		}
+
+		public static Dictionary<string, object> GetPropertyValues(object obj)
+		{
+			return obj.GetType().GetProperties().ToDictionary(p => p.Name, p => p.GetValue(obj, null));
 		}
 	}
 }

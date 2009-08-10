@@ -20,8 +20,6 @@ namespace DbRefactor.Api
 		/// <summary>
 		/// This method is a filter for group operations on table records
 		/// </summary>
-		/// <param name="parameters"></param>
-		/// <returns></returns>
 		public UpdateTable Where(object parameters)
 		{
 			whereParameters = parameters;

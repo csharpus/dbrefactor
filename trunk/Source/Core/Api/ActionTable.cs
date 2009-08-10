@@ -93,13 +93,11 @@ namespace DbRefactor.Api
 		/// Select single value from database table
 		/// </summary>
 		/// <typeparam name="T">Type of return value</typeparam>
-		/// <param name="what">Data table field</param>
-		/// <param name="where">Filter</param>
+		/// <param name="column">Data table field</param>
 		/// <returns></returns>
-		public T SelectScalar<T>(string what, object where)
+		public SelectScalarTable<T> SelectScalar<T>(string column)
 		{
-			List<string> crieriaParamList = ParametersHelper.GetParameters(where);
-			return (T)provider.SelectScalar(what, TableName, String.Join(" AND ", crieriaParamList.ToArray()));
+			return new SelectScalarTable<T>(provider, TableName, column);
 		}
 
 		/// <summary>
@@ -155,64 +153,11 @@ namespace DbRefactor.Api
 			provider.DropColumn(TableName, column);
 		}
 
-		public void AddForeignKey(string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)
-		{
-			AddForeignKey(foreignKeyColumn, primaryKeyTable, primaryKeyColumn, OnDelete.NoAction);
-		}
-
-		public void AddForeignKey(string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn, OnDelete ondelete)
-		{
-			operation = Operation.AddForeignKey;
-			this.foreignKeyColumn = foreignKeyColumn;
-			this.primaryKeyTable = primaryKeyTable;
-			this.primaryKeyColumn = primaryKeyColumn;
-			foreignKeyConstraint = ondelete;
-			Execute();
-		}
-
-		public void DropForeignKey(string key)
-		{
-			operation = Operation.DropForeignKey;
-			keyName = key;
-			Execute();
-		}
-
 		public void DropPrimaryKey()
 		{
 			provider.DropPrimaryKey(TableName);
 		}
 
 		#endregion Column operations
-
-		// does it make sense to use kind of Operation Strategy
-		private void Execute()
-		{
-			Check.Ensure(operation != Operation.None, "The operation has not been set.");
-
-			switch (operation)
-			{
-				case Operation.RemoveForeignKey:
-					provider.DropConstraint(TableName, keyName);
-					break;
-
-				case Operation.AddForeignKey:
-					string key = keyName;
-					if (String.IsNullOrEmpty(keyName))
-						key = GenerateForeignKey(TableName, primaryKeyTable);	// FK_TableName_prinaryKeyTable
-					provider.AddForeignKey(key, TableName, foreignKeyColumn, primaryKeyTable, primaryKeyColumn, foreignKeyConstraint);
-					break;
-
-				case Operation.DropForeignKey:
-					string _key = keyName;
-					if (String.IsNullOrEmpty(_key))
-						provider.DropConstraint(TableName, _key);
-					break;
-			}
-		}
-
-		private string GenerateForeignKey(string tableName, string primaryKeyTable)
-		{
-			return String.Format("FK_{0}_{1}", tableName, primaryKeyTable);
-		}
 	}
 }

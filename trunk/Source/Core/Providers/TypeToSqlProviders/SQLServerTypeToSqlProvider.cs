@@ -38,6 +38,7 @@ namespace DbRefactor.Providers.TypeToSqlProviders
 		string StringValue(string value);
 		string Text();
 		string TextValue(string value);
+		string NullValue();
 	}
 
 	internal sealed class SqlServerTypes : ISqlTypes
@@ -141,6 +142,11 @@ namespace DbRefactor.Providers.TypeToSqlProviders
 		public string TextValue(string value)
 		{
 			return StringValue(value);
+		}
+
+		public string NullValue()
+		{
+			return "null";
 		}
 	}
 

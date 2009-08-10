@@ -93,27 +93,9 @@ namespace DbRefactor
 			// Console.WriteLine("Migration.InitializeOnce()");
 		}
 
-		protected void AddForeignKey(string name, string foreignKeyTable,
-			string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn)
-		{
-			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn,
-				primaryKeyTable, primaryKeyColumn);
-		}
-
-		protected void AddForeignKey(string name, string foreignKeyTable,
-			string foreignKeyColumn, string primaryKeyTable, string primaryKeyColumn, OnDelete ondelete)
-		{
-			Database.AddForeignKey(name, foreignKeyTable, foreignKeyColumn, primaryKeyTable, primaryKeyColumn, ondelete);
-		}
-
 		protected void DropTable(string name)
 		{
 			Database.DropTable(name);
-		}
-
-		protected void DropForeignKey(string foreignKeyTable, string name)
-		{
-			Database.DropConstraint(foreignKeyTable, name);
 		}
 
 		/// <param name="sql">Supports format items to <see cref="string.Format(string,object)"/></param>

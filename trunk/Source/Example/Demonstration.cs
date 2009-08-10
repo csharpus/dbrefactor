@@ -79,12 +79,12 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("User").AddForeignKey("RoleId", "Role", "Id", OnDelete.Cascade);
+			Table("User").Column("RoleId").AddForeignKeyTo("Role", "Id", OnDelete.Cascade);
 		}
 
 		public override void Down()
 		{
-			Table("User").DropForeignKey("FK_User_Role");
+			Table("User").Column("RoleId").DropForeignKey("Role", "Id");
 		}
 	}
 

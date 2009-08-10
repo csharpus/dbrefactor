@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using DbRefactor.Extensions;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Providers.Properties;
@@ -111,69 +112,7 @@ namespace DbRefactor.Providers
 			Check.Require(indexes.Count > 0, "Primary index not found.");
 
 			DropConstraint(table, indexes[0]);
-		}
-
-		private List<string> GetConstraintsByType(string table, string column, string type)
-		{
-			string sql =
-				String.Format(
-					@"SELECT d.name
-							FROM sys.default_constraints AS d
-							JOIN sys.objects AS o
-								ON o.object_id = d.parent_object_id
-							JOIN sys.columns AS c
-								ON c.object_id = o.object_id AND c.column_id = d.parent_column_id
-							JOIN sys.schemas AS s
-								ON s.schema_id = o.schema_id
-							where o.Name = '{0}' and c.name = '{1}' and d.Type = '{2}'",
-					table, column, type);
-			return ExecuteQuery(sql).AsReadable().Select(r => r.GetString(0)).ToList();
-		}
-
-		public List<string> GetConstraints(string table, string column)
-		{
-			string sql =
-				String.Format(
-					@"WITH constraint_depends
-						AS
-						(
-							SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.CONSTRAINT_NAME
-							FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
-							UNION ALL
-							SELECT s.name, o.name, c.name, d.name
-							FROM sys.default_constraints AS d
-							JOIN sys.objects AS o
-								ON o.object_id = d.parent_object_id
-							JOIN sys.columns AS c
-								ON c.object_id = o.object_id AND c.column_id = d.parent_column_id
-							JOIN sys.schemas AS s
-								ON s.schema_id = o.schema_id)
-					SELECT c.CONSTRAINT_NAME
-					FROM constraint_depends as c
-					WHERE c.TABLE_NAME = '{0}' AND c.COLUMN_NAME = '{1}';",
-					table, column);
-
-			return ExecuteQuery(sql).AsReadable().Select(r => r.GetString(0)).ToList();
-		}
-
-		private string GetPrimaryKeyColumn(string table)
-		{
-			const string sql =
-				@"
-						SELECT [name]
-						FROM syscolumns 
-						 WHERE [id] IN (SELECT [id] 
-										  FROM sysobjects 
-										 WHERE [name] = '{0}')
-						   AND colid IN (SELECT SIK.colid 
-										   FROM sysindexkeys SIK 
-										   JOIN sysobjects SO ON SIK.[id] = SO.[id]  
-										  WHERE SIK.indid = 2
-											AND SO.[name] = '{0}')
-						";
-
-			return Convert.ToString(ExecuteScalar(sql, table));
-		}
+		}		
 
 		/// <summary>
 		/// Removes an existing table from the database
@@ -213,21 +152,6 @@ namespace DbRefactor.Providers
 			                oldName, newName);
 		}
 
-		public bool ColumnExists(string table, string column)
-		{
-			Check.RequireNonEmpty(table, "table");
-			Check.RequireNonEmpty(column, "column");
-			if (!TableExists(table))
-			{
-				Logger.Warn("Table {0} does not exists", table);
-				return false;
-			}
-			var query = String.Format("SELECT TOP 1 * FROM syscolumns WHERE id = object_id('{0}') AND name = '{1}'",
-			                          table,
-			                          column);
-			return ExecuteQuery(query).AsReadable().Any();
-		}
-
 		/// <summary>
 		/// Determines if a table exists.
 		/// </summary>
@@ -258,42 +182,11 @@ namespace DbRefactor.Providers
 			return ObjectExists(indexName);
 		}
 
-		private bool ObjectExists(string name)
-		{
-			Check.RequireNonEmpty(name, "name");
-			var query = String.Format("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')", name);
-			return ExecuteQuery(query).AsReadable().Any();
-		}
-
 		private void AlterColumn(string table, string sqlColumn)
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(sqlColumn, "sqlColumn");
 			ExecuteNonQuery("ALTER TABLE [{0}] ALTER COLUMN {1}", table, sqlColumn);
-		}
-
-		public List<ForeignKey> GetForeignKeys()
-		{
-			const string query =
-				@"
-				SELECT f.name AS Name,
-				   OBJECT_NAME(f.parent_object_id) AS ForeignTable,
-				   COL_NAME(fc.parent_object_id, fc.parent_column_id) AS ForeignColumn,
-				   OBJECT_NAME (f.referenced_object_id) AS PrimaryTable,
-				   COL_NAME(fc.referenced_object_id, fc.referenced_column_id) AS PrimaryColumn
-				FROM sys.foreign_keys AS f
-				INNER JOIN sys.foreign_key_columns AS fc
-				   ON f.OBJECT_ID = fc.constraint_object_id
-				";
-			return ExecuteQuery(query).AsReadable()
-				.Select(r => new ForeignKey
-				             	{
-				             		Name = r["Name"].ToString(),
-				             		ForeignTable = r["ForeignTable"].ToString(),
-				             		ForeignColumn = r["ForeignColumn"].ToString(),
-				             		PrimaryTable = r["PrimaryTable"].ToString(),
-				             		PrimaryColumn = r["PrimaryColumn"].ToString()
-				             	}).ToList();
 		}
 
 		private List<Relation> GetTablesRelations()
@@ -383,83 +276,6 @@ namespace DbRefactor.Providers
 			                table, name, String.Join(",", columns));
 		}
 
-		/// <summary>
-		/// Guesses the name of the foreign key and add it
-		/// </summary>
-		public void GenerateForeignKey(string primaryTable, string primaryColumn, string refTable,
-		                               string refColumn)
-		{
-			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumn,
-			              refTable, refColumn);
-		}
-
-		/// <summary>
-		/// Guesses the name of the foreign key and add it
-		/// </see>
-		/// </summary>
-		public void GenerateForeignKey(string primaryTable, string[] primaryColumns,
-		                               string refTable, string[] refColumns)
-		{
-			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumns,
-			              refTable, refColumns);
-		}
-
-		/// <summary>
-		/// Guesses the name of the foreign key and add it
-		/// </summary>
-		public void GenerateForeignKey(string primaryTable, string primaryColumn, string refTable,
-		                               string refColumn, OnDelete ondelete)
-		{
-			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumn,
-			              refTable, refColumn, ondelete);
-		}
-
-		/// <summary>
-		/// Guesses the name of the foreign key and add it
-		/// </see>
-		/// </summary>
-		public void GenerateForeignKey(string primaryTable, string[] primaryColumns,
-		                               string refTable, string[] refColumns, OnDelete ondelete)
-		{
-			AddForeignKey("FK_" + primaryTable + "_" + refTable, primaryTable, primaryColumns,
-			              refTable, refColumns, ondelete);
-		}
-
-		/// <summary>
-		/// Append a foreign key (relation) between two tables.
-		/// tables.
-		/// </summary>
-		/// <param name="name">Constraint name</param>
-		/// <param name="primaryTable">Table name containing the primary key</param>
-		/// <param name="primaryColumn">Primary key column name</param>
-		/// <param name="refTable">Foreign table name</param>
-		/// <param name="refColumn">Foreign column name</param>
-		public void AddForeignKey(string name, string primaryTable, string primaryColumn,
-		                          string refTable, string refColumn)
-		{
-			AddForeignKey(name, primaryTable, new[] {primaryColumn}, refTable,
-			              new[] {refColumn});
-		}
-
-		/// <summary>
-		/// <see cref="TransformationProvider.AddForeignKey(string, string, string, string, string)">
-		/// AddForeignKey(string, string, string, string, string)
-		/// </see>
-		/// </summary>
-		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns,
-		                          string refTable, string[] refColumns)
-		{
-			AddForeignKey(name, primaryTable, primaryColumns, refTable, refColumns,
-			              OnDelete.NoAction);
-		}
-
-		public void AddForeignKey(string name, string primaryTable, string primaryColumn, string refTable, string refColumn,
-		                          OnDelete ondelete)
-		{
-			AddForeignKey(name, primaryTable, new[] {primaryColumn}, refTable,
-			              new[] {refColumn}, ondelete);
-		}
-
 		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns,
 		                          string refTable, string[] refColumns, OnDelete constraint)
 		{
@@ -486,12 +302,6 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(name, "name");
 
 			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT [{1}]", table, name);
-		}
-
-		public string[] GetTables()
-		{
-			const string query = "SELECT name FROM sysobjects WHERE xtype = 'U'";
-			return ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
 		}
 
 		private Dictionary<string, Func<ColumnData, ColumnProvider>> GetTypesMap()
@@ -528,53 +338,6 @@ namespace DbRefactor.Providers
 		}
 
 		private const int GuidLength = 38; // 36 symbols in guid + 2 curly brackets
-
-		private bool IsUnique(string table, string column)
-		{
-			return
-				Convert.ToBoolean(
-					ExecuteScalar(
-						@"SELECT COUNT(c.CONSTRAINT_NAME) 
-				FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
-				join sys.objects as s on c.CONSTRAINT_NAME = s.Name and type = 'UQ'
-				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
-						table, column));
-		}
-
-		private bool IsPrimaryKey(string table, string column)
-		{
-			return
-				Convert.ToBoolean(
-					ExecuteScalar(
-						@"SELECT COUNT(c.CONSTRAINT_NAME) 
-				FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
-				join sys.objects as s on c.CONSTRAINT_NAME = s.Name and type = 'PK'
-				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
-						table, column));
-		}
-
-		internal List<ColumnProvider> GetColumnProviders(string table)
-		{
-			var providers = new List<ColumnProvider>();
-
-			using (
-				IDataReader reader =
-					ExecuteQuery(
-						"SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}';",
-						table))
-			{
-				while (reader.Read())
-				{
-					ColumnProvider provider = GetProvider(reader);
-					providers.Add(provider);
-				}
-			}
-			foreach (var provider in providers)
-			{
-				AddProviderProperties(table, provider);
-			}
-			return providers;
-		}
 
 		private ColumnProvider GetProvider(IDataRecord reader)
 		{
@@ -617,16 +380,6 @@ namespace DbRefactor.Providers
 			return databaseValue == DBNull.Value ? null : databaseValue;
 		}
 
-		private bool IsIdentity(string table, string column)
-		{
-			return Convert.ToBoolean(ExecuteScalar(@"SELECT COLUMNPROPERTY(OBJECT_ID('{0}'),'{1}','IsIdentity')", table, column));
-		}
-
-		private bool IsNull(string table, string column)
-		{
-			return Convert.ToBoolean(ExecuteScalar(@"SELECT COLUMNPROPERTY(OBJECT_ID('{0}'),'{1}','AllowsNull')", table, column));
-		}
-
 		private static T? NullSafeGet<T>(IDataRecord reader, string name)
 			where T : struct
 		{
@@ -660,21 +413,6 @@ namespace DbRefactor.Providers
 		public object ExecuteScalar(string sql, params string[] values)
 		{
 			return environment.ExecuteScalar(String.Format(sql, values));
-		}
-
-		public object SelectScalar(string what, string from)
-		{
-			Check.RequireNonEmpty(what, "what");
-			Check.RequireNonEmpty(from, "from");
-			return SelectScalar(what, from, "1=1");
-		}
-
-		public object SelectScalar(string what, string from, string where)
-		{
-			Check.RequireNonEmpty(what, "what");
-			Check.RequireNonEmpty(from, "from");
-			Check.RequireNonEmpty(where, "where");
-			return ExecuteScalar("SELECT {0} FROM {1} WHERE {2}", what, from, where);
 		}
 
 		public int Delete(string table, string[] where)
@@ -774,12 +512,6 @@ namespace DbRefactor.Providers
 				.Execute();
 		}
 
-		public bool TableHasIdentity(string table)
-		{
-			Check.RequireNonEmpty(table, "table");
-			return Convert.ToInt32(ExecuteScalar("SELECT OBJECTPROPERTY(object_id('{0}'), 'TableHasIdentity')", table)) == 1;
-		}
-
 		public void ExecuteFile(string fileName)
 		{
 			Check.RequireNonEmpty(fileName, "fileName");
@@ -842,25 +574,6 @@ namespace DbRefactor.Providers
 			                name, table, String.Join(",", columns));
 		}
 
-		private List<string> FindIndexes(string tableName, string columnName)
-		{
-			var query =
-				String.Format(
-					@"SELECT o.name as [TableName], i.name as [IndexName], c.name as [ColumnName]
-							FROM sysobjects o
-							JOIN sysindexes i ON i.id = o.id
-							JOIN sysindexkeys ik ON ik.id = i.id
-								AND ik.indid = i.indid
-							JOIN syscolumns c ON c.id = ik.id
-								AND c.colid = ik.colid
-							WHERE i.indid BETWEEN 2 AND 254
-								AND indexproperty(o.id, i.name, 'IsStatistics') = 0
-								AND indexproperty(o.id, i.name, 'IsHypothetical') = 0
-								AND o.Name = '{0}' and c.Name = '{1}'",
-					tableName, columnName);
-			return ExecuteQuery(query, tableName, columnName).AsReadable()
-				.Select(r => r["IndexName"].ToString()).ToList();
-		}
 
 		public void DropIndex(string table, params string[] columns)
 		{
@@ -910,25 +623,6 @@ namespace DbRefactor.Providers
 			AlterColumn(tableName, provider.GetAlterColumnSql());
 		}
 
-		private ColumnProvider GetColumnProvider(string tableName, string columnName)
-		{
-			ColumnProvider provider;
-			using (
-				IDataReader reader =
-					ExecuteQuery(
-						"SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}' and column_name = '{1}'",
-						tableName, columnName))
-			{
-				if (!reader.Read())
-				{
-					throw new DbRefactorException(String.Format("Couldn't find column '{0}' in table '{1}'", columnName, tableName));
-				}
-				provider = GetProvider(reader);
-			}
-			AddProviderProperties(tableName, provider);
-			return provider;
-		}
-
 		public void SetNotNull(string tableName, string columnName)
 		{
 			var provider = GetColumnProvider(tableName, columnName);
@@ -964,7 +658,7 @@ namespace DbRefactor.Providers
 			AlterColumn(tableName, columnProvider.GetAlterColumnSql());
 		}
 
-		private void CopyProperties(ColumnProvider source, ColumnProvider destination)
+		private static void CopyProperties(ColumnProvider source, ColumnProvider destination)
 		{
 			foreach (var property in source.Properties)
 			{
@@ -975,7 +669,8 @@ namespace DbRefactor.Providers
 		public IDataReader Select(string tableName, string[] columns, object whereParameters)
 		{
 			string query = String.Format("SELECT {0} FROM {1}", columns.ComaSeparated(), tableName);
-			string whereClause = String.Join(" AND ", ParametersHelper.GetParameters(whereParameters).ToArray());
+			var providers = GetColumnProviders(tableName);
+			string whereClause = GetWhereClauseValues(providers, whereParameters);
 			if (whereClause != String.Empty)
 			{
 				query += String.Format(" WHERE {0}", whereClause);
@@ -985,21 +680,46 @@ namespace DbRefactor.Providers
 
 		public int Update(string tableName, object updateObject, object whereParameters)
 		{
-			string operation = String.Join(", ", ParametersHelper.GetParameters(updateObject).ToArray());
+			var providers = GetColumnProviders(tableName);
+			string operation = GetOperationValues(providers, updateObject);
 			var query = String.Format("UPDATE [{0}] SET {1}", tableName, operation);
-			
-			string whereClause = String.Join(" AND ", ParametersHelper.GetParameters(whereParameters).ToArray());
+
+			string whereClause = GetWhereClauseValues(providers, whereParameters);
 			if (whereClause != String.Empty)
 			{
 				query += String.Format(" WHERE {0}", whereClause);
 			}
-			
 			return ExecuteNonQuery(query);
+		}
+
+		private static string GetOperationValues(IEnumerable<ColumnProvider> providers, object updateObject)
+		{
+			var updateValues = ParametersHelper.GetPropertyValues(updateObject);
+			var sqlUpdatePairs = from p in providers 
+			                     join v in updateValues on p.Name equals v.Key
+			                     select String.Format("{0} = {1}", p.Name, p.GetValueSql(v.Value));
+			return String.Join(", ", sqlUpdatePairs.ToArray());
+		}
+
+		private static string GetWhereClauseValues(IEnumerable<ColumnProvider> providers, object whereParameters)
+		{
+			var whereValues = ParametersHelper.GetPropertyValues(whereParameters);
+			var sqlWherePairs = from p in providers
+			                    join v in whereValues on p.Name equals v.Key
+			                    select EqualitySql(p.Name, p.GetValueSql(v.Value));
+			return String.Join(" AND ", sqlWherePairs.ToArray());
+		}
+
+		private static string EqualitySql(string name, string valueSql)
+		{
+			string equalitySign = valueSql != "null" ? "=" : "is";
+			return String.Format("{0} {1} {2}", name, equalitySign, valueSql);
 		}
 
 		public int Delete(string tableName, object whereParameters)
 		{
-			string whereClause = String.Join(" AND ", ParametersHelper.GetParameters(whereParameters).ToArray());
+			var providers = GetColumnProviders(tableName);
+			string whereClause = GetWhereClauseValues(providers, whereParameters);
 			if (whereClause == String.Empty)
 			{
 				throw new DbRefactorException("Couldn't execute delete without where clause");
@@ -1007,69 +727,237 @@ namespace DbRefactor.Providers
 			var query = String.Format("DELETE FROM [{0}] WHERE {1}", tableName, whereClause);
 			return ExecuteNonQuery(query);
 		}
-	}
 
-	public class ColumnData
-	{
-		public string DataType { get; set; }
-
-		public string Name { get; set; }
-
-		public int? Length { get; set; }
-
-		public int? Precision { get; set; }
-
-		public int? Radix { get; set; }
-
-		public object DefaultValue { get; set; }
-	}
-
-	public class Relation
-	{
-		public Relation(string parent, string child)
+		public object SelectScalar(string column, string tableName, object whereParameters)
 		{
-			Parent = parent;
-			Child = child;
+			var providers = GetColumnProviders(tableName);
+			string whereClause = GetWhereClauseValues(providers, whereParameters);
+			return ExecuteScalar("SELECT {0} FROM {1} WHERE {2}", column, tableName, whereClause);
 		}
 
-		public string Parent { get; set; }
-
-		public string Child { get; set; }
-	}
-
-	public class ForeignKey
-	{
-		public string Name { get; set; }
-		public string PrimaryTable { get; set; }
-		public string PrimaryColumn { get; set; }
-		public string ForeignTable { get; set; }
-		public string ForeignColumn { get; set; }
-	}
-
-	public static class StringListExtensions
-	{
-		public static string ComaSeparated(this IEnumerable<string> list)
+		public void DropForeignKey(string foreignKeyTable, string[] foreignKeyColumns, string primaryKeyTable, string[] primaryKeyColumns)
 		{
-			return String.Join(", ", list.ToArray());
+			throw new NotImplementedException();
 		}
 
-		public static string SpaceSeparated(this IEnumerable<string> list)
+		private List<string> GetConstraintsByType(string table, string column, string type)
 		{
-			return String.Join(" ", list.ToArray());
+			string sql =
+				String.Format(
+					@"SELECT d.name
+							FROM sys.default_constraints AS d
+							JOIN sys.objects AS o
+								ON o.object_id = d.parent_object_id
+							JOIN sys.columns AS c
+								ON c.object_id = o.object_id AND c.column_id = d.parent_column_id
+							JOIN sys.schemas AS s
+								ON s.schema_id = o.schema_id
+							where o.Name = '{0}' and c.name = '{1}' and d.Type = '{2}'",
+					table, column, type);
+			return ExecuteQuery(sql).AsReadable().Select(r => r.GetString(0)).ToList();
 		}
-	}
 
-	public static class DataReaderExtensions
-	{
-		public static IEnumerable<IDataReader> AsReadable(this IDataReader reader)
+		public List<string> GetConstraints(string table, string column)
 		{
-			using (reader)
+			// INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE - view that contains all constraints except defaults
+			// sys.default_constraints - view for default constraints
+			// http://blogs.msdn.com/sqltips/archive/2005/07/05/435882.aspx
+			string sql =
+				String.Format(
+					@"WITH constraint_depends
+						AS
+						(
+							SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.CONSTRAINT_NAME
+							FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
+							UNION ALL
+							SELECT s.name, o.name, c.name, d.name
+							FROM sys.default_constraints AS d
+							JOIN sys.objects AS o
+								ON o.object_id = d.parent_object_id
+							JOIN sys.columns AS c
+								ON c.object_id = o.object_id AND c.column_id = d.parent_column_id
+							JOIN sys.schemas AS s
+								ON s.schema_id = o.schema_id)
+					SELECT c.CONSTRAINT_NAME
+					FROM constraint_depends as c
+					WHERE c.TABLE_NAME = '{0}' AND c.COLUMN_NAME = '{1}';",
+					table, column);
+
+			return ExecuteQuery(sql).AsReadable().Select(r => r.GetString(0)).ToList();
+		}
+
+		private string GetPrimaryKeyColumn(string table)
+		{
+			const string sql =
+				@"
+						SELECT [name]
+						FROM syscolumns 
+						 WHERE [id] IN (SELECT [id] 
+										  FROM sysobjects 
+										 WHERE [name] = '{0}')
+						   AND colid IN (SELECT SIK.colid 
+										   FROM sysindexkeys SIK 
+										   JOIN sysobjects SO ON SIK.[id] = SO.[id]  
+										  WHERE SIK.indid = 2
+											AND SO.[name] = '{0}')
+						";
+
+			return Convert.ToString(ExecuteScalar(sql, table));
+		}
+
+		public List<ForeignKey> GetForeignKeys()
+		{
+			const string query =
+				@"
+				SELECT f.name AS Name,
+				   OBJECT_NAME(f.parent_object_id) AS ForeignTable,
+				   COL_NAME(fc.parent_object_id, fc.parent_column_id) AS ForeignColumn,
+				   OBJECT_NAME (f.referenced_object_id) AS PrimaryTable,
+				   COL_NAME(fc.referenced_object_id, fc.referenced_column_id) AS PrimaryColumn
+				FROM sys.foreign_keys AS f
+				INNER JOIN sys.foreign_key_columns AS fc
+				   ON f.OBJECT_ID = fc.constraint_object_id
+				";
+			return ExecuteQuery(query).AsReadable()
+				.Select(r => new ForeignKey
+				{
+					Name = r["Name"].ToString(),
+					ForeignTable = r["ForeignTable"].ToString(),
+					ForeignColumn = r["ForeignColumn"].ToString(),
+					PrimaryTable = r["PrimaryTable"].ToString(),
+					PrimaryColumn = r["PrimaryColumn"].ToString()
+				}).ToList();
+		}
+
+		private bool IsUnique(string table, string column)
+		{
+			return
+				Convert.ToBoolean(
+					ExecuteScalar(
+						@"SELECT COUNT(c.CONSTRAINT_NAME) 
+				FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
+				join sys.objects as s on c.CONSTRAINT_NAME = s.Name and type = 'UQ'
+				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
+						table, column));
+		}
+
+		private bool IsPrimaryKey(string table, string column)
+		{
+			return
+				Convert.ToBoolean(
+					ExecuteScalar(
+						@"SELECT COUNT(c.CONSTRAINT_NAME) 
+				FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
+				join sys.objects as s on c.CONSTRAINT_NAME = s.Name and type = 'PK'
+				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
+						table, column));
+		}
+
+		internal List<ColumnProvider> GetColumnProviders(string table)
+		{
+			var providers = new List<ColumnProvider>();
+
+			using (
+				IDataReader reader =
+					ExecuteQuery(
+						"SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}';",
+						table))
 			{
 				while (reader.Read())
 				{
-					yield return reader;
+					ColumnProvider provider = GetProvider(reader);
+					providers.Add(provider);
 				}
 			}
+			foreach (var provider in providers)
+			{
+				AddProviderProperties(table, provider);
+			}
+			return providers;
 		}
+
+		private bool IsIdentity(string table, string column)
+		{
+			return Convert.ToBoolean(ExecuteScalar(@"SELECT COLUMNPROPERTY(OBJECT_ID('{0}'),'{1}','IsIdentity')", table, column));
+		}
+
+		private bool IsNull(string table, string column)
+		{
+			return Convert.ToBoolean(ExecuteScalar(@"SELECT COLUMNPROPERTY(OBJECT_ID('{0}'),'{1}','AllowsNull')", table, column));
+		}
+
+		public bool TableHasIdentity(string table)
+		{
+			Check.RequireNonEmpty(table, "table");
+			return Convert.ToInt32(ExecuteScalar("SELECT OBJECTPROPERTY(object_id('{0}'), 'TableHasIdentity')", table)) == 1;
+		}
+
+		private List<string> FindIndexes(string tableName, string columnName)
+		{
+			var query =
+				String.Format(
+					@"SELECT o.name as [TableName], i.name as [IndexName], c.name as [ColumnName]
+							FROM sysobjects o
+							JOIN sysindexes i ON i.id = o.id
+							JOIN sysindexkeys ik ON ik.id = i.id
+								AND ik.indid = i.indid
+							JOIN syscolumns c ON c.id = ik.id
+								AND c.colid = ik.colid
+							WHERE i.indid BETWEEN 2 AND 254
+								AND indexproperty(o.id, i.name, 'IsStatistics') = 0
+								AND indexproperty(o.id, i.name, 'IsHypothetical') = 0
+								AND o.Name = '{0}' and c.Name = '{1}'",
+					tableName, columnName);
+			return ExecuteQuery(query, tableName, columnName).AsReadable()
+				.Select(r => r["IndexName"].ToString()).ToList();
+		}
+
+		private ColumnProvider GetColumnProvider(string tableName, string columnName)
+		{
+			ColumnProvider provider;
+			using (
+				IDataReader reader =
+					ExecuteQuery(
+						"SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}' and column_name = '{1}'",
+						tableName, columnName))
+			{
+				if (!reader.Read())
+				{
+					throw new DbRefactorException(String.Format("Couldn't find column '{0}' in table '{1}'", columnName, tableName));
+				}
+				provider = GetProvider(reader);
+			}
+			AddProviderProperties(tableName, provider);
+			return provider;
+		}
+
+		public bool ColumnExists(string table, string column)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.RequireNonEmpty(column, "column");
+			if (!TableExists(table))
+			{
+				Logger.Warn("Table {0} does not exists", table);
+				return false;
+			}
+			var query = String.Format("SELECT TOP 1 * FROM syscolumns WHERE id = object_id('{0}') AND name = '{1}'",
+									  table,
+									  column);
+			return ExecuteQuery(query).AsReadable().Any();
+		}
+
+		private bool ObjectExists(string name)
+		{
+			Check.RequireNonEmpty(name, "name");
+			var query = String.Format("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')", name);
+			return ExecuteQuery(query).AsReadable().Any();
+		}
+
+		public string[] GetTables()
+		{
+			const string query = "SELECT name FROM sysobjects WHERE xtype = 'U'";
+			return ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
+		}
+
 	}
 }

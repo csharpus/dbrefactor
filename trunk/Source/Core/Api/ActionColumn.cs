@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 
-namespace DbRefactor
+namespace DbRefactor.Api
 {
 	public class ActionColumn
 	{
@@ -12,7 +12,8 @@ namespace DbRefactor
 		private readonly ColumnProviderFactory columnProviderFactory;
 		private readonly List<string> columnNames = new List<string>();
 
-		public ActionColumn(TransformationProvider provider, string tableName, string columnName, ColumnProviderFactory columnProviderFactory)
+		public ActionColumn(TransformationProvider provider, string tableName, string columnName,
+		                    ColumnProviderFactory columnProviderFactory)
 		{
 			this.provider = provider;
 			this.tableName = tableName;
@@ -55,7 +56,7 @@ namespace DbRefactor
 		{
 			provider.DropUnique(tableName, columnNames.ToArray());
 		}
-		
+
 // AddIdentity is nos supported by sql server
 
 		public void AddIndex()
@@ -111,6 +112,38 @@ namespace DbRefactor
 		{
 			return new OtherTypeColumn(tableName, columnNames[0], columnProviderFactory, provider);
 		}
+
+		public void AddForeignKeyTo(string primaryKeyTable, params string[] primaryKeyColumns)
+		{
+			AddForeignKeyTo(primaryKeyTable, OnDelete.NoAction, primaryKeyColumns);
+		}
+
+		public void AddForeignKeyTo(string constraintName, string primaryKeyTable, params string[] primaryKeyColumns)
+		{
+			AddForeignKeyTo(constraintName, primaryKeyTable, OnDelete.NoAction, primaryKeyColumns);
+		}
+
+		public void AddForeignKeyTo(string primaryKeyTable, OnDelete onDeleteAction, params string[] primaryKeyColumns)
+		{
+			AddForeignKeyTo(GenerateForeignKeyName(primaryKeyTable), primaryKeyTable, onDeleteAction, primaryKeyColumns);
+		}
+
+		public void AddForeignKeyTo(string constraintName, string primaryKeyTable, OnDelete onDeleteAction,
+		                            params string[] primaryKeyColumns)
+		{
+			provider.AddForeignKey(constraintName, tableName, columnNames.ToArray(), primaryKeyTable,
+			                       primaryKeyColumns, onDeleteAction);
+		}
+
+		private string GenerateForeignKeyName(string primaryKeyTable)
+		{
+			return String.Format("FK_{0}_{1}", tableName, primaryKeyTable);
+		}
+
+		public void DropForeignKey(string primaryKeyTable, params string[] primaryKeyColumns)
+		{
+			provider.DropForeignKey(tableName, columnNames.ToArray(), primaryKeyTable, primaryKeyColumns);
+		}
 	}
 
 	public class OtherTypeColumn
@@ -120,7 +153,8 @@ namespace DbRefactor
 		private readonly ColumnProviderFactory factory;
 		private readonly TransformationProvider provider;
 
-		public OtherTypeColumn(string tableName, string columnName, ColumnProviderFactory factory, TransformationProvider provider)
+		public OtherTypeColumn(string tableName, string columnName, ColumnProviderFactory factory,
+		                       TransformationProvider provider)
 		{
 			this.tableName = tableName;
 			this.columnName = columnName;
@@ -172,7 +206,7 @@ namespace DbRefactor
 
 		private void AlterColumn(ColumnProvider columnProvider)
 		{
-			provider.AlterColumn(tableName, columnProvider);			
+			provider.AlterColumn(tableName, columnProvider);
 		}
 
 		#endregion Column types

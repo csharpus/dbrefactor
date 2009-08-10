@@ -22,7 +22,7 @@ namespace DbRefactor.Tools
 {
 	public class DataDumper
 	{
-		readonly TransformationProvider provider;
+		private readonly TransformationProvider provider;
 
 		public DataDumper(string connectionString)
 		{
@@ -111,14 +111,8 @@ namespace DbRefactor.Tools
 						writer.Write(") values (");
 						foreach (ColumnProvider columnProvider in columnProviders)
 						{
-							if (reader[columnProvider.Name] == DBNull.Value)
-							{
-								writer.Write("NULL");
-							}
-							else
-							{
-								columnProvider.GetValueSql(reader[columnProvider.Name]);
-							}
+							writer.Write(columnProvider.GetValueSql(reader[columnProvider.Name]));
+
 							if (columnProvider != columnProviders[columnProviders.Count - 1])
 							{
 								writer.Write(", ");
@@ -153,7 +147,7 @@ namespace DbRefactor.Tools
 			       + date.Hour.ToString("00")
 			       + ":"
 			       + date.Minute.ToString("00")
-				   + ":"
+			       + ":"
 			       + date.Second.ToString("00");
 		}
 	}

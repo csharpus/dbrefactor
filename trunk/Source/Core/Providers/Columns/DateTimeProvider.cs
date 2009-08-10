@@ -40,7 +40,7 @@ namespace DbRefactor.Providers.Columns
 			return SQLTypes.DateTime();
 		}
 
-		public override string GetValueSql(object value)
+		protected override string ValueSql(object value)
 		{
 			return SQLTypes.DateTimeValue((DateTime) value);
 		}

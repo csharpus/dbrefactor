@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using DbRefactor.Extensions;
 using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Providers

@@ -35,7 +35,7 @@ namespace DbRefactor.Providers.Columns
 			return SQLTypes.Boolean();
 		}
 
-		public override string GetValueSql(object value)
+		protected override string ValueSql(object value)
 		{
 			return SQLTypes.BooleanValue((bool) value);
 		}

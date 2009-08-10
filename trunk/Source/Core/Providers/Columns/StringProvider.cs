@@ -43,7 +43,7 @@ namespace DbRefactor.Providers.Columns
 			return SQLTypes.String(Size);
 		}
 
-		public override string GetValueSql(object value)
+		protected override string ValueSql(object value)
 		{
 			return SQLTypes.StringValue((string)value);
 		}
