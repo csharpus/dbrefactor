@@ -93,13 +93,29 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 
-			foreach (var name in columnNames)
+			var uniqueConstraints = new List<List<string>>();
+			foreach (var columnName in columnNames)
 			{
-				Check.Ensure(IsUnique(table, name), String.Format("column {0} is not unique", columnNames));
+				uniqueConstraints.Add(GetUniqueConstraints(table, columnName));
 			}
-#warning fix this (should foreach each column and check constraint name + select only unique constraint)
-			List<string> indexes = GetConstraints(table, columnNames[0]);
-			DropConstraint(table, indexes[0]);
+			var sharedConstraints = uniqueConstraints[0];
+			foreach (var uniqueConstraintList in uniqueConstraints)
+			{
+				sharedConstraints = uniqueConstraintList.Intersect(sharedConstraints).ToList();
+			}
+			if (sharedConstraints.Count == 0)
+			{
+				string message = columnNames.Length == 1
+				                 	? String.Format("Could not find any unique constraints for column '{0}' in table '{1}'", 
+				                 	                columnNames[0], table)
+				                 	: String.Format("Could not find any mutual unique constraints for columns '{0}' in table '{1}'",
+				                 	                String.Join("', '", columnNames), table);
+				throw new DbRefactorException(message);
+			}
+			foreach (var constraint in sharedConstraints)
+			{
+				DropConstraint(table, constraint);
+			}
 		}
 
 		public void DropPrimaryKey(string table)
@@ -742,48 +758,120 @@ namespace DbRefactor.Providers
 
 		private List<string> GetConstraintsByType(string table, string column, string type)
 		{
-			string sql =
-				String.Format(
-					@"SELECT d.name
-							FROM sys.default_constraints AS d
-							JOIN sys.objects AS o
-								ON o.object_id = d.parent_object_id
-							JOIN sys.columns AS c
-								ON c.object_id = o.object_id AND c.column_id = d.parent_column_id
-							JOIN sys.schemas AS s
-								ON s.schema_id = o.schema_id
-							where o.Name = '{0}' and c.name = '{1}' and d.Type = '{2}'",
-					table, column, type);
-			return ExecuteQuery(sql).AsReadable().Select(r => r.GetString(0)).ToList();
+			var filter = new ConstraintFilter {TableName = table, ColumnName = column, ConstraintType = type};
+			return GetConstraints(filter).Select(c => c.Name).ToList();
+		}
+
+		private List<Constraint> GetConstraints(ConstraintFilter filter)
+		{
+			var query = new ConstraintQueryBuilder(filter).BuildQuery();
+			return ExecuteQuery(query).AsReadable().Select(r => new Constraint
+			                                                    	{
+			                                                    		Name = r.GetString(0),
+                                                                        TableSchema = r.GetString(1),
+																		TableName = r.GetString(2),
+																		ColumnName = r.GetString(3),
+																		ConstraintType = r.GetString(4)
+			                                                    	}).ToList();
+		}
+
+		private class ConstraintFilter
+		{
+			public string TableName { get; set; }
+			public string ColumnName { get; set; }
+			public string ConstraintType { get; set; }
+		}
+
+		public class Constraint
+		{
+			public string Name { get; set; }
+			public string TableSchema { get; set; }
+			public string TableName { get; set; }
+			public string ColumnName { get; set; }
+			public string ConstraintType { get; set; }
+		}
+
+		private class ConstraintQueryBuilder
+		{
+			private readonly ConstraintFilter filter;
+			private readonly List<string> restrictions = new List<string>();
+
+			public ConstraintQueryBuilder(ConstraintFilter filter)
+			{
+				this.filter = filter;
+			}
+
+			public string BuildQuery()
+			{
+				// INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE - view that contains all constraints except defaults
+				// sys.default_constraints - view for default constraints
+				// http://blogs.msdn.com/sqltips/archive/2005/07/05/435882.aspx
+				const string baseQuery = @"
+WITH AllConstraints
+AS (
+	SELECT 
+		Constraints.CONSTRAINT_NAME AS ConstraintName,
+		Constraints.TABLE_SCHEMA AS TableSchema, 
+		Constraints.TABLE_NAME AS TableName, 
+		Constraints.COLUMN_NAME AS ColumnName, 
+		Objects.[type] AS ConstraintType
+	FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as Constraints
+	JOIN sys.objects AS Objects 
+		ON Objects.[Name] = Constraints.CONSTRAINT_NAME
+UNION ALL
+	SELECT
+		DefaultConstraints.[name] AS ConstraintName,
+		Schemas.[name] AS TableSchema,
+		Objects.[name] As TableName,
+		Columns.[name] AS ColumnName,
+		Objects.[type] AS ConstraintType
+	FROM sys.default_constraints AS DefaultConstraints
+	JOIN sys.objects AS Objects
+		ON Objects.object_id = DefaultConstraints.parent_object_id
+	JOIN sys.columns AS Columns
+		ON Columns.object_id = Objects.object_id 
+			AND Columns.column_id = DefaultConstraints.parent_column_id
+	JOIN sys.schemas AS Schemas
+		ON Schemas.schema_id = Objects.schema_id)
+SELECT ConstraintName, TableSchema, TableName, ColumnName, ConstraintType
+FROM AllConstraints
+				";
+				AddTableRestriction();
+				AddColumnRestriction();
+				AddTypeRestriction();
+				var whereClause = String.Join(" AND ", restrictions.ToArray());
+				return whereClause != string.Empty ? baseQuery + " WHERE " + whereClause : baseQuery;
+			}
+
+			private void AddTypeRestriction()
+			{
+				if (filter.ConstraintType == null) return;
+				restrictions.Add(String.Format("ConstraintType = '{0}'", filter.ConstraintType));
+			}
+
+			private void AddColumnRestriction()
+			{
+				if (filter.ColumnName == null) return;
+				restrictions.Add(String.Format("ColumnName = '{0}'", filter.ColumnName));
+			}
+
+			private void AddTableRestriction()
+			{
+				if (filter.TableName == null) return;
+				restrictions.Add(String.Format("TableName = '{0}'", filter.TableName));
+			}
 		}
 
 		public List<string> GetConstraints(string table, string column)
 		{
-			// INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE - view that contains all constraints except defaults
-			// sys.default_constraints - view for default constraints
-			// http://blogs.msdn.com/sqltips/archive/2005/07/05/435882.aspx
-			string sql =
-				String.Format(
-					@"WITH constraint_depends
-						AS
-						(
-							SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.CONSTRAINT_NAME
-							FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
-							UNION ALL
-							SELECT s.name, o.name, c.name, d.name
-							FROM sys.default_constraints AS d
-							JOIN sys.objects AS o
-								ON o.object_id = d.parent_object_id
-							JOIN sys.columns AS c
-								ON c.object_id = o.object_id AND c.column_id = d.parent_column_id
-							JOIN sys.schemas AS s
-								ON s.schema_id = o.schema_id)
-					SELECT c.CONSTRAINT_NAME
-					FROM constraint_depends as c
-					WHERE c.TABLE_NAME = '{0}' AND c.COLUMN_NAME = '{1}';",
-					table, column);
+			var filter = new ConstraintFilter { TableName = table, ColumnName = column};
+			return GetConstraints(filter).Select(c => c.Name).ToList();
+		}
 
-			return ExecuteQuery(sql).AsReadable().Select(r => r.GetString(0)).ToList();
+		public List<string> GetUniqueConstraints(string table, string column)
+		{
+			var filter = new ConstraintFilter {TableName = table, ColumnName = column, ConstraintType = "UQ"};
+			return GetConstraints(filter).Select(c => c.Name).ToList();
 		}
 
 		private string GetPrimaryKeyColumn(string table)

@@ -214,6 +214,46 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
+		public void Can_drop_unique_constraint()
+		{
+			Database.CreateTable("A").Int("B").Unique().Execute();
+		//Database.Table("A").Column("B").DropUnique();
+		}
+
+		[Test]
+		public void Can_drop_unique_constraint_for_several_columns()
+		{
+			Database.CreateTable("A")
+				.Int("B")
+				.Int("C").Execute();
+			Database.Table("A").Column("B").Column("C").AddUnique();
+
+			Database.Table("A").Column("B").Column("C").DropUnique();
+		}
+
+		[Test]
+		[ExpectedException(typeof(DbRefactorException))]
+		public void Should_fail_when_dropping_unique_constraint_for_incorrect_columns()
+		{
+			Database.CreateTable("A")
+				.Int("B")
+				.Int("C").Unique().Execute();
+
+			Database.Table("A").Column("B").Column("C").DropUnique();
+		}
+
+		[Test]
+		public void Can_add_two_unique_indexes()
+		{
+			Database.CreateTable("A")
+				.Int("B")
+				.Int("C")
+				.Int("D").Execute();
+			Database.Table("A").Column("B").Column("C").AddUnique();
+			Database.Table("A").Column("B").Column("D").AddUnique();
+		}
+
+		[Test]
 		public void Can_create_identity_column()
 		{
 			Database.CreateTable("A").Int("B").Identity().Execute();
