@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using DbRefactor.Exceptions;
 using DbRefactor.Providers;
+using DbRefactor.Runner;
 using DbRefactor.Tools.Loggers;
 
 namespace DbRefactor
@@ -32,19 +33,6 @@ namespace DbRefactor
 
 		public string Category { get; set; }
 
-		//public Migrator(string providerName, string connectionString, string category, Assembly migrationAssembly, bool trace)
-		//    : this(CreateProvider(connectionString), category, migrationAssembly, trace)
-		//{ }
-
-
-		//public Migrator(string providerName, string connectionString, Assembly migrationAssembly, bool trace)
-		//    : this(CreateProvider(connectionString), null, migrationAssembly, trace)
-		//{ }
-
-		//public Migrator(string providerName, string connectionString, Assembly migrationAssembly)
-		//    : this(CreateProvider(connectionString), null, migrationAssembly, false)
-		//{ }
-
 		internal Migrator(TransformationProvider provider, string category, Assembly migrationAssembly, ILogger logger)
 		{
 			this.provider = provider;
@@ -58,7 +46,7 @@ namespace DbRefactor
 			if (migrationAssembly != null)
 			{
 				migrationsTypes.AddRange(GetMigrationTypes(migrationAssembly));
-				_setUpMigration = GetSetUpMigrationType(migrationAssembly);
+				setUpMigration = GetSetUpMigrationType(migrationAssembly);
 			}
 
 			this.logger.Trace("Loaded migrations:");
@@ -125,10 +113,9 @@ namespace DbRefactor
 
 				if (firstRun)
 				{
-					if (migration is Migration)
-					{
-						(migration as Migration).InitializeOnce(_args);
-					}
+					
+						migration.InitializeOnce(_args);
+					
 					firstRun = false;
 				}
 
@@ -136,12 +123,11 @@ namespace DbRefactor
 				{
 					string migrationName = ToHumanName(migration.GetType().Name);
 
-					if (migration is Migration)
-					{
-						(migration as Migration).TransformationProvider = provider;
-						(migration as Migration).ColumnProviderFactory = ProviderFactory.ColumnProviderFactory;
-						(migration as Migration).ColumnPropertyProviderFactory = provider.propertyFactory;
-					}
+					
+						migration.TransformationProvider = provider;
+						migration.ColumnProviderFactory = ProviderFactory.ColumnProviderFactory;
+						migration.ColumnPropertyProviderFactory = provider.propertyFactory;
+					
 					
 
 					try
@@ -312,7 +298,7 @@ namespace DbRefactor
 		/// </summary>
 		/// <param name="asm">The <c>Assembly</c> to browse.</param>
 		/// <returns>The migrations collection</returns>
-		private List<Type> GetMigrationTypes(Assembly asm)
+		private static List<Type> GetMigrationTypes(Assembly asm)
 		{
 			var migrations = new List<Type>();
 
@@ -363,11 +349,11 @@ namespace DbRefactor
 
 		private static Type GetSetUpMigrationType(Assembly asm)
 		{
-			List<Type> setupList = new List<Type>();
+			var setupList = new List<Type>();
 
 			foreach (Type t in asm.GetTypes())
 			{
-				SetUpMigrationAttribute attrib = (SetUpMigrationAttribute)
+				var attrib = (SetUpMigrationAttribute)
 					Attribute.GetCustomAttribute(t, typeof(SetUpMigrationAttribute));
 				if (attrib != null)
 				{
@@ -388,7 +374,7 @@ namespace DbRefactor
 			return setupList[0];
 		}
 
-		private readonly Type _setUpMigration;
+		private readonly Type setUpMigration;
 
 		private void RunGlobalSetUp()
 		{
@@ -412,12 +398,12 @@ namespace DbRefactor
 
 		private void ExecuteSetupMethodWith(Type attributeType)
 		{
-			if (_setUpMigration == null)
+			if (setUpMigration == null)
 			{
 				return;
 			}
-			object setupObject = Activator.CreateInstance(_setUpMigration);
-			MethodInfo[] methods = _setUpMigration.GetMethods();
+			object setupObject = Activator.CreateInstance(setUpMigration);
+			MethodInfo[] methods = setUpMigration.GetMethods();
 			MethodInfo globalSetupMethod = null;
 			foreach (MethodInfo method in methods)
 			{

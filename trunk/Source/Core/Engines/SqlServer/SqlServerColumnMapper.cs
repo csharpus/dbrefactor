@@ -12,11 +12,11 @@
 #endregion
 
 using System;
+using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Providers.Properties;
-using DbRefactor.Providers.TypeToSqlProviders;
 
-namespace DbRefactor.Providers
+namespace DbRefactor.Engines.SqlServer
 {
 	public class SqlServerColumnMapper
 	{
@@ -49,7 +49,7 @@ namespace DbRefactor.Providers
 		public DecimalProvider CreateDecimal(ColumnData data)
 		{
 			return new DecimalProvider(data.Name, data.DefaultValue, data.Precision.Value, data.Radix.Value,
-									   codeGenerationService, sqlTypes, sqlGenerationService);
+			                           codeGenerationService, sqlTypes, sqlGenerationService);
 		}
 
 		public DoubleProvider CreateDouble(ColumnData data)
@@ -120,7 +120,7 @@ namespace DbRefactor.Providers
 		public DecimalProvider CreateDecimal(string name, decimal? defaultValue, int precision, int radix)
 		{
 			return new DecimalProvider(name, defaultValue, precision, radix,
-									   codeGenerationService, sqlTypes, sqlGenerationService);
+			                           codeGenerationService, sqlTypes, sqlGenerationService);
 		}
 
 		public DoubleProvider CreateDouble(string name, double? defaultValue)

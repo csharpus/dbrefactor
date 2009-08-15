@@ -16,14 +16,15 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using DbRefactor.Engines.SqlServer;
 using DbRefactor.Extensions;
 using DbRefactor.Providers.Columns;
-using DbRefactor.Providers.ForeignKeys;
 using DbRefactor.Providers.Properties;
 using DbRefactor.Tools;
 using DbRefactor.Tools.DesignByContract;
 using System.IO;
 using DbRefactor.Tools.Loggers;
+using Constraint=DbRefactor.Engines.SqlServer.Constraint;
 
 
 namespace DbRefactor.Providers
@@ -300,7 +301,7 @@ namespace DbRefactor.Providers
 				"ALTER TABLE [{0}] ADD CONSTRAINT [{1}] FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5}",
 				primaryTable, name, String.Join(",", primaryColumns),
 				refTable, String.Join(",", refColumns),
-				new ForeignKeyConstraintMapper().Resolve(constraint));
+				new SqlServerForeignKeyConstraintMapper().Resolve(constraint));
 		}
 
 		/// <summary>

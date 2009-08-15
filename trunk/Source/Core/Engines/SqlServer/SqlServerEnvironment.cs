@@ -13,9 +13,10 @@
 
 using System.Data;
 using System.Data.SqlClient;
+using DbRefactor.Providers;
 using DbRefactor.Tools.Loggers;
 
-namespace DbRefactor.Providers
+namespace DbRefactor.Engines.SqlServer
 {
 	sealed class SqlServerEnvironment : IDatabaseEnvironment
 	{

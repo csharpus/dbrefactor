@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using DbRefactor.Engines.SqlServer;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 

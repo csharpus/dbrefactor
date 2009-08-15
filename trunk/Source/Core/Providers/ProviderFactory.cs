@@ -10,7 +10,7 @@
 #endregion
 
 using System.Reflection;
-using DbRefactor.Providers.TypeToSqlProviders;
+using DbRefactor.Engines.SqlServer;
 using DbRefactor.Tools.Loggers;
 
 namespace DbRefactor.Providers

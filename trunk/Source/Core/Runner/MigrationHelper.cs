@@ -11,16 +11,16 @@
 
 #endregion
 
-namespace DbRefactor
-{
-	using System;
+using System;
 
+namespace DbRefactor.Runner
+{
 	internal class MigrationHelper
 	{
 		private static MigrationAttribute GetMigrationAttribute(Type t)
 		{
 			var attrib = (MigrationAttribute)Attribute
-				.GetCustomAttribute(t, typeof(MigrationAttribute));
+			                                 	.GetCustomAttribute(t, typeof(MigrationAttribute));
 			
 			return attrib;
 		}
@@ -39,10 +39,10 @@ namespace DbRefactor
 		{
 			MigrationAttribute attribute = GetMigrationAttribute(t);
 			return attribute != null 
-				&& 
-					(typeof (Migration).IsAssignableFrom(t) 
-					)
-				&& !attribute.Ignore;
+			       && 
+			       (typeof (Migration).IsAssignableFrom(t) 
+			       )
+			       && !attribute.Ignore;
 		}
 	}
 }

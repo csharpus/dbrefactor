@@ -12,6 +12,7 @@
 #endregion
 
 using DbRefactor.Api;
+using DbRefactor.Engines.SqlServer;
 using DbRefactor.Providers;
 
 namespace DbRefactor.Extended

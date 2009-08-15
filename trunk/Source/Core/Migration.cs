@@ -11,6 +11,7 @@
 
 using System.Reflection;
 using DbRefactor.Api;
+using DbRefactor.Engines.SqlServer;
 using DbRefactor.Providers;
 using System.Data;
 

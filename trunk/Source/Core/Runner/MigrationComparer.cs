@@ -12,7 +12,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DbRefactor
+namespace DbRefactor.Runner
 {
 	/// <summary>
 	/// Comparer of Migration by their version attribute.
@@ -32,8 +32,8 @@ namespace DbRefactor
 			int yVersion = MigrationHelper.GetMigrationVersion(y);
 
 			return ascending 
-				? xVersion - yVersion 
-				: yVersion - xVersion;
+			       	? xVersion - yVersion 
+			       	: yVersion - xVersion;
 		}
 	}
 }

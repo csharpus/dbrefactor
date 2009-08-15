@@ -1,5 +1,6 @@
 using System;
 using DbRefactor.Api;
+using DbRefactor.Engines.SqlServer;
 
 namespace DbRefactor.Providers
 {

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DbRefactor.Providers
+namespace DbRefactor.Engines.SqlServer
 {
 	public class Index
 	{

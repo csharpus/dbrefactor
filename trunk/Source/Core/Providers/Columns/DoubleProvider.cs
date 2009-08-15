@@ -14,8 +14,8 @@
 using System;
 using System.Linq.Expressions;
 using DbRefactor.Api;
+using DbRefactor.Engines.SqlServer;
 using DbRefactor.Extended;
-using DbRefactor.Providers.TypeToSqlProviders;
 
 namespace DbRefactor.Providers.Columns
 {

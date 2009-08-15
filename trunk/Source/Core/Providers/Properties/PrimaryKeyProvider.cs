@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using DbRefactor.Api;
-using DbRefactor.Providers.TypeToSqlProviders;
+using DbRefactor.Engines.SqlServer;
 
 namespace DbRefactor.Providers.Properties
 {
