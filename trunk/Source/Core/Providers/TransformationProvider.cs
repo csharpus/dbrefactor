@@ -18,12 +18,12 @@ using System.Linq;
 using System.Reflection;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Extensions;
+using DbRefactor.Infrastructure;
+using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Providers.Properties;
-using DbRefactor.Tools;
 using DbRefactor.Tools.DesignByContract;
 using System.IO;
-using DbRefactor.Tools.Loggers;
 using Constraint=DbRefactor.Engines.SqlServer.Constraint;
 
 

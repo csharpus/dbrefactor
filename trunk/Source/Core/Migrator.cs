@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using DbRefactor.Exceptions;
+using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
 using DbRefactor.Runner;
-using DbRefactor.Tools.Loggers;
 
 namespace DbRefactor
 {

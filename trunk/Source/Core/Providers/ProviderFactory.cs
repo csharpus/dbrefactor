@@ -11,7 +11,7 @@
 
 using System.Reflection;
 using DbRefactor.Engines.SqlServer;
-using DbRefactor.Tools.Loggers;
+using DbRefactor.Infrastructure.Loggers;
 
 namespace DbRefactor.Providers
 {

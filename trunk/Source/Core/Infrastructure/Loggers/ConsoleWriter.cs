@@ -9,10 +9,8 @@
 //under the License.
 #endregion
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace DbRefactor.Tools.Loggers
+namespace DbRefactor.Infrastructure.Loggers
 {
 	public class ConsoleWriter : ILogWriter
 	{

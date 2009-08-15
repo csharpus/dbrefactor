@@ -1,4 +1,4 @@
-﻿namespace DbRefactor.Tools.Loggers
+﻿namespace DbRefactor.Infrastructure.Loggers
 {
 	public class ConsoleLogger : Logger
 	{

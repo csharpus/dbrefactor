@@ -9,10 +9,8 @@
 //under the License.
 #endregion
 using System;
-
+using DbRefactor.Infrastructure.Loggers;
 using NAnt.Core;
-
-using DbRefactor.Tools.Loggers;
 
 namespace Migrator.NAnt.Loggers
 {

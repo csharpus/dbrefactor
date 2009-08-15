@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using DbRefactor.Api;
+using DbRefactor.Infrastructure;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 

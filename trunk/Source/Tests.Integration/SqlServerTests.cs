@@ -1,8 +1,8 @@
 ﻿using System;
 using DbRefactor.Extended;
+using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
 using DbRefactor.Tools;
-using DbRefactor.Tools.Loggers;
 using NUnit.Framework;
 
 namespace DbRefactor.Tests.Integration

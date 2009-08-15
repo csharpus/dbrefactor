@@ -14,7 +14,7 @@
 using System;
 
 
-namespace DbRefactor.Tools.Loggers
+namespace DbRefactor.Infrastructure.Loggers
 {
 	public interface ILogger
 	{

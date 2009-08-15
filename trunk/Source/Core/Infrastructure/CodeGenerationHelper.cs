@@ -12,22 +12,16 @@
 #endregion
 
 using System;
-using System.Linq.Expressions;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace DbRefactor.Tools
+namespace DbRefactor.Infrastructure
 {
-	public static class ExpressionHelper
+	public static class CodeGenerationHelper
 	{
-		public static object ValueFromExpression(Expression expression)
+		public static string GenerateMethodCall(string name, IEnumerable<string> arguments)
 		{
-			if (expression is ConstantExpression)
-			{
-				return (expression as ConstantExpression).Value;
-			}
-			var lambda = Expression.Lambda<Func<object>>(
-				Expression.Convert(expression, typeof(object)),
-				new ParameterExpression[0]);
-			return lambda.Compile()();
+			return String.Format("{0}({1})", name, String.Join(", ", arguments.ToArray()));
 		}
 	}
 }

@@ -10,7 +10,7 @@
 #endregion
 using System;
 
-namespace DbRefactor.Tools.Loggers
+namespace DbRefactor.Infrastructure.Loggers
 {
 	/// <summary>
 	/// Handles writing a message to the log medium (i.e. file, console)

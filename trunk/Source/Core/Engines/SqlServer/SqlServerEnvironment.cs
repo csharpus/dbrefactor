@@ -13,8 +13,8 @@
 
 using System.Data;
 using System.Data.SqlClient;
+using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
-using DbRefactor.Tools.Loggers;
 
 namespace DbRefactor.Engines.SqlServer
 {

@@ -14,8 +14,8 @@
 using System;
 using System.Collections.Generic;
 using DbRefactor.Engines.SqlServer;
+using DbRefactor.Infrastructure;
 using DbRefactor.Providers;
-using DbRefactor.Tools;
 using DbRefactor.Tools.DesignByContract;
 
 namespace DbRefactor.Api

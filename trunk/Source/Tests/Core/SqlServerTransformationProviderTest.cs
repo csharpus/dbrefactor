@@ -1,6 +1,6 @@
 using System;
+using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
-using DbRefactor.Tools.Loggers;
 using NUnit.Framework;
 using System.Data;
 using Rhino.Mocks;

@@ -15,7 +15,7 @@ using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.IO;
 
-namespace DbRefactor.Tools
+namespace DbRefactor.Infrastructure
 {
 	public class ReflectionHelper
 	{

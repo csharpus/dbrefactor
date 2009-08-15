@@ -61,6 +61,13 @@
     <Compile Include="Api\Table.cs" />
     <Compile Include="Api\UpdateTable.cs" />
     <Compile Include="Extended\TypeExtensions.cs" />
+    <Compile Include="Infrastructure\DesignByContract\DesignByContract.cs" />
+    <Compile Include="Infrastructure\Loggers\ConsoleLogger.cs" />
+    <Compile Include="Infrastructure\Loggers\ConsoleWriter.cs" />
+    <Compile Include="Infrastructure\Loggers\IAttachableLogger.cs" />
+    <Compile Include="Infrastructure\Loggers\ILogger.cs" />
+    <Compile Include="Infrastructure\Loggers\ILogWriter.cs" />
+    <Compile Include="Infrastructure\Loggers\Logger.cs" />
     <Compile Include="Runner\MigrationHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Exceptions\DuplicatedVersionException.cs" />
@@ -108,22 +115,18 @@
     <Compile Include="Engines\SqlServer\SqlServerTypeToSqlProvider.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Providers\Properties\UniqueProvider.cs" />
-    <Compile Include="Tools\CodeGenerationHelper.cs" />
+    <Compile Include="Infrastructure\CodeGenerationHelper.cs" />
     <Compile Include="Tools\DataDumper.cs" />
-    <Compile Include="Tools\DesignByContract\DesignByContract.cs" />
-    <Compile Include="Tools\ExpressionHelper.cs" />
-    <Compile Include="Tools\Loggers\ConsoleLogger.cs" />
-    <Compile Include="Tools\Loggers\ConsoleWriter.cs" />
-    <Compile Include="Tools\Loggers\IAttachableLogger.cs" />
-    <Compile Include="Tools\Loggers\ILogger.cs" />
-    <Compile Include="Tools\Loggers\ILogWriter.cs" />
-    <Compile Include="Tools\Loggers\Logger.cs" />
-    <Compile Include="Tools\ParametersHelper.cs" />
-    <Compile Include="Tools\ReflectionHelper.cs" />
+    <Compile Include="Infrastructure\ExpressionHelper.cs" />
+    <Compile Include="Infrastructure\ParametersHelper.cs" />
+    <Compile Include="Infrastructure\ReflectionHelper.cs" />
     <Compile Include="Tools\SchemaDumper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DbRefactor.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Infrastructure\CodeGeneration\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

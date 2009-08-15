@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DbRefactor.Tools
+namespace DbRefactor.Infrastructure
 {
 	internal class ParametersHelper
 	{
