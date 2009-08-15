@@ -118,17 +118,17 @@ namespace DbRefactor.Api
 			AddForeignKeyTo(primaryKeyTable, OnDelete.NoAction, primaryKeyColumns);
 		}
 
-		public void AddForeignKeyTo(string constraintName, string primaryKeyTable, params string[] primaryKeyColumns)
-		{
-			AddForeignKeyTo(constraintName, primaryKeyTable, OnDelete.NoAction, primaryKeyColumns);
-		}
+		//public void AddForeignKeyTo(string constraintName, string primaryKeyTable, params string[] primaryKeyColumns)
+		//{
+		//    AddForeignKeyTo(constraintName, primaryKeyTable, OnDelete.NoAction, primaryKeyColumns);
+		//}
 
 		public void AddForeignKeyTo(string primaryKeyTable, OnDelete onDeleteAction, params string[] primaryKeyColumns)
 		{
 			AddForeignKeyTo(GenerateForeignKeyName(primaryKeyTable), primaryKeyTable, onDeleteAction, primaryKeyColumns);
 		}
 
-		public void AddForeignKeyTo(string constraintName, string primaryKeyTable, OnDelete onDeleteAction,
+		private void AddForeignKeyTo(string constraintName, string primaryKeyTable, OnDelete onDeleteAction,
 		                            params string[] primaryKeyColumns)
 		{
 			provider.AddForeignKey(constraintName, tableName, columnNames.ToArray(), primaryKeyTable,

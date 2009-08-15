@@ -9,21 +9,32 @@
 //under the License.
 #endregion
 
-using DbRefactor.Compatibility;
+using System;
 
 namespace DbRefactor
 {
 	/// <summary>
 	/// Describe a migration
 	/// </summary>
-	public sealed class MigrationAttribute : BaseMigrationAttribute
+	public sealed class MigrationAttribute : Attribute
 	{
 		/// <summary>
 		/// Describe the migration
 		/// </summary>
 		/// <param name="version">The unique version of the migration.</param>	
-		public MigrationAttribute(int version) : base(version)
+		public MigrationAttribute(int version)
 		{
+			Version = version;
 		}
+
+		/// <summary>
+		/// The version reflected by the migration
+		/// </summary>
+		public int Version { get; set; }
+
+		/// <summary>
+		/// Set to <c>true</c> to ignore this migration.
+		/// </summary>
+		public bool Ignore { get; set; }
 	}
 }

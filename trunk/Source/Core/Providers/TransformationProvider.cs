@@ -93,26 +93,20 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 
-			var uniqueConstraints = new List<List<string>>();
-			foreach (var columnName in columnNames)
-			{
-				uniqueConstraints.Add(GetUniqueConstraints(table, columnName));
-			}
-			var sharedConstraints = uniqueConstraints[0];
-			foreach (var uniqueConstraintList in uniqueConstraints)
-			{
-				sharedConstraints = uniqueConstraintList.Intersect(sharedConstraints).ToList();
-			}
-			if (sharedConstraints.Count == 0)
+			var uniqueConstraints = GetUniqueConstraints(table, columnNames);
+			var constraintsSharedBetweenAllColumns = uniqueConstraints.GroupBy(c => c.Name)
+				.Where(group => !columnNames.Except(group.Select(c => c.ColumnName)).Any())
+				.Select(g => g.Key).ToList();
+			if (constraintsSharedBetweenAllColumns.Count == 0)
 			{
 				string message = columnNames.Length == 1
-				                 	? String.Format("Could not find any unique constraints for column '{0}' in table '{1}'", 
+				                 	? String.Format("Could not find any unique constraints for column '{0}' in table '{1}'",
 				                 	                columnNames[0], table)
 				                 	: String.Format("Could not find any mutual unique constraints for columns '{0}' in table '{1}'",
 				                 	                String.Join("', '", columnNames), table);
 				throw new DbRefactorException(message);
 			}
-			foreach (var constraint in sharedConstraints)
+			foreach (var constraint in constraintsSharedBetweenAllColumns)
 			{
 				DropConstraint(table, constraint);
 			}
@@ -121,14 +115,20 @@ namespace DbRefactor.Providers
 		public void DropPrimaryKey(string table)
 		{
 			Check.RequireNonEmpty(table, "table");
-			string primaryKeyColumn = GetPrimaryKeyColumn(table);
-			Check.RequireNonEmpty(primaryKeyColumn, "primary key");
 
-			List<string> indexes = GetConstraints(table, primaryKeyColumn);
-			Check.Require(indexes.Count > 0, "Primary index not found.");
+			string constraintName = GetPrimaryKeyConstraintName(table);
 
-			DropConstraint(table, indexes[0]);
-		}		
+			DropConstraint(table, constraintName);
+		}
+
+		private string GetPrimaryKeyConstraintName(string table)
+		{
+			var filter = new ConstraintFilter {TableName = table, ConstraintType = "PK"};
+			var constraints = GetConstraints(filter).Select(c => c.Name).Distinct().ToList();
+			if (constraints.Count == 0)
+				throw new Exception(String.Format("Could not find primary key constraint on table '{0}'", table));
+			return constraints[0];
+		}
 
 		/// <summary>
 		/// Removes an existing table from the database
@@ -168,6 +168,12 @@ namespace DbRefactor.Providers
 			                oldName, newName);
 		}
 
+		public bool IndexExists(string name)
+		{
+			var filter = new IndexFilter {Name = name};
+			return GetIndexes(filter).Any();
+		}
+
 		/// <summary>
 		/// Determines if a table exists.
 		/// </summary>
@@ -186,16 +192,6 @@ namespace DbRefactor.Providers
 		public bool ConstraintExists(string name)
 		{
 			return ObjectExists(name);
-		}
-
-		/// <summary>
-		/// Determines if a index exists.
-		/// </summary>
-		/// <param name="indexName">Index name</param>
-		/// <returns><c>true</c> if the index exists.</returns>
-		public bool IndexExists(string indexName)
-		{
-			return ObjectExists(indexName);
 		}
 
 		private void AlterColumn(string table, string sqlColumn)
@@ -265,7 +261,7 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(column, "column");
-			var constraints = GetConstraints(table, column);
+			var constraints = GetConstraints(table, new[] {column});
 			foreach (string constraint in constraints)
 			{
 				DropConstraint(table, constraint);
@@ -660,7 +656,7 @@ namespace DbRefactor.Providers
 
 		public void DropDefault(string tableName, string columnName)
 		{
-			List<string> defaultConstraints = GetConstraintsByType(tableName, columnName, "D");
+			List<string> defaultConstraints = GetConstraintsByType(tableName, new[] {columnName}, "D");
 			foreach (var constraint in defaultConstraints)
 			{
 				DropConstraint(tableName, constraint);
@@ -711,7 +707,7 @@ namespace DbRefactor.Providers
 		private static string GetOperationValues(IEnumerable<ColumnProvider> providers, object updateObject)
 		{
 			var updateValues = ParametersHelper.GetPropertyValues(updateObject);
-			var sqlUpdatePairs = from p in providers 
+			var sqlUpdatePairs = from p in providers
 			                     join v in updateValues on p.Name equals v.Key
 			                     select String.Format("{0} = {1}", p.Name, p.GetValueSql(v.Value));
 			return String.Join(", ", sqlUpdatePairs.ToArray());
@@ -751,194 +747,103 @@ namespace DbRefactor.Providers
 			return ExecuteScalar("SELECT {0} FROM {1} WHERE {2}", column, tableName, whereClause);
 		}
 
-		public void DropForeignKey(string foreignKeyTable, string[] foreignKeyColumns, string primaryKeyTable, string[] primaryKeyColumns)
+		public void DropForeignKey(string foreignKeyTable, string[] foreignKeyColumns, string primaryKeyTable,
+		                           string[] primaryKeyColumns)
 		{
-			throw new NotImplementedException();
+			if (foreignKeyColumns.Length != primaryKeyColumns.Length)
+				throw new DbRefactorException(
+					"The number of foreign key columns should be the same as the number of primary key columns");
+			var filter = new ForeignKeyFilter
+			             	{
+			             		ForeignKeyTable = foreignKeyTable,
+			             		ForeignKeyColumns = foreignKeyColumns,
+			             		PrimaryKeyTable = primaryKeyTable,
+			             		PrimaryKeyColumns = primaryKeyColumns
+			             	};
+			var foreignKeys = GetForeignKeys(filter);
+			var keysSharedBetweenAllColumns = foreignKeys.GroupBy(key => key.Name)
+				.Where(group => !foreignKeyColumns.Except(group.Select(k => k.ForeignColumn)).Any())
+				.Select(g => g.Key).ToList();
+			foreach (var key in keysSharedBetweenAllColumns)
+			{
+				DropConstraint(foreignKeyTable, key);
+			}
 		}
 
-		private List<string> GetConstraintsByType(string table, string column, string type)
+		private List<string> GetConstraintsByType(string table, string[] columns, string type)
 		{
-			var filter = new ConstraintFilter {TableName = table, ColumnName = column, ConstraintType = type};
+			var filter = new ConstraintFilter {TableName = table, ColumnNames = columns, ConstraintType = type};
 			return GetConstraints(filter).Select(c => c.Name).ToList();
 		}
 
 		private List<Constraint> GetConstraints(ConstraintFilter filter)
 		{
 			var query = new ConstraintQueryBuilder(filter).BuildQuery();
-			return ExecuteQuery(query).AsReadable().Select(r => new Constraint
-			                                                    	{
-			                                                    		Name = r.GetString(0),
-                                                                        TableSchema = r.GetString(1),
-																		TableName = r.GetString(2),
-																		ColumnName = r.GetString(3),
-																		ConstraintType = r.GetString(4)
-			                                                    	}).ToList();
+			return ExecuteQuery(query).AsReadable()
+				.Select(r => new Constraint
+				             	{
+				             		Name = r["ConstraintName"].ToString(),
+				             		TableSchema = r["TableSchema"].ToString(),
+				             		TableName = r["TableName"].ToString(),
+				             		ColumnName = r["ColumnName"].ToString(),
+				             		ConstraintType = r["ConstraintType"].ToString()
+				             	}).ToList();
 		}
 
-		private class ConstraintFilter
+
+		public List<string> GetConstraints(string table, string[] columns)
 		{
-			public string TableName { get; set; }
-			public string ColumnName { get; set; }
-			public string ConstraintType { get; set; }
-		}
-
-		public class Constraint
-		{
-			public string Name { get; set; }
-			public string TableSchema { get; set; }
-			public string TableName { get; set; }
-			public string ColumnName { get; set; }
-			public string ConstraintType { get; set; }
-		}
-
-		private class ConstraintQueryBuilder
-		{
-			private readonly ConstraintFilter filter;
-			private readonly List<string> restrictions = new List<string>();
-
-			public ConstraintQueryBuilder(ConstraintFilter filter)
-			{
-				this.filter = filter;
-			}
-
-			public string BuildQuery()
-			{
-				// INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE - view that contains all constraints except defaults
-				// sys.default_constraints - view for default constraints
-				// http://blogs.msdn.com/sqltips/archive/2005/07/05/435882.aspx
-				const string baseQuery = @"
-WITH AllConstraints
-AS (
-	SELECT 
-		Constraints.CONSTRAINT_NAME AS ConstraintName,
-		Constraints.TABLE_SCHEMA AS TableSchema, 
-		Constraints.TABLE_NAME AS TableName, 
-		Constraints.COLUMN_NAME AS ColumnName, 
-		Objects.[type] AS ConstraintType
-	FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as Constraints
-	JOIN sys.objects AS Objects 
-		ON Objects.[Name] = Constraints.CONSTRAINT_NAME
-UNION ALL
-	SELECT
-		DefaultConstraints.[name] AS ConstraintName,
-		Schemas.[name] AS TableSchema,
-		Objects.[name] As TableName,
-		Columns.[name] AS ColumnName,
-		Objects.[type] AS ConstraintType
-	FROM sys.default_constraints AS DefaultConstraints
-	JOIN sys.objects AS Objects
-		ON Objects.object_id = DefaultConstraints.parent_object_id
-	JOIN sys.columns AS Columns
-		ON Columns.object_id = Objects.object_id 
-			AND Columns.column_id = DefaultConstraints.parent_column_id
-	JOIN sys.schemas AS Schemas
-		ON Schemas.schema_id = Objects.schema_id)
-SELECT ConstraintName, TableSchema, TableName, ColumnName, ConstraintType
-FROM AllConstraints
-				";
-				AddTableRestriction();
-				AddColumnRestriction();
-				AddTypeRestriction();
-				var whereClause = String.Join(" AND ", restrictions.ToArray());
-				return whereClause != string.Empty ? baseQuery + " WHERE " + whereClause : baseQuery;
-			}
-
-			private void AddTypeRestriction()
-			{
-				if (filter.ConstraintType == null) return;
-				restrictions.Add(String.Format("ConstraintType = '{0}'", filter.ConstraintType));
-			}
-
-			private void AddColumnRestriction()
-			{
-				if (filter.ColumnName == null) return;
-				restrictions.Add(String.Format("ColumnName = '{0}'", filter.ColumnName));
-			}
-
-			private void AddTableRestriction()
-			{
-				if (filter.TableName == null) return;
-				restrictions.Add(String.Format("TableName = '{0}'", filter.TableName));
-			}
-		}
-
-		public List<string> GetConstraints(string table, string column)
-		{
-			var filter = new ConstraintFilter { TableName = table, ColumnName = column};
+			var filter = new ConstraintFilter {TableName = table, ColumnNames = columns};
 			return GetConstraints(filter).Select(c => c.Name).ToList();
 		}
 
-		public List<string> GetUniqueConstraints(string table, string column)
+		public List<Constraint> GetUniqueConstraints(string table, string[] columns)
 		{
-			var filter = new ConstraintFilter {TableName = table, ColumnName = column, ConstraintType = "UQ"};
-			return GetConstraints(filter).Select(c => c.Name).ToList();
+			var filter = new ConstraintFilter {TableName = table, ColumnNames = columns, ConstraintType = "UQ"};
+			return GetConstraints(filter).ToList();
 		}
 
-		private string GetPrimaryKeyColumn(string table)
+		private List<ForeignKey> GetForeignKeys(ForeignKeyFilter filter)
 		{
-			const string sql =
-				@"
-						SELECT [name]
-						FROM syscolumns 
-						 WHERE [id] IN (SELECT [id] 
-										  FROM sysobjects 
-										 WHERE [name] = '{0}')
-						   AND colid IN (SELECT SIK.colid 
-										   FROM sysindexkeys SIK 
-										   JOIN sysobjects SO ON SIK.[id] = SO.[id]  
-										  WHERE SIK.indid = 2
-											AND SO.[name] = '{0}')
-						";
+			var query = new ForeignKeyQueryBuilder(filter).BuildQuery();
+			return ExecuteQuery(query).AsReadable()
+				.Select(r => new ForeignKey
+				             	{
+				             		Name = r["Name"].ToString(),
+				             		ForeignTable = r["ForeignTable"].ToString(),
+				             		ForeignColumn = r["ForeignColumn"].ToString(),
+				             		PrimaryTable = r["PrimaryTable"].ToString(),
+				             		PrimaryColumn = r["PrimaryColumn"].ToString()
+				             	}).ToList();
+		}
 
-			return Convert.ToString(ExecuteScalar(sql, table));
+		private List<Index> GetIndexes(IndexFilter filter)
+		{
+			var query = new IndexQueryBuilder(filter).BuildQuery();
+			return ExecuteQuery(query).AsReadable()
+				.Select(r => new Index
+				             	{
+				             		Name = r["Name"].ToString(),
+				             		TableName = r["TableName"].ToString(),
+				             		ColumnName = r["ColumnName"].ToString()
+				             	}).ToList();
 		}
 
 		public List<ForeignKey> GetForeignKeys()
 		{
-			const string query =
-				@"
-				SELECT f.name AS Name,
-				   OBJECT_NAME(f.parent_object_id) AS ForeignTable,
-				   COL_NAME(fc.parent_object_id, fc.parent_column_id) AS ForeignColumn,
-				   OBJECT_NAME (f.referenced_object_id) AS PrimaryTable,
-				   COL_NAME(fc.referenced_object_id, fc.referenced_column_id) AS PrimaryColumn
-				FROM sys.foreign_keys AS f
-				INNER JOIN sys.foreign_key_columns AS fc
-				   ON f.OBJECT_ID = fc.constraint_object_id
-				";
-			return ExecuteQuery(query).AsReadable()
-				.Select(r => new ForeignKey
-				{
-					Name = r["Name"].ToString(),
-					ForeignTable = r["ForeignTable"].ToString(),
-					ForeignColumn = r["ForeignColumn"].ToString(),
-					PrimaryTable = r["PrimaryTable"].ToString(),
-					PrimaryColumn = r["PrimaryColumn"].ToString()
-				}).ToList();
+			return GetForeignKeys(new ForeignKeyFilter());
 		}
 
 		private bool IsUnique(string table, string column)
 		{
-			return
-				Convert.ToBoolean(
-					ExecuteScalar(
-						@"SELECT COUNT(c.CONSTRAINT_NAME) 
-				FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
-				join sys.objects as s on c.CONSTRAINT_NAME = s.Name and type = 'UQ'
-				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
-						table, column));
+			var filter = new ConstraintFilter {TableName = table, ColumnNames = new[] {column}, ConstraintType = "UQ"};
+			return GetConstraints(filter).Any();
 		}
 
 		private bool IsPrimaryKey(string table, string column)
 		{
-			return
-				Convert.ToBoolean(
-					ExecuteScalar(
-						@"SELECT COUNT(c.CONSTRAINT_NAME) 
-				FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c
-				join sys.objects as s on c.CONSTRAINT_NAME = s.Name and type = 'PK'
-				where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
-						table, column));
+			var filter = new ConstraintFilter {TableName = table, ColumnNames = new[] {column}, ConstraintType = "PK"};
+			return GetConstraints(filter).Any();
 		}
 
 		internal List<ColumnProvider> GetColumnProviders(string table)
@@ -982,22 +887,8 @@ FROM AllConstraints
 
 		private List<string> FindIndexes(string tableName, string columnName)
 		{
-			var query =
-				String.Format(
-					@"SELECT o.name as [TableName], i.name as [IndexName], c.name as [ColumnName]
-							FROM sysobjects o
-							JOIN sysindexes i ON i.id = o.id
-							JOIN sysindexkeys ik ON ik.id = i.id
-								AND ik.indid = i.indid
-							JOIN syscolumns c ON c.id = ik.id
-								AND c.colid = ik.colid
-							WHERE i.indid BETWEEN 2 AND 254
-								AND indexproperty(o.id, i.name, 'IsStatistics') = 0
-								AND indexproperty(o.id, i.name, 'IsHypothetical') = 0
-								AND o.Name = '{0}' and c.Name = '{1}'",
-					tableName, columnName);
-			return ExecuteQuery(query, tableName, columnName).AsReadable()
-				.Select(r => r["IndexName"].ToString()).ToList();
+			var filter = new IndexFilter {TableName = tableName, ColumnName = columnName};
+			return GetIndexes(filter).Select(i => i.Name).ToList();
 		}
 
 		private ColumnProvider GetColumnProvider(string tableName, string columnName)
@@ -1029,8 +920,8 @@ FROM AllConstraints
 				return false;
 			}
 			var query = String.Format("SELECT TOP 1 * FROM syscolumns WHERE id = object_id('{0}') AND name = '{1}'",
-									  table,
-									  column);
+			                          table,
+			                          column);
 			return ExecuteQuery(query).AsReadable().Any();
 		}
 
@@ -1043,9 +934,14 @@ FROM AllConstraints
 
 		public string[] GetTables()
 		{
-			const string query = "SELECT name FROM sysobjects WHERE xtype = 'U'";
+			const string query = "SELECT [name] FROM sysobjects WHERE xtype = 'U'";
 			return ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
 		}
 
+		public bool UniqueExists(string name)
+		{
+			var filter = new ConstraintFilter {Name = name, ConstraintType = "UQ"};
+			return GetConstraints(filter).Any();
+		}
 	}
 }

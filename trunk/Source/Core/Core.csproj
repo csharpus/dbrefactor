@@ -60,26 +60,8 @@
     <Compile Include="Api\SelectTable.cs" />
     <Compile Include="Api\Table.cs" />
     <Compile Include="Api\UpdateTable.cs" />
-    <Compile Include="Compatibility\BaseMigration.cs" />
-    <Compile Include="Compatibility\BaseMigrationAttribute.cs" />
     <Compile Include="Extended\TypeExtensions.cs" />
     <Compile Include="MigrationHelper.cs" />
-    <Compile Include="Migrator\Column.cs" />
-    <Compile Include="Migrator\DuplicatedVersionException.cs" />
-    <Compile Include="Migrator\IrreversibleMigrationException.cs" />
-    <Compile Include="Migrator\Loggers\ConsoleLogger.cs" />
-    <Compile Include="Migrator\Loggers\ILogger.cs" />
-    <Compile Include="Migrator\Loggers\NullLogger.cs" />
-    <Compile Include="Migrator\Migration.cs" />
-    <Compile Include="Migrator\MigrationAttribute.cs" />
-    <Compile Include="Migrator\MigrationComparer.cs" />
-    <Compile Include="Migrator\MigrationException.cs" />
-    <Compile Include="Migrator\Migrator.cs" />
-    <Compile Include="Migrator\Providers\ProviderFactory.cs" />
-    <Compile Include="Migrator\Providers\SqlServerTransformationProvider.cs" />
-    <Compile Include="Migrator\Providers\TransformationProvider.cs" />
-    <Compile Include="Migrator\Tools\SchemaDumper.cs" />
-    <Compile Include="Migrator\TypeHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Exceptions\DuplicatedVersionException.cs" />
     <Compile Include="Exceptions\IrreversibleMigrationException.cs" />
@@ -90,9 +72,12 @@
     <Compile Include="Migrator.cs" />
     <Compile Include="Providers\CodeGenerationService.cs" />
     <Compile Include="Providers\ColumnData.cs" />
+    <Compile Include="Providers\ConstraintQueryBuilder.cs" />
     <Compile Include="Providers\Database.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Providers\ForeignKey.cs" />
+    <Compile Include="Providers\ForeignKeyQueryBuilder.cs" />
+    <Compile Include="Providers\IndexQueryBuilder.cs" />
     <Compile Include="Providers\Properties\IdentityProvider.cs" />
     <Compile Include="Providers\Properties\PrimaryKeyProvider.cs" />
     <Compile Include="Providers\Properties\PropertyProvider.cs" />
@@ -139,6 +124,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="DbRefactor.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Compatibility\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -79,7 +79,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("User").Column("RoleId").AddForeignKeyTo("Role", "Id", OnDelete.Cascade);
+			Table("User").Column("RoleId").AddForeignKeyTo("Role", OnDelete.Cascade, "Id");
 		}
 
 		public override void Down()

@@ -21,10 +21,7 @@ namespace DbRefactor.Tests.Integration
 
 		private void DropAllTables()
 		{
-			foreach (var table in Provider.GetTables())
-			{
-				Provider.DropTable(table);
-			}
+			Provider.ExecuteNonQuery(new DataDumper(Provider).GenerateDropStatement());
 		}
 
 		private const string ConnectionString =
@@ -41,8 +38,6 @@ namespace DbRefactor.Tests.Integration
 	[TestFixture]
 	public class SqlServerTests : ProviderTests
 	{
-		
-
 		[Test]
 		public void should_create_table()
 		{
@@ -103,6 +98,36 @@ namespace DbRefactor.Tests.Integration
 			CreateMigration<CreateForeignKeyMigration>().Up();
 
 			Assert.That(Provider.ConstraintExists("FK_Dependent_Test"), Is.True);
+		}
+
+		[Test]
+		public void should_create_foreign_for_several_columns()
+		{
+			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
+			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
+			Database.CreateTable("A1").Int("B1").Int("C1").Execute();
+			Database.Table("A1").Column("B1").Column("C1").AddForeignKeyTo("A", "B", "C");
+		}
+
+		[Test]
+		public void should_drop_foreign_for_several_columns()
+		{
+			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
+			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
+			Database.CreateTable("A1").Int("B1").Int("C1").Execute();
+			Database.Table("A1").Column("B1").Column("C1").AddForeignKeyTo("A", "B", "C");
+			// Database.Table("A1").Column("B1").AddForeignKeyTo("A", "B");
+			Database.Table("A1").Column("B1").Column("C1").DropForeignKey("A", "B", "C");
+		}
+
+		[Test]
+		public void should_drop_foreign_key()
+		{
+			Database.CreateTable("A").Int("B").PrimaryKey().Execute();
+			Database.CreateTable("A1").Int("B1").Execute();
+			Database.Table("A1").Column("B1").AddForeignKeyTo("A", "B");
+			Database.Table("A1").Column("B1").DropForeignKey("A", "B");
+			Database.DropTable("A1");
 		}
 
 		[Test]
@@ -205,6 +230,28 @@ namespace DbRefactor.Tests.Integration
 		public void Can_create_primary_key_column()
 		{
 			Database.CreateTable("A").Int("B").PrimaryKey().Execute();
+		}
+
+		[Test]
+		public void Can_add_primary_key_on_two_columns()
+		{
+			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
+			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
+		}
+
+		[Test]
+		public void Can_drop_primary_key_on_several_columns()
+		{
+			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
+			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
+			Database.Table("A").Column("B").Column("C").DropPrimaryKey();
+		}
+
+		[Test]
+		[Ignore("Doesn't work")]
+		public void Can_create_primary_key_on_two_columns()
+		{
+			Database.CreateTable("A").Int("B").PrimaryKey().Int("C").PrimaryKey().Execute();
 		}
 
 		[Test]
@@ -336,11 +383,85 @@ namespace DbRefactor.Tests.Integration
 			Database.CreateTable("A").Text("B", "hello").Execute();
 		}
 
+		
+
+		[Test]
+		public void Can_change_type()
+		{
+			Database.CreateTable("A").Int("B").NotNull().Execute();
+			Database.Table("A").Column("B").ConvertTo().Long();
+		}
+
+		[Test]
+		public void Can_update_table()
+		{
+			Database.CreateTable("A").Int("B").NotNull().Execute();
+			Database.Table("A").Update(new {B = 1}).Where(new {B = 2}).Execute();
+		}
+
+		[Test]
+		public void Can_use_null_in_where_clause()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").Update(new {B = 1}).Where(new {B = DBNull.Value}).Execute();
+		}
+
+		[Test]
+		public void Can_use_null_in_update_clause()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").Update(new { B = DBNull.Value }).Where(new { B = 1 }).Execute();
+		}
+		
+		[Test]
+		public void Can_use_where_with_several_items()
+		{
+			Database.CreateTable("A").Int("B").Int("C").Execute();
+			Database.Table("A").Update(new { B = DBNull.Value }).Where(new { B = 1, C = 2 }).Execute();
+		}
+
+		[Test]
+		public void Can_use_insert()
+		{
+			Database.CreateTable("A").Int("B").Int("C").Execute();
+			Database.Table("A").Insert(new{B = 1, C = 1});
+		}
+
+		[Test]
+		public void Can_use_select_scalar()
+		{
+			Database.CreateTable("A").Int("B").Int("C").Execute();
+			Database.Table("A").Insert(new {B = 1, C = 1});
+			Database.Table("A").Insert(new { B = 2, C = 2 });
+			Database.Table("A").SelectScalar<int>("B").Where(new {C = 2}).Execute();
+		}
+
+		[Test]
+		public void Can_delete_record()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").Insert(new{B = 1});
+			Database.Table("A").Delete().Where(new {B = 1}).Execute();
+		}
+	}
+
+	public abstract class UpMigration : Migration
+	{
+		public override void Down()
+		{
+		}
+	}
+
+	[TestFixture]
+	public class SqlServerConstraintsTests : ProviderTests
+	{
 		[Test]
 		public void Can_add_unique_constraint()
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").AddUnique();
+			
+			Assert.That(Provider.UniqueExists("UQ_A_B"));
 		}
 
 		[Test]
@@ -348,6 +469,8 @@ namespace DbRefactor.Tests.Integration
 		{
 			Database.CreateTable("A").Int("B").Int("C").Execute();
 			Database.Table("A").Column("B").Column("C").AddUnique();
+
+			Assert.That(Provider.UniqueExists("UQ_A_B_C"));
 		}
 
 		[Test]
@@ -355,6 +478,8 @@ namespace DbRefactor.Tests.Integration
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").AddIndex();
+
+			Assert.That(Provider.IndexExists("IX_A_B"));
 		}
 
 		[Test]
@@ -362,6 +487,8 @@ namespace DbRefactor.Tests.Integration
 		{
 			Database.CreateTable("A").Int("B").Int("C").Execute();
 			Database.Table("A").Column("B").Column("C").AddIndex();
+
+			Assert.That(Provider.IndexExists("IX_A_B_C"));
 		}
 
 		[Test]
@@ -370,6 +497,8 @@ namespace DbRefactor.Tests.Integration
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").AddIndex();
 			Database.Table("A").Column("B").DropIndex();
+			
+			Assert.False(Provider.IndexExists("IX_A_B"));
 		}
 
 		[Test]
@@ -378,6 +507,8 @@ namespace DbRefactor.Tests.Integration
 			Database.CreateTable("A").Int("B").Int("C").Execute();
 			Database.Table("A").Column("B").Column("C").AddIndex();
 			Database.Table("A").Column("B").Column("C").DropIndex();
+			
+			Assert.False(Provider.IndexExists("IX_A_B_C"));
 		}
 
 		[Test]
@@ -463,72 +594,6 @@ namespace DbRefactor.Tests.Integration
 		{
 			Database.CreateTable("A").Int("B", 1).Execute();
 			Database.Table("A").Column("B").DropDefault();
-		}
-
-		[Test]
-		public void Can_change_type()
-		{
-			Database.CreateTable("A").Int("B").NotNull().Execute();
-			Database.Table("A").Column("B").ConvertTo().Long();
-		}
-
-		[Test]
-		public void Can_update_table()
-		{
-			Database.CreateTable("A").Int("B").NotNull().Execute();
-			Database.Table("A").Update(new {B = 1}).Where(new {B = 2}).Execute();
-		}
-
-		[Test]
-		public void Can_use_null_in_where_clause()
-		{
-			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").Update(new {B = 1}).Where(new {B = DBNull.Value}).Execute();
-		}
-
-		[Test]
-		public void Can_use_null_in_update_clause()
-		{
-			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").Update(new { B = DBNull.Value }).Where(new { B = 1 }).Execute();
-		}
-		
-		[Test]
-		public void Can_use_where_with_several_items()
-		{
-			Database.CreateTable("A").Int("B").Int("C").Execute();
-			Database.Table("A").Update(new { B = DBNull.Value }).Where(new { B = 1, C = 2 }).Execute();
-		}
-
-		[Test]
-		public void Can_use_insert()
-		{
-			Database.CreateTable("A").Int("B").Int("C").Execute();
-			Database.Table("A").Insert(new{B = 1, C = 1});
-		}
-
-		[Test]
-		public void Can_use_select_scalar()
-		{
-			Database.CreateTable("A").Int("B").Int("C").Execute();
-			Database.Table("A").Insert(new {B = 1, C = 1});
-			Database.Table("A").Insert(new { B = 2, C = 2 });
-			Database.Table("A").SelectScalar<int>("B").Where(new {C = 2}).Execute();
-		}
-
-		[Test]
-		public void Can_delete_record()
-		{
-			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").Insert(new{B = 1});
-			Database.Table("A").Delete().Where(new {B = 1}).Execute();
-		}
-	}
-
-	public abstract class UpMigration : Migration
-	{
-		public override void Down()
-		{
 		}
 	}
 }

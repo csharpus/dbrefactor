@@ -1,3 +1,5 @@
+using DbRefactor.Providers;
+
 namespace DbRefactor.Tests.Tools
 {
 	using NUnit.Framework;
@@ -10,7 +12,9 @@ namespace DbRefactor.Tests.Tools
 		[Ignore]
 		public void DumpTest()
 		{
-			DataDumper d = new DataDumper(@"Data Source=.\SQLExpress;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
+			TransformationProvider provider =
+				new ProviderFactory().Create(@"Data Source=.\SQLExpress;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
+			var d = new DataDumper(provider);
 			string result = d.Dump(true);
 		}
 	}

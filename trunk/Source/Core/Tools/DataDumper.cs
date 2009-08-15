@@ -24,9 +24,9 @@ namespace DbRefactor.Tools
 	{
 		private readonly TransformationProvider provider;
 
-		public DataDumper(string connectionString)
+		public DataDumper(TransformationProvider provider)
 		{
-			provider = new ProviderFactory().Create(connectionString);
+			this.provider = provider;
 		}
 
 		private bool hasIdentity;
@@ -75,6 +75,47 @@ namespace DbRefactor.Tools
 		private void EmptyLine()
 		{
 			writer.WriteLine();
+		}
+
+		public string GenerateDropStatement()
+		{
+			shouldDelete = true;
+			writer = new StringWriter();
+			List<string> tables = provider.GetTablesSortedByDependency();
+			foreach (string table in tables)
+			{
+				DisableConstraints(table);
+			}
+			foreach (string table in tables)
+			{
+				DropStatement(table);
+			}
+			return writer.ToString();
+		}
+
+		private void DropStatement(string table)
+		{
+			writer.WriteLine("DROP TABLE [{0}]", table);
+		}
+
+		public string GenerateDeleteStatement()
+		{
+			shouldDelete = true;
+			writer = new StringWriter();
+			List<string> tables = provider.GetTablesSortedByDependency();
+			foreach (string table in tables)
+			{
+				DisableConstraints(table);
+			}
+			foreach (string table in tables)
+			{
+				DeleteStatement(table);
+			}
+			foreach (string table in tables)
+			{
+				EnableConstraints(table);
+			}
+			return writer.ToString();
 		}
 
 		/// <param name="delete">Generate delete statement for all tables</param>

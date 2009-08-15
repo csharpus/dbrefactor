@@ -13,15 +13,12 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using DbRefactor.Compatibility;
 using DbRefactor.Exceptions;
 using DbRefactor.Providers;
 using DbRefactor.Tools.Loggers;
 
 namespace DbRefactor
 {
-	using OldMigrator = global::Migrator;
-	using System.Data.SqlClient;
 	/// <summary>
 	/// Migrations mediator.
 	/// </summary>
@@ -48,14 +45,10 @@ namespace DbRefactor
 		//    : this(CreateProvider(connectionString), null, migrationAssembly, false)
 		//{ }
 
-		private OldMigrator.Providers.SqlServerTransformationProvider _oldProvider;
-
 		internal Migrator(TransformationProvider provider, string category, Assembly migrationAssembly, ILogger logger)
 		{
 			this.provider = provider;
 			this.provider.Category = category;
-
-			_oldProvider = new OldMigrator.Providers.SqlServerTransformationProvider(((SqlServerEnvironment) provider.Environment).Connection as SqlConnection);
 
 			this.logger = logger;
 			Category = category;
@@ -79,7 +72,7 @@ namespace DbRefactor
 		private void BeginTransaction()
 		{
 			provider.BeginTransaction();
-			_oldProvider.Transaction = (provider.Environment as SqlServerEnvironment).Transaction;
+			
 		}
 
 		/// <summary>
@@ -107,7 +100,7 @@ namespace DbRefactor
 			}
 			int originalVersion = CurrentVersion;
 			bool goingUp = originalVersion < version;
-			BaseMigration migration;
+			Migration migration;
 			int v;	// the currently running migration number
 			bool firstRun = true;
 
@@ -149,10 +142,7 @@ namespace DbRefactor
 						(migration as Migration).ColumnProviderFactory = ProviderFactory.ColumnProviderFactory;
 						(migration as Migration).ColumnPropertyProviderFactory = provider.propertyFactory;
 					}
-					else
-					{
-						(migration as OldMigrator.Migration).TransformationProvider = _oldProvider;
-					}
+					
 
 					try
 					{
@@ -357,13 +347,13 @@ namespace DbRefactor
 			return new ProviderFactory().Create(connectionString);
 		}
 
-		private BaseMigration GetMigration(int version)
+		private Migration GetMigration(int version)
 		{
 			foreach (Type t in migrationsTypes)
 			{
 				if (GetMigrationVersion(t) == version)
 				{
-					return (BaseMigration)Activator.CreateInstance(t);
+					return (Migration)Activator.CreateInstance(t);
 				}
 			}
 			throw new Exception(String.Format("Migration {0} was not found", version));

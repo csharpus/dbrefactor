@@ -1,3 +1,4 @@
+using System;
 using DbRefactor.Api;
 
 namespace DbRefactor.Providers
@@ -6,6 +7,7 @@ namespace DbRefactor.Providers
 	{
 		NewTable CreateTable(string name);
 		ActionTable Table(string name);
+		void DropTable(string name);
 	}
 
 	public class Database : IDatabase
@@ -30,6 +32,11 @@ namespace DbRefactor.Providers
 		public ActionTable Table(string name)
 		{
 			return new ActionTable(transformationProvider, name, columnProviderFactory, columnPropertyProviderFactory);
+		}
+
+		public void DropTable(string name)
+		{
+			transformationProvider.DropTable(name);
 		}
 	}
 }

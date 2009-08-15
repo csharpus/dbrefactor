@@ -14,27 +14,20 @@
 namespace DbRefactor
 {
 	using System;
-	using OldMigrator = global::Migrator;
-	using DbRefactor.Compatibility;
 
 	internal class MigrationHelper
 	{
-		private static BaseMigrationAttribute GetMigrationAttribute(Type t)
+		private static MigrationAttribute GetMigrationAttribute(Type t)
 		{
-			MigrationAttribute attrib = (MigrationAttribute)Attribute
+			var attrib = (MigrationAttribute)Attribute
 				.GetCustomAttribute(t, typeof(MigrationAttribute));
-			if (attrib == null)
-			{
-				OldMigrator.MigrationAttribute oldAttribute = (OldMigrator.MigrationAttribute)Attribute
-				.GetCustomAttribute(t, typeof(OldMigrator.MigrationAttribute));
-				return oldAttribute;
-			}
+			
 			return attrib;
 		}
 
 		public static int GetMigrationVersion(Type t)
 		{
-			BaseMigrationAttribute attribute = GetMigrationAttribute(t);
+			MigrationAttribute attribute = GetMigrationAttribute(t);
 			if(attribute == null)
 			{
 				throw new ArgumentException("Specified type doesn't marked as a Migration", "t");
@@ -44,11 +37,11 @@ namespace DbRefactor
 
 		public static bool IsMigration(Type t)
 		{
-			BaseMigrationAttribute attribute = GetMigrationAttribute(t);
+			MigrationAttribute attribute = GetMigrationAttribute(t);
 			return attribute != null 
 				&& 
 					(typeof (Migration).IsAssignableFrom(t) 
-					|| typeof(OldMigrator.Migration).IsAssignableFrom(t))
+					)
 				&& !attribute.Ignore;
 		}
 	}

@@ -9,10 +9,8 @@
 //under the License.
 #endregion
 
-using System;
 using System.Reflection;
 using DbRefactor.Api;
-using DbRefactor.Compatibility;
 using DbRefactor.Providers;
 using System.Data;
 
@@ -71,7 +69,7 @@ namespace DbRefactor
 	///// </code>
 	///// </example>
 	
-	public abstract class Migration : BaseMigration
+	public abstract class Migration
 	{
 		internal TransformationProvider TransformationProvider { get; set; }
 		internal ColumnProviderFactory ColumnProviderFactory { get; set; }
@@ -139,14 +137,17 @@ namespace DbRefactor
 			Database.DeleteColumnConstraints(table, column);
 		}
 
-		public override NewTable CreateTable(string tableName)
+		public NewTable CreateTable(string tableName)
 		{
 			return new NewTable(TransformationProvider, ColumnProviderFactory, ColumnPropertyProviderFactory, tableName);
 		}
 
-		public override ActionTable Table(string tableName)
+		public ActionTable Table(string tableName)
 		{
 			return new ActionTable(TransformationProvider, tableName, ColumnProviderFactory, ColumnPropertyProviderFactory);
 		}
+
+		public abstract void Up();
+		public abstract void Down();
 	}
 }
