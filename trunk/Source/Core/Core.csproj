@@ -70,14 +70,12 @@
     <Compile Include="Infrastructure\Loggers\Logger.cs" />
     <Compile Include="Runner\MigrationHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Exceptions\DuplicatedVersionException.cs" />
-    <Compile Include="Exceptions\IrreversibleMigrationException.cs" />
     <Compile Include="Migration.cs" />
     <Compile Include="MigrationAttribute.cs" />
     <Compile Include="Runner\MigrationComparer.cs" />
     <Compile Include="Exceptions\MigrationException.cs" />
     <Compile Include="Migrator.cs" />
-    <Compile Include="Providers\CodeGenerationService.cs" />
+    <Compile Include="Infrastructure\CodeGenerationService.cs" />
     <Compile Include="Providers\ColumnData.cs" />
     <Compile Include="Engines\SqlServer\ConstraintQueryBuilder.cs" />
     <Compile Include="Providers\Database.cs" />
@@ -99,7 +97,7 @@
     <Compile Include="Providers\Columns\DecimalProvider.cs" />
     <Compile Include="Providers\Columns\DoubleProvider.cs" />
     <Compile Include="Providers\Columns\FloatProvider.cs" />
-    <Compile Include="Providers\ICodeGenerationService.cs" />
+    <Compile Include="Infrastructure\ICodeGenerationService.cs" />
     <Compile Include="OnDelete.cs" />
     <Compile Include="Engines\SqlServer\SqlServerForeignKeyConstraintMapper.cs" />
     <Compile Include="Providers\IDatabaseEnvironment.cs" />
@@ -124,9 +122,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="DbRefactor.snk" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Infrastructure\CodeGeneration\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

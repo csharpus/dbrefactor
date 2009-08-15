@@ -1,4 +1,5 @@
 ﻿using System;
+using DbRefactor.Exceptions;
 using DbRefactor.Extended;
 using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
@@ -21,7 +22,11 @@ namespace DbRefactor.Tests.Integration
 
 		private void DropAllTables()
 		{
-			Provider.ExecuteNonQuery(new DataDumper(Provider).GenerateDropStatement());
+			var sql = new DataDumper(Provider).GenerateDropStatement();
+			if (sql != String.Empty)
+			{
+				Provider.ExecuteNonQuery(sql);
+			}
 		}
 
 		private const string ConnectionString =
@@ -91,44 +96,6 @@ namespace DbRefactor.Tests.Integration
 			}
 		}
 
-		[Test]
-		public void should_create_foreign_key()
-		{
-			CreateMigration<CreateTableMigration>().Up();
-			CreateMigration<CreateForeignKeyMigration>().Up();
-
-			Assert.That(Provider.ConstraintExists("FK_Dependent_Test"), Is.True);
-		}
-
-		[Test]
-		public void should_create_foreign_for_several_columns()
-		{
-			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
-			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
-			Database.CreateTable("A1").Int("B1").Int("C1").Execute();
-			Database.Table("A1").Column("B1").Column("C1").AddForeignKeyTo("A", "B", "C");
-		}
-
-		[Test]
-		public void should_drop_foreign_for_several_columns()
-		{
-			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
-			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
-			Database.CreateTable("A1").Int("B1").Int("C1").Execute();
-			Database.Table("A1").Column("B1").Column("C1").AddForeignKeyTo("A", "B", "C");
-			// Database.Table("A1").Column("B1").AddForeignKeyTo("A", "B");
-			Database.Table("A1").Column("B1").Column("C1").DropForeignKey("A", "B", "C");
-		}
-
-		[Test]
-		public void should_drop_foreign_key()
-		{
-			Database.CreateTable("A").Int("B").PrimaryKey().Execute();
-			Database.CreateTable("A1").Int("B1").Execute();
-			Database.Table("A1").Column("B1").AddForeignKeyTo("A", "B");
-			Database.Table("A1").Column("B1").DropForeignKey("A", "B");
-			Database.DropTable("A1");
-		}
 
 		[Test]
 		public void should_create_schema_dump()
@@ -177,9 +144,6 @@ namespace DbRefactor.Tests.Integration
 			Console.Write(values);
 		}
 
-		
-
-
 
 		[Test]
 		public void should_generate_method_call_from_lambda()
@@ -205,7 +169,12 @@ namespace DbRefactor.Tests.Integration
 		private TMigration CreateMigration<TMigration>()
 			where TMigration : Migration, new()
 		{
-			return new TMigration {TransformationProvider = Provider, ColumnPropertyProviderFactory = ProviderFactory.ColumnPropertyProviderFactory, ColumnProviderFactory = ProviderFactory.ColumnProviderFactory};
+			return new TMigration
+			       	{
+			       		TransformationProvider = Provider,
+			       		ColumnPropertyProviderFactory = ProviderFactory.ColumnPropertyProviderFactory,
+			       		ColumnProviderFactory = ProviderFactory.ColumnProviderFactory
+			       	};
 		}
 
 		[Test]
@@ -213,7 +182,7 @@ namespace DbRefactor.Tests.Integration
 		{
 			Assert.False(Provider.TableExists("A"));
 			Assert.False(Provider.ColumnExists("A", "B"));
-			
+
 			Database.CreateTable("A").Int("B").Execute();
 
 			Assert.True(Provider.TableExists("A"));
@@ -260,26 +229,10 @@ namespace DbRefactor.Tests.Integration
 			Database.CreateTable("A").Int("B").Unique().Execute();
 		}
 
-		[Test]
-		public void Can_drop_unique_constraint()
-		{
-			Database.CreateTable("A").Int("B").Unique().Execute();
-		//Database.Table("A").Column("B").DropUnique();
-		}
+		
 
 		[Test]
-		public void Can_drop_unique_constraint_for_several_columns()
-		{
-			Database.CreateTable("A")
-				.Int("B")
-				.Int("C").Execute();
-			Database.Table("A").Column("B").Column("C").AddUnique();
-
-			Database.Table("A").Column("B").Column("C").DropUnique();
-		}
-
-		[Test]
-		[ExpectedException(typeof(DbRefactorException))]
+		[ExpectedException(typeof (DbRefactorException))]
 		public void Should_fail_when_dropping_unique_constraint_for_incorrect_columns()
 		{
 			Database.CreateTable("A")
@@ -323,7 +276,9 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		[Ignore("This value can be inserted - 0xC9CBBBCCCEB9C8CABCCCCEB9C9CBBB, but we need to check order of numbers when converting bytes to hex. It is better to insert and select one pixel png file")]
+		[Ignore(
+			"This value can be inserted - 0xC9CBBBCCCEB9C8CABCCCCEB9C9CBBB, but we need to check order of numbers when converting bytes to hex. It is better to insert and select one pixel png file"
+			)]
 		public void Can_generate_binary_sql()
 		{
 			Database.CreateTable("A").Binary("B", new byte[] {1}).Execute();
@@ -376,14 +331,13 @@ namespace DbRefactor.Tests.Integration
 		{
 			Database.CreateTable("A").String("B", 1, string.Empty).Execute();
 		}
-		
+
 		[Test]
 		public void Can_generate_text_sql()
 		{
 			Database.CreateTable("A").Text("B", "hello").Execute();
 		}
 
-		
 
 		[Test]
 		public void Can_change_type()
@@ -410,21 +364,21 @@ namespace DbRefactor.Tests.Integration
 		public void Can_use_null_in_update_clause()
 		{
 			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").Update(new { B = DBNull.Value }).Where(new { B = 1 }).Execute();
+			Database.Table("A").Update(new {B = DBNull.Value}).Where(new {B = 1}).Execute();
 		}
-		
+
 		[Test]
 		public void Can_use_where_with_several_items()
 		{
 			Database.CreateTable("A").Int("B").Int("C").Execute();
-			Database.Table("A").Update(new { B = DBNull.Value }).Where(new { B = 1, C = 2 }).Execute();
+			Database.Table("A").Update(new {B = DBNull.Value}).Where(new {B = 1, C = 2}).Execute();
 		}
 
 		[Test]
 		public void Can_use_insert()
 		{
 			Database.CreateTable("A").Int("B").Int("C").Execute();
-			Database.Table("A").Insert(new{B = 1, C = 1});
+			Database.Table("A").Insert(new {B = 1, C = 1});
 		}
 
 		[Test]
@@ -432,7 +386,7 @@ namespace DbRefactor.Tests.Integration
 		{
 			Database.CreateTable("A").Int("B").Int("C").Execute();
 			Database.Table("A").Insert(new {B = 1, C = 1});
-			Database.Table("A").Insert(new { B = 2, C = 2 });
+			Database.Table("A").Insert(new {B = 2, C = 2});
 			Database.Table("A").SelectScalar<int>("B").Where(new {C = 2}).Execute();
 		}
 
@@ -440,8 +394,22 @@ namespace DbRefactor.Tests.Integration
 		public void Can_delete_record()
 		{
 			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").Insert(new{B = 1});
+			Database.Table("A").Insert(new {B = 1});
 			Database.Table("A").Delete().Where(new {B = 1}).Execute();
+		}
+
+		[Test]
+		public void Can_add_column_to_table()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").AddColumn().Int("C").Execute();
+		}
+
+		[Test]
+		public void Can_add_not_null_column_to_table()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").AddColumn().Int("C").NotNull().Execute();
 		}
 	}
 
@@ -460,8 +428,17 @@ namespace DbRefactor.Tests.Integration
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").AddUnique();
-			
+
 			Assert.That(Provider.UniqueExists("UQ_A_B"));
+		}
+
+		[Test]
+		public void Can_drop_unique_constraint()
+		{
+			Database.CreateTable("A").Int("B").Unique().Execute();
+			Database.Table("A").Column("B").DropUnique();
+
+			Assert.False(Provider.UniqueExists("UQ_A_B"));
 		}
 
 		[Test]
@@ -474,12 +451,34 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
+		public void Can_drop_unique_constraint_for_several_columns()
+		{
+			Database.CreateTable("A")
+				.Int("B")
+				.Int("C").Execute();
+			Database.Table("A").Column("B").Column("C").AddUnique();
+
+			Database.Table("A").Column("B").Column("C").DropUnique();
+			Assert.False(Provider.UniqueExists("UQ_A_B_C"));
+		}
+
+		[Test]
 		public void Can_add_index()
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").AddIndex();
 
 			Assert.That(Provider.IndexExists("IX_A_B"));
+		}
+
+		[Test]
+		public void Can_drop_index_for_column()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").Column("B").AddIndex();
+			Database.Table("A").Column("B").DropIndex();
+
+			Assert.False(Provider.IndexExists("IX_A_B"));
 		}
 
 		[Test]
@@ -492,46 +491,22 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void Can_drop_index_for_column()
-		{
-			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").Column("B").AddIndex();
-			Database.Table("A").Column("B").DropIndex();
-			
-			Assert.False(Provider.IndexExists("IX_A_B"));
-		}
-
-		[Test]
 		public void Can_drop_index_for_several_columns()
 		{
 			Database.CreateTable("A").Int("B").Int("C").Execute();
 			Database.Table("A").Column("B").Column("C").AddIndex();
 			Database.Table("A").Column("B").Column("C").DropIndex();
-			
+
 			Assert.False(Provider.IndexExists("IX_A_B_C"));
 		}
 
 		[Test]
-		[ExpectedException(typeof(DbRefactorException))]
+		[ExpectedException(typeof (DbRefactorException))]
 		public void Should_not_delete_any_indexes_if_they_are_not_for_all_columns()
 		{
 			Database.CreateTable("A").Int("B").Int("C").Execute();
 			Database.Table("A").Column("B").AddIndex();
 			Database.Table("A").Column("B").Column("C").DropIndex();
-		}
-
-		[Test]
-		public void Can_add_column_to_table()
-		{
-			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").AddColumn().Int("C").Execute();
-		}
-
-		[Test]
-		public void Can_add_not_null_column_to_table()
-		{
-			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").AddColumn().Int("C").NotNull().Execute();
 		}
 
 		[Test]
@@ -594,6 +569,47 @@ namespace DbRefactor.Tests.Integration
 		{
 			Database.CreateTable("A").Int("B", 1).Execute();
 			Database.Table("A").Column("B").DropDefault();
+		}
+
+		[Test]
+		public void should_create_foreign_key()
+		{
+			Database.CreateTable("A").Int("B").PrimaryKey().Execute();
+			Database.CreateTable("A1").Int("B1").Execute();
+			Database.Table("A1").Column("B1").AddForeignKeyTo("A", "B");
+
+			Assert.That(Provider.ForeignKeyExists("FK_A1_A"));
+		}
+
+		[Test]
+		public void should_drop_foreign_key()
+		{
+			Database.CreateTable("A").Int("B").PrimaryKey().Execute();
+			Database.CreateTable("A1").Int("B1").Execute();
+			Database.Table("A1").Column("B1").AddForeignKeyTo("A", "B");
+			Database.Table("A1").Column("B1").DropForeignKey("A", "B");
+
+			Assert.False(Provider.ForeignKeyExists("FK_A1_A"));
+		}
+
+		[Test]
+		public void should_create_foreign_for_several_columns()
+		{
+			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
+			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
+			Database.CreateTable("A1").Int("B1").Int("C1").Execute();
+			Database.Table("A1").Column("B1").Column("C1").AddForeignKeyTo("A", "B", "C");
+		}
+
+		[Test]
+		public void should_drop_foreign_for_several_columns()
+		{
+			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
+			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
+			Database.CreateTable("A1").Int("B1").Int("C1").Execute();
+			Database.Table("A1").Column("B1").Column("C1").AddForeignKeyTo("A", "B", "C");
+			// Database.Table("A1").Column("B1").AddForeignKeyTo("A", "B");
+			Database.Table("A1").Column("B1").Column("C1").DropForeignKey("A", "B", "C");
 		}
 	}
 }

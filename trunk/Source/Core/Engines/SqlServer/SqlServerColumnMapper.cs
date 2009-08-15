@@ -12,6 +12,7 @@
 #endregion
 
 using System;
+using DbRefactor.Infrastructure;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Providers.Properties;

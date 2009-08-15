@@ -17,6 +17,8 @@ using System.Globalization;
 using System.Linq.Expressions;
 using DbRefactor.Api;
 using DbRefactor.Engines.SqlServer;
+using DbRefactor.Exceptions;
+using DbRefactor.Infrastructure;
 using DbRefactor.Providers.Properties;
 
 namespace DbRefactor.Providers.Columns

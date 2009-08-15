@@ -14,7 +14,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace DbRefactor.Providers
+namespace DbRefactor.Exceptions
 {
 	public class DbRefactorException : Exception
 	{

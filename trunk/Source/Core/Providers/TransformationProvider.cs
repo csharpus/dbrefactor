@@ -17,6 +17,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using DbRefactor.Engines.SqlServer;
+using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
 using DbRefactor.Infrastructure;
 using DbRefactor.Infrastructure.Loggers;
@@ -24,7 +25,6 @@ using DbRefactor.Providers.Columns;
 using DbRefactor.Providers.Properties;
 using DbRefactor.Tools.DesignByContract;
 using System.IO;
-using Constraint=DbRefactor.Engines.SqlServer.Constraint;
 
 
 namespace DbRefactor.Providers
@@ -777,11 +777,11 @@ namespace DbRefactor.Providers
 			return GetConstraints(filter).Select(c => c.Name).ToList();
 		}
 
-		private List<Constraint> GetConstraints(ConstraintFilter filter)
+		private List<DatabaseConstraint> GetConstraints(ConstraintFilter filter)
 		{
 			var query = new ConstraintQueryBuilder(filter).BuildQuery();
 			return ExecuteQuery(query).AsReadable()
-				.Select(r => new Constraint
+				.Select(r => new DatabaseConstraint
 				             	{
 				             		Name = r["ConstraintName"].ToString(),
 				             		TableSchema = r["TableSchema"].ToString(),
@@ -798,7 +798,7 @@ namespace DbRefactor.Providers
 			return GetConstraints(filter).Select(c => c.Name).ToList();
 		}
 
-		public List<Constraint> GetUniqueConstraints(string table, string[] columns)
+		public List<DatabaseConstraint> GetUniqueConstraints(string table, string[] columns)
 		{
 			var filter = new ConstraintFilter {TableName = table, ColumnNames = columns, ConstraintType = "UQ"};
 			return GetConstraints(filter).ToList();
@@ -943,6 +943,12 @@ namespace DbRefactor.Providers
 		{
 			var filter = new ConstraintFilter {Name = name, ConstraintType = "UQ"};
 			return GetConstraints(filter).Any();
+		}
+
+		public bool ForeignKeyExists(string name)
+		{
+			var filter = new ForeignKeyFilter {Name = name};
+			return GetForeignKeys(filter).Any();
 		}
 	}
 }

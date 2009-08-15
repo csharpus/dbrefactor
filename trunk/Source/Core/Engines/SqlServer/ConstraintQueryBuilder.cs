@@ -11,7 +11,7 @@ namespace DbRefactor.Engines.SqlServer
 		public string ConstraintType { get; set; }
 	}
 
-	public class Constraint
+	public class DatabaseConstraint
 	{
 		public string Name { get; set; }
 		public string TableSchema { get; set; }
@@ -88,7 +88,7 @@ FROM AllConstraints
 		private void AddColumnRestriction()
 		{
 			if (filter.ColumnNames == null) return;
-			restrictions.Add(String.Format("ColumnName IN ('{0}')", String.Format("', '", filter.ColumnNames)));
+			restrictions.Add(String.Format("ColumnName IN ('{0}')", String.Join("', '", filter.ColumnNames)));
 		}
 
 		private void AddTableRestriction()

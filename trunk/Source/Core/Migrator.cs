@@ -287,7 +287,7 @@ namespace DbRefactor
 				int version = GetMigrationVersion(t);
 
 				if (versions.Contains(version))
-					throw new DuplicatedVersionException(version);
+					throw new DbRefactorException(String.Format("Migration version #{0} is duplicated", version));
 
 				versions.Add(version);
 			}

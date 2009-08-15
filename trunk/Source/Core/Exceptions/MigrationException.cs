@@ -16,7 +16,7 @@ namespace DbRefactor.Exceptions
 	/// <summary>
 	/// Base class for migration errors.
 	/// </summary>
-	public class MigrationException : Exception
+	public class MigrationException : DbRefactorException
 	{
 		public MigrationException(string migration, int version, Exception innerException)
 			: base(String.Format("Exception in migration {0} (#{1})", migration, version), innerException) {}
