@@ -177,7 +177,7 @@ namespace DbRefactor.Tests.Core
 		//    }
 		//    using (mockery.Playback())
 		//    {
-		//        provider.AddTable("Table1", 
+		//        provider.CreateTable("Table1", 
 		//            new Column("ID", typeof(int)));
 		//    }
 		//}
@@ -191,7 +191,7 @@ namespace DbRefactor.Tests.Core
 		//    }
 		//    using (mockery.Playback())
 		//    {
-		//        provider.AddTable("Table1",
+		//        provider.CreateTable("Table1",
 		//            new Column("ID", typeof(int)),
 		//            new Column("Name", typeof(string), 10));
 		//    }

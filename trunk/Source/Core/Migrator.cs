@@ -328,10 +328,6 @@ namespace DbRefactor
 		}
 
 		#region Helper methods
-		private static TransformationProvider CreateProvider(string connectionString)
-		{
-			return new ProviderFactory().Create(connectionString);
-		}
 
 		private Migration GetMigration(int version)
 		{

@@ -20,8 +20,7 @@ namespace DbRefactor.Providers.Columns
 {
 	public class BooleanProvider : ColumnProvider
 	{
-		public BooleanProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService,
-							   ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
+		public BooleanProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
 			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
 		{
 		}

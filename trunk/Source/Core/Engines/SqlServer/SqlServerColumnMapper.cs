@@ -169,14 +169,14 @@ namespace DbRefactor.Engines.SqlServer
 			return new NotNullProvider(columnProperties);
 		}
 
-		public PrimaryKeyProvider CreatePrimaryKey()
+		public PrimaryKeyProvider CreatePrimaryKey(string name)
 		{
-			return new PrimaryKeyProvider(columnProperties);
+			return new PrimaryKeyProvider(name, columnProperties);
 		}
 
-		public UniqueProvider CreateUnique()
+		public UniqueProvider CreateUnique(string name)
 		{
-			return new UniqueProvider(columnProperties);
+			return new UniqueProvider(name, columnProperties);
 		}
 
 		public IdentityProvider CreateIdentity()

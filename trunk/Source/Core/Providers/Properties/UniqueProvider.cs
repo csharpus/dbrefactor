@@ -20,8 +20,11 @@ namespace DbRefactor.Providers.Properties
 {
 	public class UniqueProvider : PropertyProvider
 	{
-		public UniqueProvider(IColumnProperties columnProperties) : base(columnProperties)
+		private readonly string name;
+
+		public UniqueProvider(string name, IColumnProperties columnProperties) : base(columnProperties)
 		{
+			this.name = name;
 		}
 
 		public override Expression<Action<NewTable>> Method()
@@ -31,7 +34,7 @@ namespace DbRefactor.Providers.Properties
 
 		public override string CreateTableSql()
 		{
-			return ColumnProperties.Unique();
+			return ColumnProperties.Unique(name);
 		}
 
 		public override string AlterTableSql()

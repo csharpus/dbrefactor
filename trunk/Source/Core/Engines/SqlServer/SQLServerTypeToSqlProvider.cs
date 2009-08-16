@@ -153,8 +153,8 @@ namespace DbRefactor.Engines.SqlServer
 	public interface IColumnProperties
 	{
 		string NotNull();
-		string PrimaryKey();
-		string Unique();
+		string PrimaryKey(string name);
+		string Unique(string name);
 		string Identity();
 		string Default(string value);
 	}
@@ -163,27 +163,27 @@ namespace DbRefactor.Engines.SqlServer
 	{
 		public string NotNull()
 		{
-			return "not null";
+			return "NOT NULL";
 		}
 
-		public string PrimaryKey()
+		public string PrimaryKey(string name)
 		{
-			return "primary key";
+			return String.Format("CONSTRAINT {0} PRIMARY KEY", name);
 		}
 
-		public string Unique()
+		public string Unique(string name)
 		{
-			return "unique";
+			return String.Format("CONSTRAINT {0} UNIQUE", name);
 		}
 
 		public string Identity()
 		{
-			return "identity";
+			return "IDENTITY";
 		}
 
 		public string Default(string value)
 		{
-			return string.Format("default {0}", value);
+			return string.Format("DEFAULT {0}", value);
 		}
 	}
 }

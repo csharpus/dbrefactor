@@ -11,12 +11,10 @@
 
 #endregion
 
-using System;
 using System.Collections.Generic;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Infrastructure;
 using DbRefactor.Providers;
-using DbRefactor.Tools.DesignByContract;
 
 namespace DbRefactor.Api
 {
@@ -26,21 +24,6 @@ namespace DbRefactor.Api
 		private readonly ColumnProviderFactory columnProviderFactory;
 		private readonly ColumnPropertyProviderFactory columnPropertyProviderFactory;
 
-		private enum Operation
-		{
-			None,
-			RemoveForeignKey,
-			AddForeignKey,
-			DropForeignKey
-		}
-
-		private string foreignKeyColumn;
-		private string primaryKeyTable;
-		private string primaryKeyColumn;
-		private OnDelete foreignKeyConstraint = OnDelete.NoAction;
-		private string keyName;
-		private Operation operation = Operation.None;
-		
 		public ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory columnPropertyProviderFactory) : base(provider, tableName)
 		{
 			this.provider = provider;
@@ -137,11 +120,6 @@ namespace DbRefactor.Api
 		public AddColumnTable AddColumn()
 		{
 			return new AddColumnTable(provider, columnProviderFactory, columnPropertyProviderFactory, TableName);
-		}
-
-		public void RemoveColumnConstraints(string column)
-		{
-			provider.DeleteColumnConstraints(TableName, column);
 		}
 
 		public void RenameColumn(string oldName, string newName)

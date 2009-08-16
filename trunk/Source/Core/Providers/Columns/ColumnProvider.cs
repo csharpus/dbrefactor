@@ -32,7 +32,7 @@ namespace DbRefactor.Providers.Columns
 
 		protected ColumnProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
 		{
-			this.DefaultValue = defaultValue;
+			DefaultValue = defaultValue;
 			this.codeGenerationService = codeGenerationService;
 			this.sqlTypes = sqlTypes;
 			this.sqlGenerationService = sqlGenerationService;

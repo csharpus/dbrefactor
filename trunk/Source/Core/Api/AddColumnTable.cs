@@ -157,15 +157,27 @@ namespace DbRefactor.Api
 			return this;
 		}
 
+		// TODO: move this method to special name generation class to remove duplication
+		private string PrimaryKeyName()
+		{
+			return System.String.Format("PK_{0}_{1}", tableName, currentColumn.Name);
+		}
+
 		public AddColumnTable PrimaryKey()
 		{
-			currentColumn.AddProperty(propertyFactory.CreatePrimaryKey());
+			currentColumn.AddProperty(propertyFactory.CreatePrimaryKey(PrimaryKeyName()));
 			return this;
+		}
+
+		// TODO: move this method to special name generation class to remove duplication
+		private string UniqueName()
+		{
+			return System.String.Format("UQ_{0}_{1}", tableName, currentColumn.Name);
 		}
 
 		public AddColumnTable Unique()
 		{
-			currentColumn.AddProperty(propertyFactory.CreateUnique());
+			currentColumn.AddProperty(propertyFactory.CreateUnique(UniqueName()));
 			return this;
 		}
 

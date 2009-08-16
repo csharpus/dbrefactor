@@ -5,23 +5,23 @@ using DbRefactor.Engines.SqlServer;
 
 namespace DbRefactor.Providers.Properties
 {
-	public class PrimaryKeyProvider : PropertyProvider
+	public class IndexProvider : PropertyProvider
 	{
 		private readonly string name;
 
-		public PrimaryKeyProvider(string name, IColumnProperties columnProperties) : base(columnProperties)
+		public IndexProvider(string name, IColumnProperties properties) : base(properties)
 		{
 			this.name = name;
 		}
 
 		public override Expression<Action<NewTable>> Method()
 		{
-			return t => t.PrimaryKey();
+			return t => t.Index();
 		}
 
 		public override string CreateTableSql()
 		{
-			return ColumnProperties.PrimaryKey(name);
+			return String.Empty;
 		}
 
 		public override string AlterTableSql()

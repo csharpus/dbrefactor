@@ -135,7 +135,7 @@ namespace DbRefactor
 
 		protected void RemoveColumnConstraints(string table, string column)
 		{
-			Database.DeleteColumnConstraints(table, column);
+			Database.DropColumnConstraints(table, column);
 		}
 
 		public NewTable CreateTable(string tableName)

@@ -28,7 +28,7 @@ namespace DbRefactor.Api
 
 		public NewTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory propertyFactory, string tableName): base(provider, tableName)
 		{
-			this.factory = columnProviderFactory;
+			factory = columnProviderFactory;
 			this.propertyFactory = propertyFactory;
 			columns = new List<ColumnProvider>();
 		}
@@ -154,23 +154,46 @@ namespace DbRefactor.Api
 			return this;
 		}
 
+		// TODO: move this method to special name generation class to remove duplication
+		private string PrimaryKeyName()
+		{
+			return System.String.Format("PK_{0}_{1}", TableName, currentColumn.Name);
+		}
+
 		public NewTable PrimaryKey()
 		{
-			currentColumn.AddProperty(propertyFactory.CreatePrimaryKey());
+			currentColumn.AddProperty(propertyFactory.CreatePrimaryKey(PrimaryKeyName()));
 			return this;
+		}
+
+		// TODO: move this method to special name generation class to remove duplication
+		private string UniqueName()
+		{
+			return System.String.Format("UQ_{0}_{1}", TableName, currentColumn.Name);
 		}
 
 		public NewTable Unique()
 		{
-			currentColumn.AddProperty(propertyFactory.CreateUnique());
+			currentColumn.AddProperty(propertyFactory.CreateUnique(UniqueName()));
 			return this;
 		}
+
+		//public NewTable Index()
+		//{
+		//    currentColumn.AddProperty(propertyFactory.CreateIndex(IndexName()));
+		//    return this;
+		//}
 
 		#endregion Column properties
 
 		public void Execute()
 		{
-			Provider.AddTable(TableName, columns.ToArray());
+			Provider.CreateTable(TableName, columns.ToArray());
+		}
+
+		private string IndexName()
+		{
+			return System.String.Format("IX_{0}_{1}", TableName, currentColumn.Name);
 		}
 	}
 }

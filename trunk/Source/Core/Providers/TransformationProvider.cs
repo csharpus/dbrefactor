@@ -33,7 +33,7 @@ namespace DbRefactor.Providers
 	/// A 'tranformation' is an operation that modifies the database.
 	/// This class might be changed in feature
 	/// </summary>
-	public sealed class TransformationProvider
+	public sealed partial class TransformationProvider
 	{
 		public IDatabase GetDatabase()
 		{
@@ -64,17 +64,22 @@ namespace DbRefactor.Providers
 		/// </summary>
 		private ILogger Logger { get; set; }
 
-		public void AddTable(string name, params ColumnProvider[] columns)
+		public void CreateTable(string name, params ColumnProvider[] columns)
 		{
 			Check.RequireNonEmpty(name, "name");
 			Check.Require(columns.Length > 0, "At least one column should be passed");
-			var columnsSql = GetCreateColumnSql(columns);
-			AddTable(name, columnsSql);
+			var columnsSql = GetCreateColumnsSql(columns);
+			ExecuteNonQuery("CREATE TABLE [{0}] ({1})", name, columnsSql);
 		}
 
-		private static string GetCreateColumnSql(IEnumerable<ColumnProvider> columns)
+		/// <summary>
+		/// Removes an existing table from the database
+		/// </summary>
+		/// <param name="name">Table name</param>
+		public void DropTable(string name)
 		{
-			return columns.Select(col => col.GetCreateColumnSql()).ComaSeparated();
+			Check.RequireNonEmpty(name, "name");
+			ExecuteNonQuery("DROP TABLE [{0}]", name);
 		}
 
 		/// <summary>
@@ -86,8 +91,13 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(column, "column");
-			DeleteColumnConstraints(table, column);
+			DropColumnConstraints(table, column);
 			ExecuteNonQuery("ALTER TABLE {0} DROP COLUMN {1} ", table, column);
+		}
+
+		private static string GetCreateColumnsSql(IEnumerable<ColumnProvider> columns)
+		{
+			return columns.Select(col => col.GetCreateColumnSql()).ComaSeparated();
 		}
 
 		public void DropUnique(string table, params string[] columnNames)
@@ -132,16 +142,6 @@ namespace DbRefactor.Providers
 		}
 
 		/// <summary>
-		/// Removes an existing table from the database
-		/// </summary>
-		/// <param name="name">Table name</param>
-		public void DropTable(string name)
-		{
-			Check.RequireNonEmpty(name, "name");
-			ExecuteNonQuery("DROP TABLE [{0}]", name);
-		}
-
-		/// <summary>
 		/// Renames an existing column
 		/// </summary>
 		/// <param name="table">Table name</param>
@@ -152,8 +152,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(oldColumnName, "oldColumnName");
 			Check.RequireNonEmpty(newColumnName, "newColumnName");
-			ExecuteNonQuery("EXEC sp_rename '{0}.{1}', '{2}', 'COLUMN'",
-			                table, oldColumnName, newColumnName);
+			ExecuteNonQuery("EXEC sp_rename '{0}.{1}', '{2}', 'COLUMN'", table, oldColumnName, newColumnName);
 		}
 
 		/// <summary>
@@ -165,34 +164,7 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(oldName, "oldName");
 			Check.RequireNonEmpty(newName, "newName");
-			ExecuteNonQuery("EXEC sp_rename '{0}', '{1}', 'OBJECT'",
-			                oldName, newName);
-		}
-
-		public bool IndexExists(string name)
-		{
-			var filter = new IndexFilter {Name = name};
-			return GetIndexes(filter).Any();
-		}
-
-		/// <summary>
-		/// Determines if a table exists.
-		/// </summary>
-		/// <param name="table">Table name</param>
-		/// <returns><c>true</c> if the constraint exists.</returns>
-		public bool TableExists(string table)
-		{
-			return ObjectExists(table);
-		}
-
-		/// <summary>
-		/// Determines if a constraint exists.
-		/// </summary>
-		/// <param name="name">Constraint name</param>
-		/// <returns><c>true</c> if the constraint exists.</returns>
-		public bool ConstraintExists(string name)
-		{
-			return ObjectExists(name);
+			ExecuteNonQuery("EXEC sp_rename '{0}', '{1}', 'OBJECT'", oldName, newName);
 		}
 
 		private void AlterColumn(string table, string sqlColumn)
@@ -202,63 +174,7 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("ALTER TABLE [{0}] ALTER COLUMN {1}", table, sqlColumn);
 		}
 
-		private List<Relation> GetTablesRelations()
-		{
-			var keys = GetForeignKeys();
-			var relations = new List<Relation>();
-			foreach (var key in keys)
-			{
-				relations.Add(new Relation(
-				              	key.PrimaryTable,
-				              	key.ForeignTable));
-			}
-			return relations;
-		}
-
-		public List<string> GetTablesSortedByDependency()
-		{
-			return SortTablesByDependency(new List<string>(GetTables()));
-		}
-
-		private List<string> SortTablesByDependency(List<string> tables)
-		{
-			List<Relation> relations = GetTablesRelations();
-			return DependencySorter.Run(tables, relations);
-		}
-
-		public class DependencySorter
-		{
-			public static List<string> Run(List<string> tables, List<Relation> relations)
-			{
-				CheckCyclicDependencyAbsence(relations);
-				var sortedTables = new List<string>(tables);
-				sortedTables.Sort(delegate(string a, string b)
-				                  	{
-				                  		if (a == b) return 0;
-				                  		return IsChildParent(a, b, relations) ? -1 : 1;
-				                  	});
-				return sortedTables;
-			}
-
-			private static void CheckCyclicDependencyAbsence(List<Relation> relations)
-			{
-				//TODO: implement
-			}
-
-			private static bool IsChildParent(string table1, string table2, IEnumerable<Relation> relations)
-			{
-				foreach (Relation r in relations)
-				{
-					if (r.Child == table1 && r.Parent == table2)
-					{
-						return true;
-					}
-				}
-				return false;
-			}
-		}
-
-		public void DeleteColumnConstraints(string table, string column)
+		public void DropColumnConstraints(string table, string column)
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(column, "column");
@@ -267,11 +183,6 @@ namespace DbRefactor.Providers
 			{
 				DropConstraint(table, constraint);
 			}
-		}
-
-		private void AddTable(string name, string columns)
-		{
-			ExecuteNonQuery("CREATE TABLE [{0}] ({1})", name, columns);
 		}
 
 		/// <summary>
@@ -370,9 +281,9 @@ namespace DbRefactor.Providers
 		{
 			if (IsPrimaryKey(table, provider.Name))
 			{
-				provider.AddProperty(propertyFactory.CreatePrimaryKey());
+				provider.AddProperty(propertyFactory.CreatePrimaryKey(PrimaryKeyName(table, provider.Name)));
 			}
-			else if (!IsNull(table, provider.Name))
+			else if (!IsNullable(table, provider.Name))
 			{
 				provider.AddProperty(propertyFactory.CreateNotNull());
 			}
@@ -384,8 +295,20 @@ namespace DbRefactor.Providers
 
 			if (IsUnique(table, provider.Name))
 			{
-				provider.AddProperty(propertyFactory.CreateUnique());
+				provider.AddProperty(propertyFactory.CreateUnique(UniqueName(table, provider.Name)));
 			}
+		}
+
+		// TODO: move this method to special name generation class to remove duplication
+		private static string PrimaryKeyName(string table, string column)
+		{
+			return String.Format("PK_{0}_{1}", table, column);
+		}
+
+		// TODO: move this method to special name generation class to remove duplication
+		private static string UniqueName(string table, string column)
+		{
+			return String.Format("UQ_{0}_{1}", table, column);
 		}
 
 		private static object GetDefaultValue(object databaseValue)
@@ -426,13 +349,6 @@ namespace DbRefactor.Providers
 		public object ExecuteScalar(string sql, params string[] values)
 		{
 			return environment.ExecuteScalar(String.Format(sql, values));
-		}
-
-		public int Delete(string table, string[] where)
-		{
-			Check.RequireNonEmpty(table, "table");
-			Check.Require(where.Length > 0, "You have to pass at least one criteria for delete");
-			return ExecuteNonQuery("DELETE FROM [{0}] WHERE {1}", table, String.Join(" AND ", where));
 		}
 
 		public int Insert(string table, params string[] columnValues)
@@ -479,50 +395,6 @@ namespace DbRefactor.Providers
 		public void Commit()
 		{
 			environment.CommitTransaction();
-		}
-
-		private string category;
-
-		/// <summary>
-		/// Get or set the current version of the database.
-		/// This determines if the migrator should migrate up or down
-		/// in the migration numbers.
-		/// </summary>
-		/// <remark>
-		/// This value should not be modified inside a migration.
-		/// </remark>
-		public int CurrentVersion
-		{
-			get
-			{
-				CreateSchemaInfoTable();
-				object version = SelectScalar("Version", "SchemaInfo", String.Format("Category='{0}'", category));
-				return Convert.ToInt32(version);
-			}
-			set
-			{
-				CreateSchemaInfoTable();
-				int count = Update("SchemaInfo", new[] {"Version=" + value}, String.Format("Category='{0}'", category));
-				if (count == 0)
-				{
-					Insert("SchemaInfo", "Version=" + value, "Category='" + category + "'");
-				}
-			}
-		}
-
-		public string Category
-		{
-			get { return category; }
-			set { category = value ?? String.Empty; }
-		}
-
-		private void CreateSchemaInfoTable()
-		{
-			if (TableExists("SchemaInfo")) return;
-			GetDatabase().CreateTable("SchemaInfo")
-				.Int("Version").PrimaryKey()
-				.String("Category", 50, String.Empty)
-				.Execute();
 		}
 
 		public void ExecuteFile(string fileName)
@@ -595,7 +467,7 @@ namespace DbRefactor.Providers
 			var indexesList = new List<List<string>>();
 			foreach (var column in columns)
 			{
-				var indexes = FindIndexes(table, column);
+				var indexes = GetIndexes(table, column);
 				indexesList.Add(indexes);
 			}
 			var indexesPresentInAllColumns = GetIndexesPresentInAllColumns(indexesList);
@@ -609,10 +481,10 @@ namespace DbRefactor.Providers
 			}
 		}
 
-		private static List<string> GetIndexesPresentInAllColumns(IList<List<string>> list)
+		private static List<string> GetIndexesPresentInAllColumns(IList<List<string>> indexesList)
 		{
-			var startIndexes = list[0];
-			foreach (var indexList in list)
+			var startIndexes = indexesList[0];
+			foreach (var indexList in indexesList)
 			{
 				var indexesThatExists = indexList.Intersect(startIndexes).ToList();
 				startIndexes = indexesThatExists;
@@ -769,186 +641,6 @@ namespace DbRefactor.Providers
 			{
 				DropConstraint(foreignKeyTable, key);
 			}
-		}
-
-		private List<string> GetConstraintsByType(string table, string[] columns, string type)
-		{
-			var filter = new ConstraintFilter {TableName = table, ColumnNames = columns, ConstraintType = type};
-			return GetConstraints(filter).Select(c => c.Name).ToList();
-		}
-
-		private List<DatabaseConstraint> GetConstraints(ConstraintFilter filter)
-		{
-			var query = new ConstraintQueryBuilder(filter).BuildQuery();
-			return ExecuteQuery(query).AsReadable()
-				.Select(r => new DatabaseConstraint
-				             	{
-				             		Name = r["ConstraintName"].ToString(),
-				             		TableSchema = r["TableSchema"].ToString(),
-				             		TableName = r["TableName"].ToString(),
-				             		ColumnName = r["ColumnName"].ToString(),
-				             		ConstraintType = r["ConstraintType"].ToString()
-				             	}).ToList();
-		}
-
-
-		public List<string> GetConstraints(string table, string[] columns)
-		{
-			var filter = new ConstraintFilter {TableName = table, ColumnNames = columns};
-			return GetConstraints(filter).Select(c => c.Name).ToList();
-		}
-
-		public List<DatabaseConstraint> GetUniqueConstraints(string table, string[] columns)
-		{
-			var filter = new ConstraintFilter {TableName = table, ColumnNames = columns, ConstraintType = "UQ"};
-			return GetConstraints(filter).ToList();
-		}
-
-		private List<ForeignKey> GetForeignKeys(ForeignKeyFilter filter)
-		{
-			var query = new ForeignKeyQueryBuilder(filter).BuildQuery();
-			return ExecuteQuery(query).AsReadable()
-				.Select(r => new ForeignKey
-				             	{
-				             		Name = r["Name"].ToString(),
-				             		ForeignTable = r["ForeignTable"].ToString(),
-				             		ForeignColumn = r["ForeignColumn"].ToString(),
-				             		PrimaryTable = r["PrimaryTable"].ToString(),
-				             		PrimaryColumn = r["PrimaryColumn"].ToString()
-				             	}).ToList();
-		}
-
-		private List<Index> GetIndexes(IndexFilter filter)
-		{
-			var query = new IndexQueryBuilder(filter).BuildQuery();
-			return ExecuteQuery(query).AsReadable()
-				.Select(r => new Index
-				             	{
-				             		Name = r["Name"].ToString(),
-				             		TableName = r["TableName"].ToString(),
-				             		ColumnName = r["ColumnName"].ToString()
-				             	}).ToList();
-		}
-
-		public List<ForeignKey> GetForeignKeys()
-		{
-			return GetForeignKeys(new ForeignKeyFilter());
-		}
-
-		private bool IsUnique(string table, string column)
-		{
-			var filter = new ConstraintFilter {TableName = table, ColumnNames = new[] {column}, ConstraintType = "UQ"};
-			return GetConstraints(filter).Any();
-		}
-
-		private bool IsPrimaryKey(string table, string column)
-		{
-			var filter = new ConstraintFilter {TableName = table, ColumnNames = new[] {column}, ConstraintType = "PK"};
-			return GetConstraints(filter).Any();
-		}
-
-		internal List<ColumnProvider> GetColumnProviders(string table)
-		{
-			var providers = new List<ColumnProvider>();
-
-			using (
-				IDataReader reader =
-					ExecuteQuery(
-						"SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}';",
-						table))
-			{
-				while (reader.Read())
-				{
-					ColumnProvider provider = GetProvider(reader);
-					providers.Add(provider);
-				}
-			}
-			foreach (var provider in providers)
-			{
-				AddProviderProperties(table, provider);
-			}
-			return providers;
-		}
-
-		private bool IsIdentity(string table, string column)
-		{
-			return Convert.ToBoolean(ExecuteScalar(@"SELECT COLUMNPROPERTY(OBJECT_ID('{0}'),'{1}','IsIdentity')", table, column));
-		}
-
-		private bool IsNull(string table, string column)
-		{
-			return Convert.ToBoolean(ExecuteScalar(@"SELECT COLUMNPROPERTY(OBJECT_ID('{0}'),'{1}','AllowsNull')", table, column));
-		}
-
-		public bool TableHasIdentity(string table)
-		{
-			Check.RequireNonEmpty(table, "table");
-			return Convert.ToInt32(ExecuteScalar("SELECT OBJECTPROPERTY(object_id('{0}'), 'TableHasIdentity')", table)) == 1;
-		}
-
-		private List<string> FindIndexes(string tableName, string columnName)
-		{
-			var filter = new IndexFilter {TableName = tableName, ColumnName = columnName};
-			return GetIndexes(filter).Select(i => i.Name).ToList();
-		}
-
-		private ColumnProvider GetColumnProvider(string tableName, string columnName)
-		{
-			ColumnProvider provider;
-			using (
-				IDataReader reader =
-					ExecuteQuery(
-						"SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}' and column_name = '{1}'",
-						tableName, columnName))
-			{
-				if (!reader.Read())
-				{
-					throw new DbRefactorException(String.Format("Couldn't find column '{0}' in table '{1}'", columnName, tableName));
-				}
-				provider = GetProvider(reader);
-			}
-			AddProviderProperties(tableName, provider);
-			return provider;
-		}
-
-		public bool ColumnExists(string table, string column)
-		{
-			Check.RequireNonEmpty(table, "table");
-			Check.RequireNonEmpty(column, "column");
-			if (!TableExists(table))
-			{
-				Logger.Warn("Table {0} does not exists", table);
-				return false;
-			}
-			var query = String.Format("SELECT TOP 1 * FROM syscolumns WHERE id = object_id('{0}') AND name = '{1}'",
-			                          table,
-			                          column);
-			return ExecuteQuery(query).AsReadable().Any();
-		}
-
-		private bool ObjectExists(string name)
-		{
-			Check.RequireNonEmpty(name, "name");
-			var query = String.Format("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')", name);
-			return ExecuteQuery(query).AsReadable().Any();
-		}
-
-		public string[] GetTables()
-		{
-			const string query = "SELECT [name] FROM sysobjects WHERE xtype = 'U'";
-			return ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
-		}
-
-		public bool UniqueExists(string name)
-		{
-			var filter = new ConstraintFilter {Name = name, ConstraintType = "UQ"};
-			return GetConstraints(filter).Any();
-		}
-
-		public bool ForeignKeyExists(string name)
-		{
-			var filter = new ForeignKeyFilter {Name = name};
-			return GetForeignKeys(filter).Any();
 		}
 	}
 }
