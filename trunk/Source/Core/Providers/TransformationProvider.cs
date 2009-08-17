@@ -21,7 +21,6 @@ using DbRefactor.Engines.SqlServer;
 using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
 using DbRefactor.Infrastructure;
-using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Providers.Properties;
 using DbRefactor.Tools.DesignByContract;
@@ -30,10 +29,6 @@ using System.IO;
 
 namespace DbRefactor.Providers
 {
-	/// <summary>
-	/// A 'tranformation' is an operation that modifies the database.
-	/// This class might be changed in feature
-	/// </summary>
 	public sealed partial class TransformationProvider
 	{
 		public IDatabase GetDatabase()
@@ -43,14 +38,13 @@ namespace DbRefactor.Providers
 
 		private readonly IDatabaseEnvironment environment;
 		private readonly SqlServerColumnMapper sqlServerColumnMapper;
-		internal readonly ColumnPropertyProviderFactory propertyFactory;
+		private readonly ColumnPropertyProviderFactory propertyFactory;
 
-		internal TransformationProvider(IDatabaseEnvironment environment, ILogger logger,
+		internal TransformationProvider(IDatabaseEnvironment environment,
 		                                SqlServerColumnMapper sqlServerColumnMapper,
 		                                ColumnPropertyProviderFactory propertyFactory)
 		{
 			this.environment = environment;
-			Logger = logger;
 			this.sqlServerColumnMapper = sqlServerColumnMapper;
 			this.propertyFactory = propertyFactory;
 		}
@@ -60,10 +54,7 @@ namespace DbRefactor.Providers
 			get { return environment; }
 		}
 
-		/// <summary>
-		/// Returns the event logger
-		/// </summary>
-		private ILogger Logger { get; set; }
+		
 
 		public void CreateTable(string name, params ColumnProvider[] columns)
 		{

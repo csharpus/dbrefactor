@@ -56,11 +56,6 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(column, "column");
-			if (!TableExists(table))
-			{
-				Logger.Warn("Table {0} does not exists", table);
-				return false;
-			}
 			var query = String.Format("SELECT TOP 1 * FROM syscolumns WHERE id = object_id('{0}') AND name = '{1}'",
 									  table,
 									  column);

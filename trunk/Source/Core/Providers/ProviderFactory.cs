@@ -21,13 +21,6 @@ namespace DbRefactor.Providers
 		public TransformationProvider Create(string connectionString)
 		{
 			return Create(connectionString, Logger.NullLogger);
-			//string providerName = GuessProviderName(name);
-
-			//return (TransformationProvider)Activator.CreateInstance(
-			//    Type.GetType(
-			//        String.Format("Migrator.Providers.{0}TransformationProvider, Migrator", 
-			//            providerName), true),
-			//    new object[] { connectionString });
 		}
 
 		internal static ColumnProviderFactory ColumnProviderFactory
@@ -59,7 +52,7 @@ namespace DbRefactor.Providers
 			var sqlServerColumnMapper = new SqlServerColumnMapper(codeGenerationService, sqlServerTypes, sqlGenerationService);
 			var columnPropertyProviderFactory = new ColumnPropertyProviderFactory(new SqlServerColumnProperties());
 			columnProviderFactory = new ColumnProviderFactory(codeGenerationService, sqlServerTypes, sqlGenerationService);
-			return new TransformationProvider(sqlServerEnvironment, logger, sqlServerColumnMapper, columnPropertyProviderFactory);
+			return new TransformationProvider(sqlServerEnvironment, sqlServerColumnMapper, columnPropertyProviderFactory);
 		}
 
 		public Migrator CreateMigrator(string provider, string connectionString, string category, Assembly assembly, bool trace)
@@ -67,23 +60,6 @@ namespace DbRefactor.Providers
 			var logger = new Logger(trace);
 			logger.Attach(new ConsoleWriter());
 			return new Migrator(Create(connectionString, logger), category, assembly, logger);
-		}
-
-		private string GuessProviderName(string name)
-		{
-			if (name == "NHibernate.Driver.MySqlDataDriver")
-			{
-				return "MySql";
-			}
-			if (name == "NHibernate.Driver.NpgsqlDriver")
-			{
-				return "PostgreSQL";
-			}
-			if (name == "NHibernate.Driver.SqlClientDriver")
-			{
-				return "SqlServer";
-			}
-			return name;
 		}
 	}
 }
