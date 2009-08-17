@@ -53,7 +53,7 @@ UNION ALL
 		Schemas.[name] AS TableSchema,
 		Objects.[name] As TableName,
 		Columns.[name] AS ColumnName,
-		Objects.[type] AS ConstraintType
+		'DF' AS ConstraintType
 	FROM sys.default_constraints AS DefaultConstraints
 	JOIN sys.objects AS Objects
 		ON Objects.object_id = DefaultConstraints.parent_object_id

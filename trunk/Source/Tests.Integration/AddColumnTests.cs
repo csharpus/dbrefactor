@@ -15,6 +15,14 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
+		public void Can_create_column_with_several_properties()
+		{
+			Database.CreateTable("A").Int("B").Unique().NotNull().Execute();
+
+			Assert.True(Provider.ColumnExists("A", "B"));
+		}
+
+		[Test]
 		public void Can_add_not_null_column_to_table()
 		{
 			Database.CreateTable("A").Int("B").Execute();
@@ -46,12 +54,8 @@ namespace DbRefactor.Tests.Integration
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").AddColumn().Int("C", 1).Execute();
-		}
 
-		[Test]
-		public void Can_create_column_with_several_properties()
-		{
-			Database.CreateTable("A").Int("B").Unique().NotNull().Execute();
+			Assert.True(Provider.IsDefault("A", "B"));
 		}
 
 		[Test]

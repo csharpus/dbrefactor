@@ -58,6 +58,7 @@
     <Compile Include="AddColumnTests.cs" />
     <Compile Include="CreateTableTests.cs" />
     <Compile Include="CrudTests.cs" />
+    <Compile Include="DataDumperTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProviderTestBase.cs" />
     <Compile Include="GenericProviderTests.cs" />

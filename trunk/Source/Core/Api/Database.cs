@@ -1,14 +1,14 @@
-using System;
-using DbRefactor.Api;
 using DbRefactor.Engines.SqlServer;
+using DbRefactor.Providers;
 
-namespace DbRefactor.Providers
+namespace DbRefactor.Api
 {
 	public interface IDatabase
 	{
 		NewTable CreateTable(string name);
 		ActionTable Table(string name);
 		void DropTable(string name);
+		ExecuteEngine Execute();
 	}
 
 	public class Database : IDatabase
@@ -38,6 +38,11 @@ namespace DbRefactor.Providers
 		public void DropTable(string name)
 		{
 			transformationProvider.DropTable(name);
+		}
+
+		public ExecuteEngine Execute()
+		{
+			return new ExecuteEngine(transformationProvider);
 		}
 	}
 }

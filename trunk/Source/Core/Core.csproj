@@ -54,6 +54,7 @@
     <Compile Include="Api\ActionTable.cs" />
     <Compile Include="Api\AddColumnTable.cs" />
     <Compile Include="Api\DeleteTable.cs" />
+    <Compile Include="Api\ExecuteEngine.cs" />
     <Compile Include="Api\NewTable.cs" />
     <Compile Include="Api\QueryTable.cs" />
     <Compile Include="Api\SelectScalarTable.cs" />
@@ -81,7 +82,7 @@
     <Compile Include="Infrastructure\CodeGenerationService.cs" />
     <Compile Include="Providers\ColumnData.cs" />
     <Compile Include="Engines\SqlServer\ConstraintQueryBuilder.cs" />
-    <Compile Include="Providers\Database.cs" />
+    <Compile Include="Api\Database.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Providers\ForeignKey.cs" />
     <Compile Include="Engines\SqlServer\ForeignKeyQueryBuilder.cs" />

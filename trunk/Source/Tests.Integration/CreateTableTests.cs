@@ -42,5 +42,12 @@ namespace DbRefactor.Tests.Integration
 
 			Assert.That(Provider.UniqueExists("UQ_A_B"));
 		}
+
+		[Test]
+		[Ignore("Doesn't work")]
+		public void Can_create_primary_key_on_two_columns()
+		{
+			Database.CreateTable("A").Int("B").PrimaryKey().Int("C").PrimaryKey().Execute();
+		}
 	}
 }

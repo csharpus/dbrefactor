@@ -110,9 +110,8 @@ namespace DbRefactor.Tests.Integration
 		{
 			return new TMigration
 			       	{
-			       		TransformationProvider = Provider,
-			       		ColumnPropertyProviderFactory = ProviderFactory.ColumnPropertyProviderFactory,
-			       		ColumnProviderFactory = ProviderFactory.ColumnProviderFactory
+						Database = Database,
+			       		Provider = Provider
 			       	};
 		}
 
@@ -126,15 +125,6 @@ namespace DbRefactor.Tests.Integration
 
 			Assert.True(Provider.TableExists("A"));
 			Assert.True(Provider.ColumnExists("A", "B"));
-		}
-
-		
-
-		[Test]
-		[Ignore("Doesn't work")]
-		public void Can_create_primary_key_on_two_columns()
-		{
-			Database.CreateTable("A").Int("B").PrimaryKey().Int("C").PrimaryKey().Execute();
 		}
 	}
 

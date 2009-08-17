@@ -101,5 +101,11 @@ namespace DbRefactor.Providers
 			var filter = new ConstraintFilter { TableName = table, ColumnNames = new[] { column }, ConstraintType = "UQ" };
 			return GetConstraints(filter).Any();
 		}
+
+		public bool IsDefault(string table, string column)
+		{
+			var filter = new ConstraintFilter {TableName = table, ColumnNames = new[] {column}, ConstraintType = "DF"};
+			return GetConstraints(filter).Any();
+		}
 	}
 }

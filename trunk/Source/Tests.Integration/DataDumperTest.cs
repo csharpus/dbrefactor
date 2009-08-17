@@ -1,10 +1,9 @@
 using DbRefactor.Providers;
+using DbRefactor.Tools;
+using NUnit.Framework;
 
-namespace DbRefactor.Tests.Tools
+namespace DbRefactor.Tests.Integration
 {
-	using NUnit.Framework;
-	using DbRefactor.Tools;
-
 	[TestFixture]
 	public class DataDumperTest
 	{

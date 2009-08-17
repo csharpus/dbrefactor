@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using DbRefactor.Api;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
@@ -137,7 +138,7 @@ namespace DbRefactor.Providers
 			var filter = new ConstraintFilter {TableName = table, ConstraintType = "PK"};
 			var constraints = GetConstraints(filter).Select(c => c.Name).Distinct().ToList();
 			if (constraints.Count == 0)
-				throw new Exception(String.Format("Could not find primary key constraint on table '{0}'", table));
+				throw new DbRefactorException(String.Format("Could not find primary key constraint on table '{0}'", table));
 			return constraints[0];
 		}
 
@@ -353,6 +354,7 @@ namespace DbRefactor.Providers
 
 		public int Insert(string table, params string[] columnValues)
 		{
+			// TODO: fix this method (should use object instead of string array)
 			Check.RequireNonEmpty(table, "table");
 			Check.Require(columnValues.Length > 0, "You have to pass at least one column value");
 			var columns = new string[columnValues.Length];

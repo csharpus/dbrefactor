@@ -11,9 +11,7 @@
 
 using System.Reflection;
 using DbRefactor.Api;
-using DbRefactor.Engines.SqlServer;
 using DbRefactor.Providers;
-using System.Data;
 
 namespace DbRefactor
 {
@@ -72,48 +70,17 @@ namespace DbRefactor
 	
 	public abstract class Migration
 	{
-		internal TransformationProvider TransformationProvider { get; set; }
-		internal ColumnProviderFactory ColumnProviderFactory { get; set; }
-		internal ColumnPropertyProviderFactory ColumnPropertyProviderFactory { get; set; }
-
-		private TransformationProvider Database
-		{
-			get
-			{
-				return TransformationProvider;
-			}
-		}
-
-		/// <summary>
-		/// This gets called once on the first migration object.
-		/// </summary>
-		public virtual void InitializeOnce(string[] args)
-		{
-			// Console.WriteLine("Migration.InitializeOnce()");
-		}
+		internal IDatabase Database { get; set; }
+		internal TransformationProvider Provider { get; set; }
 
 		protected void DropTable(string name)
 		{
 			Database.DropTable(name);
 		}
 
-		/// <param name="sql">Supports format items to <see cref="string.Format(string,object)"/></param>
-		/// <param name="values">An object to format</param>
-		protected void ExecuteNonQuery(string sql, params string[] values)
-		{
-			Database.ExecuteNonQuery(sql, values);
-		}
-
-		/// <param name="sql">Supports format items to <see cref="string.Format(string,object)"/></param>
-		/// <param name="values">An object to format</param>
-		protected IDataReader ExecuteQuery(string sql, params string[] values)
-		{
-			return Database.ExecuteQuery(sql, values);
-		}
-
 		protected void ExecuteFile(string filePath)
 		{
-			Database.ExecuteFile(filePath);
+			Provider.ExecuteFile(filePath);
 		}
 
 		/// <summary>
@@ -123,29 +90,22 @@ namespace DbRefactor
 		/// <returns>A stream containing the file data.</returns>
 		protected void ExecuteResource(string resourcePath)
 		{
-			Database.ExecuteResource(Assembly.GetCallingAssembly().FullName, resourcePath);
+			Provider.ExecuteResource(Assembly.GetCallingAssembly().FullName, resourcePath);
 		}
 
-		/// <param name="sql">Supports format items to <see cref="string.Format(string,object)"/></param>
-		/// <param name="values">An object to format</param>
-		protected object ExecuteScalar(string sql, params string[] values)
+		public NewTable CreateTable(string name)
 		{
-			return Database.ExecuteScalar(sql, values);
+			return Database.CreateTable(name);
 		}
 
-		protected void RemoveColumnConstraints(string table, string column)
+		public ActionTable Table(string name)
 		{
-			Database.DropColumnConstraints(table, column);
+			return Database.Table(name);
 		}
 
-		public NewTable CreateTable(string tableName)
+		public ExecuteEngine Execute()
 		{
-			return new NewTable(TransformationProvider, ColumnProviderFactory, ColumnPropertyProviderFactory, tableName);
-		}
-
-		public ActionTable Table(string tableName)
-		{
-			return new ActionTable(TransformationProvider, tableName, ColumnProviderFactory, ColumnPropertyProviderFactory);
+			return Database.Execute();
 		}
 
 		public abstract void Up();

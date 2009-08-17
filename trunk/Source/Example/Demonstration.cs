@@ -194,11 +194,11 @@ namespace Example
 	/// and process queried data
 	/// </summary>
 	[Migration(10)]
-	public class ExecuteQuery : Migration
+	public class ExecuteQueryMigration : Migration
 	{
 		public override void Up()
 		{
-			using (IDataReader reader = ExecuteQuery("select Id, [Name] from [User] where IsRegistered = 0 or PersonalInformation is null"))
+			using (IDataReader reader = Execute().Query("select Id, [Name] from [User] where IsRegistered = 0 or PersonalInformation is null"))
 			{
 
 				var systemUsers = new List<string>();
@@ -233,7 +233,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			int value = Convert.ToInt32(ExecuteScalar("select Id from [User] where IsRegistered = 1 or PersonalInformation is null"));
+			int value = Convert.ToInt32(Execute().Scalar("select Id from [User] where IsRegistered = 1 or PersonalInformation is null"));
 		}
 
 		public override void Down()
@@ -247,7 +247,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			ExecuteNonQuery("delete from [User] where IsRegistered = 0 or PersonalInformation is null");
+			Execute().NonQuery("delete from [User] where IsRegistered = 0 or PersonalInformation is null");
 		}
 
 		public override void Down()

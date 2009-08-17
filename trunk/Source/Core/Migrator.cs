@@ -20,16 +20,11 @@ using DbRefactor.Runner;
 
 namespace DbRefactor
 {
-	/// <summary>
-	/// Migrations mediator.
-	/// </summary>
 	public sealed class Migrator
 	{
 		private readonly TransformationProvider provider;
 		private readonly List<Type> migrationsTypes = new List<Type>();
-		private readonly bool trace;  // show trace for debugging
 		private ILogger logger = new Logger(false);
-		private string[] _args;
 
 		public string Category { get; set; }
 
@@ -90,7 +85,6 @@ namespace DbRefactor
 			bool goingUp = originalVersion < version;
 			Migration migration;
 			int v;	// the currently running migration number
-			bool firstRun = true;
 
 			if (goingUp)
 			{
@@ -111,22 +105,12 @@ namespace DbRefactor
 			{
 				migration = GetMigration(v);
 
-				if (firstRun)
-				{
-					
-						migration.InitializeOnce(_args);
-					
-					firstRun = false;
-				}
-
 				if (migration != null)
 				{
 					string migrationName = ToHumanName(migration.GetType().Name);
 
-					
-						migration.TransformationProvider = provider;
-						migration.ColumnProviderFactory = ProviderFactory.ColumnProviderFactory;
-						migration.ColumnPropertyProviderFactory = provider.propertyFactory;
+					migration.Database = provider.GetDatabase();
+						migration.Provider = provider;
 					
 					
 
@@ -338,7 +322,7 @@ namespace DbRefactor
 					return (Migration)Activator.CreateInstance(t);
 				}
 			}
-			throw new Exception(String.Format("Migration {0} was not found", version));
+			throw new DbRefactorException(String.Format("Migration {0} was not found", version));
 		}
 
 		#endregion
@@ -359,7 +343,7 @@ namespace DbRefactor
 
 			if (setupList.Count > 1)
 			{
-				throw new Exception("Found more than one classes with SetUpMigrationAttribute");
+				throw new DbRefactorException("Found more than one classes with SetUpMigrationAttribute");
 			}
 
 			if (setupList.Count == 0)
