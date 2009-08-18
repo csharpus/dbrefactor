@@ -22,14 +22,16 @@ namespace DbRefactor.Api
 	public class AddColumnTable
 	{
 		private readonly string tableName;
+		private readonly ConstraintNameService constraintNameService;
 		private readonly TransformationProvider provider;
 		private readonly ColumnProviderFactory factory;
 		private readonly ColumnPropertyProviderFactory propertyFactory;
 		private ColumnProvider currentColumn;
 
-		public AddColumnTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory propertyFactory, string tableName)
+		public AddColumnTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory propertyFactory, string tableName, ConstraintNameService constraintNameService)
 		{
 			this.tableName = tableName;
+			this.constraintNameService = constraintNameService;
 			this.provider = provider;
 			factory = columnProviderFactory;
 			this.propertyFactory = propertyFactory;
@@ -147,37 +149,25 @@ namespace DbRefactor.Api
 
 		public AddColumnTable Identity()
 		{
-			currentColumn.AddProperty(propertyFactory.CreateIdentity());
+			currentColumn.AddIdentity();
 			return this;
 		}
 
 		public AddColumnTable NotNull()
 		{
-			currentColumn.AddProperty(propertyFactory.CreateNotNull());
+			currentColumn.AddNotNull();
 			return this;
-		}
-
-		// TODO: move this method to special name generation class to remove duplication
-		private string PrimaryKeyName()
-		{
-			return System.String.Format("PK_{0}_{1}", tableName, currentColumn.Name);
 		}
 
 		public AddColumnTable PrimaryKey()
 		{
-			currentColumn.AddProperty(propertyFactory.CreatePrimaryKey(PrimaryKeyName()));
+			currentColumn.AddPrimaryKey(constraintNameService.PrimaryKeyName(tableName, currentColumn.Name));
 			return this;
-		}
-
-		// TODO: move this method to special name generation class to remove duplication
-		private string UniqueName()
-		{
-			return System.String.Format("UQ_{0}_{1}", tableName, currentColumn.Name);
 		}
 
 		public AddColumnTable Unique()
 		{
-			currentColumn.AddProperty(propertyFactory.CreateUnique(UniqueName()));
+			currentColumn.AddUnique(constraintNameService.UniqueName(tableName, currentColumn.Name));
 			return this;
 		}
 

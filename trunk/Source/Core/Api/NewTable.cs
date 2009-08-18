@@ -22,14 +22,14 @@ namespace DbRefactor.Api
 	public class NewTable : Table
 	{
 		private readonly ColumnProviderFactory factory;
-		private readonly ColumnPropertyProviderFactory propertyFactory;
+		private readonly ConstraintNameService constraintNameService;
 		private readonly List<ColumnProvider> columns;
 		private ColumnProvider currentColumn;
 
-		public NewTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory propertyFactory, string tableName): base(provider, tableName)
+		public NewTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, string tableName, ConstraintNameService constraintNameService): base(provider, tableName)
 		{
 			factory = columnProviderFactory;
-			this.propertyFactory = propertyFactory;
+			this.constraintNameService = constraintNameService;
 			columns = new List<ColumnProvider>();
 		}
 
@@ -144,37 +144,25 @@ namespace DbRefactor.Api
 
 		public NewTable Identity()
 		{
-			currentColumn.AddProperty(propertyFactory.CreateIdentity());
+			currentColumn.AddIdentity();
 			return this;
 		}
 
 		public NewTable NotNull()
 		{
-			currentColumn.AddProperty(propertyFactory.CreateNotNull());
+			currentColumn.AddNotNull();
 			return this;
-		}
-
-		// TODO: move this method to special name generation class to remove duplication
-		private string PrimaryKeyName()
-		{
-			return System.String.Format("PK_{0}_{1}", TableName, currentColumn.Name);
 		}
 
 		public NewTable PrimaryKey()
 		{
-			currentColumn.AddProperty(propertyFactory.CreatePrimaryKey(PrimaryKeyName()));
+			currentColumn.AddPrimaryKey(constraintNameService.PrimaryKeyName(TableName, currentColumn.Name));
 			return this;
-		}
-
-		// TODO: move this method to special name generation class to remove duplication
-		private string UniqueName()
-		{
-			return System.String.Format("UQ_{0}_{1}", TableName, currentColumn.Name);
 		}
 
 		public NewTable Unique()
 		{
-			currentColumn.AddProperty(propertyFactory.CreateUnique(UniqueName()));
+			currentColumn.AddUnique(constraintNameService.UniqueName(TableName, currentColumn.Name));
 			return this;
 		}
 
@@ -189,11 +177,6 @@ namespace DbRefactor.Api
 		public void Execute()
 		{
 			Provider.CreateTable(TableName, columns.ToArray());
-		}
-
-		private string IndexName()
-		{
-			return System.String.Format("IX_{0}_{1}", TableName, currentColumn.Name);
 		}
 	}
 }

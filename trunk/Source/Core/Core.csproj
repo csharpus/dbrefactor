@@ -69,6 +69,8 @@
     <Compile Include="Infrastructure\Loggers\ILogger.cs" />
     <Compile Include="Infrastructure\Loggers\ILogWriter.cs" />
     <Compile Include="Infrastructure\Loggers\Logger.cs" />
+    <Compile Include="Providers\ConstraintGenerationService.cs" />
+    <Compile Include="Providers\Properties\EmptyProvider.cs" />
     <Compile Include="Providers\TransformationProviderExistence.cs" />
     <Compile Include="Providers\TransformationProviderMigration.cs" />
     <Compile Include="Providers\TransformationProviderSchema.cs" />

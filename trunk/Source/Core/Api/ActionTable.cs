@@ -23,12 +23,14 @@ namespace DbRefactor.Api
 		private readonly TransformationProvider provider;
 		private readonly ColumnProviderFactory columnProviderFactory;
 		private readonly ColumnPropertyProviderFactory columnPropertyProviderFactory;
+		private readonly ConstraintNameService constraintNameService;
 
-		public ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory columnPropertyProviderFactory) : base(provider, tableName)
+		public ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory columnPropertyProviderFactory, ConstraintNameService constraintNameService) : base(provider, tableName)
 		{
 			this.provider = provider;
 			this.columnProviderFactory = columnProviderFactory;
 			this.columnPropertyProviderFactory = columnPropertyProviderFactory;
+			this.constraintNameService = constraintNameService;
 		}
 
 		public ActionColumn Column(string name)
@@ -119,7 +121,7 @@ namespace DbRefactor.Api
 
 		public AddColumnTable AddColumn()
 		{
-			return new AddColumnTable(provider, columnProviderFactory, columnPropertyProviderFactory, TableName);
+			return new AddColumnTable(provider, columnProviderFactory, columnPropertyProviderFactory, TableName, constraintNameService);
 		}
 
 		public void RenameColumn(string oldName, string newName)

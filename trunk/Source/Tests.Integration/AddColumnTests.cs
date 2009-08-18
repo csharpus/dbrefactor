@@ -55,7 +55,7 @@ namespace DbRefactor.Tests.Integration
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").AddColumn().Int("C", 1).Execute();
 
-			Assert.True(Provider.IsDefault("A", "B"));
+			Assert.True(Provider.IsDefault("A", "C"));
 		}
 
 		[Test]

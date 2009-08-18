@@ -28,15 +28,23 @@ namespace DbRefactor.Providers.Columns
 		private readonly ICodeGenerationService codeGenerationService;
 		private readonly ISqlTypes sqlTypes;
 		private readonly ISqlGenerationService sqlGenerationService;
+		private readonly ColumnPropertyProviderFactory columnPropertyProviderFactory;
 		private readonly List<PropertyProvider> properties = new List<PropertyProvider>();
 
-		protected ColumnProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
+		protected ColumnProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService,
+		                         ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
 		{
 			DefaultValue = defaultValue;
 			this.codeGenerationService = codeGenerationService;
 			this.sqlTypes = sqlTypes;
 			this.sqlGenerationService = sqlGenerationService;
+			this.columnPropertyProviderFactory = columnPropertyProviderFactory;
 			Name = name;
+
+			identityProvider = columnPropertyProviderFactory.CreateEmpty();
+			notNullProvider = columnPropertyProviderFactory.CreateEmpty();
+			primaryKeyProvider = columnPropertyProviderFactory.CreateEmpty();
+			uniqueProvider = columnPropertyProviderFactory.CreateEmpty();
 		}
 
 		public ISqlTypes SQLTypes
@@ -70,9 +78,90 @@ namespace DbRefactor.Providers.Columns
 			return ((MethodCallExpression) Method().Body).Method.Name;
 		}
 
-		public void AddProperty(PropertyProvider provider)
+		private void AddProperty(PropertyProvider provider)
 		{
 			Properties.Add(provider);
+		}
+
+		private PropertyProvider identityProvider;
+
+		public PropertyProvider Identity
+		{
+			get { return identityProvider; }
+		}
+
+		public void AddIdentity()
+		{
+			identityProvider = columnPropertyProviderFactory.CreateIdentity();
+			AddProperty(identityProvider);
+		}
+
+		public void RemoveIdentity()
+		{
+			RemoveProperty(identityProvider);
+			identityProvider = columnPropertyProviderFactory.CreateEmpty();
+		}
+
+		private void RemoveProperty(PropertyProvider provider)
+		{
+			properties.Remove(provider);
+		}
+
+		private PropertyProvider notNullProvider;
+
+		public PropertyProvider NotNull
+		{
+			get { return notNullProvider; }
+		}
+
+		public void AddNotNull()
+		{
+			notNullProvider = columnPropertyProviderFactory.CreateNotNull();
+			AddProperty(notNullProvider);
+		}
+
+		public void RemoveNotNull()
+		{
+			RemoveProperty(notNullProvider);
+			notNullProvider = columnPropertyProviderFactory.CreateEmpty();
+		}
+
+		private PropertyProvider primaryKeyProvider;
+
+		public PropertyProvider PrimaryKey
+		{
+			get { return primaryKeyProvider; }
+		}
+
+		public void AddPrimaryKey(string name)
+		{
+			primaryKeyProvider = columnPropertyProviderFactory.CreatePrimaryKey(name);
+			AddProperty(primaryKeyProvider);
+		}
+
+		public void RemovePrimaryKey()
+		{
+			RemoveProperty(primaryKeyProvider);
+			primaryKeyProvider = columnPropertyProviderFactory.CreateEmpty();
+		}
+
+		private PropertyProvider uniqueProvider;
+
+		public PropertyProvider Unique
+		{
+			get { return uniqueProvider; }
+		}
+
+		public void AddUnique(string name)
+		{
+			uniqueProvider = columnPropertyProviderFactory.CreateUnique(name);
+			AddProperty(uniqueProvider);
+		}
+
+		public void RemoveUnique()
+		{
+			RemoveProperty(uniqueProvider);
+			uniqueProvider = columnPropertyProviderFactory.CreateEmpty();
 		}
 
 		public string GetDefaultValueSql()
@@ -132,6 +221,14 @@ namespace DbRefactor.Providers.Columns
 		protected virtual string ValueSql(object value)
 		{
 			return Convert.ToString(value, CultureInfo.InvariantCulture);
+		}
+
+		public void CopyPropertiesFrom(ColumnProvider provider)
+		{
+			foreach (var property in provider.Properties)
+			{
+				AddProperty(property);
+			}
 		}
 	}
 }

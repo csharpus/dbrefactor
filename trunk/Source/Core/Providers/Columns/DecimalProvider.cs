@@ -24,8 +24,8 @@ namespace DbRefactor.Providers.Columns
 		private readonly int precision;
 		private readonly int radix;
 
-		public DecimalProvider(string name, object defaultValue, int precision, int radix, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
-			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
+		public DecimalProvider(string name, object defaultValue, int precision, int radix, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
+			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)
 		{
 			this.precision = precision;
 			this.radix = radix;

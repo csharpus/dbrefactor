@@ -49,10 +49,11 @@ namespace DbRefactor.Providers
 			var codeGenerationService = new CodeGenerationService();
 			var sqlGenerationService = new SQLGenerationService();
 			var sqlServerTypes = new SqlServerTypes();
-			var sqlServerColumnMapper = new SqlServerColumnMapper(codeGenerationService, sqlServerTypes, sqlGenerationService);
 			var columnPropertyProviderFactory = new ColumnPropertyProviderFactory(new SqlServerColumnProperties());
-			columnProviderFactory = new ColumnProviderFactory(codeGenerationService, sqlServerTypes, sqlGenerationService);
-			return new TransformationProvider(sqlServerEnvironment, sqlServerColumnMapper, columnPropertyProviderFactory);
+			var sqlServerColumnMapper = new SqlServerColumnMapper(codeGenerationService, sqlServerTypes, sqlGenerationService, columnPropertyProviderFactory);
+			columnProviderFactory = new ColumnProviderFactory(codeGenerationService, sqlServerTypes, sqlGenerationService, columnPropertyProviderFactory);
+			var constraintNameService = new ConstraintNameService();
+			return new TransformationProvider(sqlServerEnvironment, sqlServerColumnMapper, columnPropertyProviderFactory, constraintNameService);
 		}
 
 		public Migrator CreateMigrator(string provider, string connectionString, string category, Assembly assembly, bool trace)

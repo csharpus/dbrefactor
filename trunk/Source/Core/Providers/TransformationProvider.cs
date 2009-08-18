@@ -22,7 +22,6 @@ using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
 using DbRefactor.Infrastructure;
 using DbRefactor.Providers.Columns;
-using DbRefactor.Providers.Properties;
 using DbRefactor.Tools.DesignByContract;
 using System.IO;
 
@@ -33,20 +32,22 @@ namespace DbRefactor.Providers
 	{
 		public IDatabase GetDatabase()
 		{
-			return new Database(this, ProviderFactory.ColumnProviderFactory, propertyFactory);
+			return new Database(this, ProviderFactory.ColumnProviderFactory, propertyFactory, constraintNameService);
 		}
 
 		private readonly IDatabaseEnvironment environment;
 		private readonly SqlServerColumnMapper sqlServerColumnMapper;
 		private readonly ColumnPropertyProviderFactory propertyFactory;
+		private readonly ConstraintNameService constraintNameService;
 
 		internal TransformationProvider(IDatabaseEnvironment environment,
 		                                SqlServerColumnMapper sqlServerColumnMapper,
-		                                ColumnPropertyProviderFactory propertyFactory)
+		                                ColumnPropertyProviderFactory propertyFactory, ConstraintNameService constraintNameService)
 		{
 			this.environment = environment;
 			this.sqlServerColumnMapper = sqlServerColumnMapper;
 			this.propertyFactory = propertyFactory;
+			this.constraintNameService = constraintNameService;
 		}
 
 		internal IDatabaseEnvironment Environment
@@ -273,34 +274,22 @@ namespace DbRefactor.Providers
 		{
 			if (IsPrimaryKey(table, provider.Name))
 			{
-				provider.AddProperty(propertyFactory.CreatePrimaryKey(PrimaryKeyName(table, provider.Name)));
+				provider.AddPrimaryKey(constraintNameService.PrimaryKeyName(table, provider.Name));
 			}
 			else if (!IsNullable(table, provider.Name))
 			{
-				provider.AddProperty(propertyFactory.CreateNotNull());
+				provider.AddNotNull();
 			}
 
 			if (IsIdentity(table, provider.Name))
 			{
-				provider.AddProperty(propertyFactory.CreateIdentity());
+				provider.AddIdentity();
 			}
 
 			if (IsUnique(table, provider.Name))
 			{
-				provider.AddProperty(propertyFactory.CreateUnique(UniqueName(table, provider.Name)));
+				provider.AddUnique(constraintNameService.UniqueName(table, provider.Name));
 			}
-		}
-
-		// TODO: move this method to special name generation class to remove duplication
-		private static string PrimaryKeyName(string table, string column)
-		{
-			return String.Format("PK_{0}_{1}", table, column);
-		}
-
-		// TODO: move this method to special name generation class to remove duplication
-		private static string UniqueName(string table, string column)
-		{
-			return String.Format("UQ_{0}_{1}", table, column);
 		}
 
 		private static object GetDefaultValue(object databaseValue)
@@ -493,21 +482,14 @@ namespace DbRefactor.Providers
 		public void SetNull(string tableName, string columnName)
 		{
 			var provider = GetColumnProvider(tableName, columnName);
-			if (provider.Properties.Select(p => p.GetType() == typeof (NotNullProvider)).Any())
-			{
-				// TODO: remove typeof
-				provider.Properties.Remove(provider.Properties.Where(p => p.GetType() == typeof (NotNullProvider)).Single());
-			}
+			provider.RemoveNotNull();
 			AlterColumn(tableName, provider.GetAlterColumnSql());
 		}
 
 		public void SetNotNull(string tableName, string columnName)
 		{
 			var provider = GetColumnProvider(tableName, columnName);
-			// TODO: remove typeof
-			bool isNotNull = provider.Properties.Where(t => t.GetType() == typeof (NotNullProvider)).Any();
-			if (isNotNull) return;
-			provider.AddProperty(propertyFactory.CreateNotNull());
+			provider.AddNotNull();
 			AlterColumn(tableName, provider.GetAlterColumnSql());
 		}
 
@@ -532,16 +514,9 @@ namespace DbRefactor.Providers
 		public void AlterColumn(string tableName, ColumnProvider columnProvider)
 		{
 			var provider = GetColumnProvider(tableName, columnProvider.Name);
-			CopyProperties(provider, columnProvider);
+			// TODO: IS it correct just copy properties?
+			columnProvider.CopyPropertiesFrom(provider);
 			AlterColumn(tableName, columnProvider.GetAlterColumnSql());
-		}
-
-		private static void CopyProperties(ColumnProvider source, ColumnProvider destination)
-		{
-			foreach (var property in source.Properties)
-			{
-				destination.AddProperty(property);
-			}
 		}
 
 		public IDataReader Select(string tableName, string[] columns, object whereParameters)

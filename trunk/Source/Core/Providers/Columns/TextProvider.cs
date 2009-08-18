@@ -21,8 +21,8 @@ namespace DbRefactor.Providers.Columns
 {
 	public class TextProvider : ColumnProvider
 	{
-		public TextProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
-			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
+		public TextProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
+			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)
 		{
 		}
 

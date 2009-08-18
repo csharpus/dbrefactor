@@ -16,23 +16,25 @@ namespace DbRefactor.Api
 		private readonly TransformationProvider transformationProvider;
 		private readonly ColumnProviderFactory columnProviderFactory;
 		private readonly ColumnPropertyProviderFactory columnPropertyProviderFactory;
+		private readonly ConstraintNameService constraintNameService;
 
 		public Database(TransformationProvider transformationProvider, ColumnProviderFactory columnProviderFactory,
-		                ColumnPropertyProviderFactory columnPropertyProviderFactory)
+		                ColumnPropertyProviderFactory columnPropertyProviderFactory, ConstraintNameService constraintNameService)
 		{
 			this.transformationProvider = transformationProvider;
 			this.columnProviderFactory = columnProviderFactory;
 			this.columnPropertyProviderFactory = columnPropertyProviderFactory;
+			this.constraintNameService = constraintNameService;
 		}
 
 		public NewTable CreateTable(string name)
 		{
-			return new NewTable(transformationProvider, columnProviderFactory, columnPropertyProviderFactory, name);
+			return new NewTable(transformationProvider, columnProviderFactory, name, constraintNameService);
 		}
 
 		public ActionTable Table(string name)
 		{
-			return new ActionTable(transformationProvider, name, columnProviderFactory, columnPropertyProviderFactory);
+			return new ActionTable(transformationProvider, name, columnProviderFactory, columnPropertyProviderFactory, constraintNameService);
 		}
 
 		public void DropTable(string name)

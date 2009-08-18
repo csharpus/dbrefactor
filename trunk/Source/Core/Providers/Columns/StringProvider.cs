@@ -23,8 +23,8 @@ namespace DbRefactor.Providers.Columns
 	{
 		private readonly int size;
 
-		public StringProvider(string name, object defaultValue, int size, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService)
-			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService)
+		public StringProvider(string name, object defaultValue, int size, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
+			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)
 		{
 			this.size = size;
 		}
