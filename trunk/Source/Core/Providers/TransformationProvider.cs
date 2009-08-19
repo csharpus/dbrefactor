@@ -32,21 +32,20 @@ namespace DbRefactor.Providers
 	{
 		public IDatabase GetDatabase()
 		{
-			return new Database(this, ProviderFactory.ColumnProviderFactory, propertyFactory, constraintNameService);
+			return database;
 		}
+
+		public IDatabase database;
 
 		private readonly IDatabaseEnvironment environment;
 		private readonly SqlServerColumnMapper sqlServerColumnMapper;
-		private readonly ColumnPropertyProviderFactory propertyFactory;
 		private readonly ConstraintNameService constraintNameService;
 
-		internal TransformationProvider(IDatabaseEnvironment environment,
-		                                SqlServerColumnMapper sqlServerColumnMapper,
-		                                ColumnPropertyProviderFactory propertyFactory, ConstraintNameService constraintNameService)
+		internal TransformationProvider(IDatabaseEnvironment environment, SqlServerColumnMapper sqlServerColumnMapper,
+		                                ConstraintNameService constraintNameService)
 		{
 			this.environment = environment;
 			this.sqlServerColumnMapper = sqlServerColumnMapper;
-			this.propertyFactory = propertyFactory;
 			this.constraintNameService = constraintNameService;
 		}
 
@@ -55,7 +54,6 @@ namespace DbRefactor.Providers
 			get { return environment; }
 		}
 
-		
 
 		public void CreateTable(string name, params ColumnProvider[] columns)
 		{
@@ -332,27 +330,17 @@ namespace DbRefactor.Providers
 			return environment.ExecuteScalar(String.Format(sql, values));
 		}
 
-		public int Insert(string table, params string[] columnValues)
+		public int Insert(string table, object updateObject)
 		{
-			// TODO: fix this method (should use object instead of string array)
-			Check.RequireNonEmpty(table, "table");
-			Check.Require(columnValues.Length > 0, "You have to pass at least one column value");
-			var columns = new string[columnValues.Length];
-			var values = new string[columnValues.Length];
-			int i = 0;
-
-			foreach (string cs in columnValues)
-			{
-				columns[i] = cs.Split('=')[0];
-				values[i] = cs.Split('=')[1];
-				i++;
-			}
+			var providers = GetColumnProviders(table);
+			string operation = GetOperationValues(providers, updateObject);
+			var columns = String.Join(", ", providers.Select(p => p.Name).ToArray());
 
 			return ExecuteNonQuery(
 				"INSERT INTO [{0}] ({1}) VALUES ({2})",
 				table,
-				String.Join(", ", columns),
-				String.Join(", ", values));
+				columns,
+				operation);
 		}
 
 		/// <summary>
@@ -379,13 +367,13 @@ namespace DbRefactor.Providers
 			environment.CommitTransaction();
 		}
 
-		public void ExecuteFile(string fileName)
+		public void ExecuteFile(string fileName, int version)
 		{
 			Check.RequireNonEmpty(fileName, "fileName");
 			if (!File.Exists(fileName))
 			{
 				string migrationScriptPath = String.Format(@"{0}\Scripts\{1:000}\{2}", Directory.GetCurrentDirectory(),
-				                                           CurrentVersion, fileName);
+														   version, fileName);
 				Check.Ensure(File.Exists(migrationScriptPath), String.Format("Script file '{0}' has not found.", fileName));
 				fileName = migrationScriptPath;
 			}
@@ -393,13 +381,13 @@ namespace DbRefactor.Providers
 			environment.ExecuteNonQuery(content);
 		}
 
-		public void ExecuteResource(string assemblyName, string resourceName)
+		public void ExecuteResource(string assemblyName, string resourceName, int version)
 		{
 			Check.RequireNonEmpty(assemblyName, "assemblyName");
 			Check.RequireNonEmpty(resourceName, "resourceName");
 
 			Assembly assembly = Assembly.Load(assemblyName);
-			resourceName = GetResource(resourceName, assembly);
+			resourceName = GetResource(resourceName, assembly, version);
 
 			Stream stream = assembly.GetManifestResourceStream(resourceName);
 			if (stream == null)
@@ -413,11 +401,11 @@ namespace DbRefactor.Providers
 			environment.ExecuteNonQuery(script);
 		}
 
-		private string GetResource(string resourceName, Assembly assembly)
+		private string GetResource(string resourceName, Assembly assembly, int version)
 		{
 			foreach (var resource in assembly.GetManifestResourceNames())
 			{
-				if (resource.Contains(String.Format("._{0:000}.{1}", CurrentVersion, resourceName)))
+				if (resource.Contains(String.Format("._{0:000}.{1}", version, resourceName)))
 					return resource;
 			}
 			return String.Empty;

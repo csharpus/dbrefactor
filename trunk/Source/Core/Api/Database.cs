@@ -1,4 +1,4 @@
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Factories;
 using DbRefactor.Providers;
 
 namespace DbRefactor.Api
@@ -15,16 +15,16 @@ namespace DbRefactor.Api
 	{
 		private readonly TransformationProvider transformationProvider;
 		private readonly ColumnProviderFactory columnProviderFactory;
-		private readonly ColumnPropertyProviderFactory columnPropertyProviderFactory;
 		private readonly ConstraintNameService constraintNameService;
+		private readonly ApiFactory apiFactory;
 
 		public Database(TransformationProvider transformationProvider, ColumnProviderFactory columnProviderFactory,
-		                ColumnPropertyProviderFactory columnPropertyProviderFactory, ConstraintNameService constraintNameService)
+		                ConstraintNameService constraintNameService, ApiFactory apiFactory)
 		{
 			this.transformationProvider = transformationProvider;
 			this.columnProviderFactory = columnProviderFactory;
-			this.columnPropertyProviderFactory = columnPropertyProviderFactory;
 			this.constraintNameService = constraintNameService;
+			this.apiFactory = apiFactory;
 		}
 
 		public NewTable CreateTable(string name)
@@ -34,7 +34,7 @@ namespace DbRefactor.Api
 
 		public ActionTable Table(string name)
 		{
-			return new ActionTable(transformationProvider, name, columnProviderFactory, columnPropertyProviderFactory, constraintNameService);
+			return apiFactory.CreateActionTable(name);
 		}
 
 		public void DropTable(string name)

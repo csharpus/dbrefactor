@@ -1,5 +1,4 @@
-﻿using System;
-using DbRefactor.Providers;
+﻿using DbRefactor.Providers;
 
 namespace DbRefactor.Api
 {

@@ -13,7 +13,7 @@
 
 using System;
 using System.Collections.Generic;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Factories;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 

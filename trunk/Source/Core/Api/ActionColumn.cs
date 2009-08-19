@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Factories;
 using DbRefactor.Providers;
-using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Api
 {
@@ -10,15 +8,16 @@ namespace DbRefactor.Api
 	{
 		private readonly TransformationProvider provider;
 		private readonly string tableName;
-		private readonly ColumnProviderFactory columnProviderFactory;
+		private readonly ApiFactory apiFactory;
+		private readonly ConstraintNameService constraintNameService;
 		private readonly List<string> columnNames = new List<string>();
 
-		public ActionColumn(TransformationProvider provider, string tableName, string columnName,
-		                    ColumnProviderFactory columnProviderFactory)
+		public ActionColumn(TransformationProvider provider, string tableName, string columnName, ApiFactory apiFactory, ConstraintNameService constraintNameService)
 		{
 			this.provider = provider;
 			this.tableName = tableName;
-			this.columnProviderFactory = columnProviderFactory;
+			this.apiFactory = apiFactory;
+			this.constraintNameService = constraintNameService;
 			columnNames.Add(columnName);
 		}
 
@@ -30,12 +29,9 @@ namespace DbRefactor.Api
 
 		public void AddPrimaryKey()
 		{
-			provider.AddPrimaryKey(GeneratePrimaryKeyName(), tableName, columnNames.ToArray());
-		}
 
-		private string GeneratePrimaryKeyName()
-		{
-			return GenerateConstraintName("PK");
+			provider.AddPrimaryKey(
+				constraintNameService.PrimaryKeyName(tableName, columnNames.ToArray()), tableName, columnNames.ToArray());
 		}
 
 		public void DropPrimaryKey()
@@ -45,12 +41,7 @@ namespace DbRefactor.Api
 
 		public void AddUnique()
 		{
-			provider.AddUnique(GenerateUniqueName(), tableName, columnNames.ToArray());
-		}
-
-		private string GenerateUniqueName()
-		{
-			return GenerateConstraintName("UQ");
+			provider.AddUnique(constraintNameService.UniqueName(tableName, columnNames.ToArray()), tableName, columnNames.ToArray());
 		}
 
 		public void DropUnique()
@@ -62,23 +53,12 @@ namespace DbRefactor.Api
 
 		public void AddIndex()
 		{
-			provider.AddIndex(GenerateIndexName(), tableName, columnNames.ToArray());
-		}
-
-		private string GenerateIndexName()
-		{
-			return GenerateConstraintName("IX");
+			provider.AddIndex(constraintNameService.IndexName(tableName, columnNames.ToArray()), tableName, columnNames.ToArray());
 		}
 
 		public void DropIndex()
 		{
 			provider.DropIndex(tableName, columnNames.ToArray());
-		}
-
-		private string GenerateConstraintName(string prefix)
-		{
-			string columns = String.Join("_", columnNames.ToArray());
-			return String.Format("{0}_{1}_{2}", prefix, tableName, columns);
 		}
 
 		public void SetNull()
@@ -95,12 +75,7 @@ namespace DbRefactor.Api
 
 		public void SetDefault(object value)
 		{
-			provider.SetDefault(GenerateDefaultName(), tableName, columnNames[0], value);
-		}
-
-		private string GenerateDefaultName()
-		{
-			return GenerateConstraintName("DF");
+			provider.SetDefault(constraintNameService.DefaultName(tableName, columnNames.ToArray()), tableName, columnNames[0], value);
 		}
 
 //Table("Users").Column("Name").ConvertTo().String(100)
@@ -111,7 +86,7 @@ namespace DbRefactor.Api
 
 		public OtherTypeColumn ConvertTo()
 		{
-			return new OtherTypeColumn(tableName, columnNames[0], columnProviderFactory, provider);
+			return apiFactory.CreateOtherTypeColumn(tableName, columnNames[0]);
 		}
 
 		public void AddForeignKeyTo(string primaryKeyTable, params string[] primaryKeyColumns)
@@ -126,7 +101,7 @@ namespace DbRefactor.Api
 
 		public void AddForeignKeyTo(string primaryKeyTable, OnDelete onDeleteAction, params string[] primaryKeyColumns)
 		{
-			AddForeignKeyTo(GenerateForeignKeyName(primaryKeyTable), primaryKeyTable, onDeleteAction, primaryKeyColumns);
+			AddForeignKeyTo(constraintNameService.ForeignKeyName(tableName, primaryKeyTable), primaryKeyTable, onDeleteAction, primaryKeyColumns);
 		}
 
 		private void AddForeignKeyTo(string constraintName, string primaryKeyTable, OnDelete onDeleteAction,
@@ -136,80 +111,9 @@ namespace DbRefactor.Api
 			                       primaryKeyColumns, onDeleteAction);
 		}
 
-		private string GenerateForeignKeyName(string primaryKeyTable)
-		{
-			return String.Format("FK_{0}_{1}", tableName, primaryKeyTable);
-		}
-
 		public void DropForeignKey(string primaryKeyTable, params string[] primaryKeyColumns)
 		{
 			provider.DropForeignKey(tableName, columnNames.ToArray(), primaryKeyTable, primaryKeyColumns);
 		}
-	}
-
-	public class OtherTypeColumn
-	{
-		private readonly string tableName;
-		private readonly string columnName;
-		private readonly ColumnProviderFactory factory;
-		private readonly TransformationProvider provider;
-
-		public OtherTypeColumn(string tableName, string columnName, ColumnProviderFactory factory,
-		                       TransformationProvider provider)
-		{
-			this.tableName = tableName;
-			this.columnName = columnName;
-			this.factory = factory;
-			this.provider = provider;
-		}
-
-		#region Column types
-
-		public void String(int size)
-		{
-			AlterColumn(factory.CreateString(columnName, null, size));
-		}
-
-		public void Text()
-		{
-			AlterColumn(factory.CreateText(columnName, null));
-		}
-
-		public void Int()
-		{
-			AlterColumn(factory.CreateInt(columnName, null));
-		}
-
-		public void Long()
-		{
-			AlterColumn(factory.CreateLong(columnName, null));
-		}
-
-		public void DateTime()
-		{
-			AlterColumn(factory.CreateDateTime(columnName, null));
-		}
-
-		public void Decimal()
-		{
-			AlterColumn(factory.CreateDecimal(columnName, null, 18, 9)); // change this value
-		}
-
-		public void Decimal(int whole, int remainder)
-		{
-			AlterColumn(factory.CreateDecimal(columnName, null, whole, remainder));
-		}
-
-		public void Boolean()
-		{
-			AlterColumn(factory.CreateBoolean(columnName, null));
-		}
-
-		private void AlterColumn(ColumnProvider columnProvider)
-		{
-			provider.AlterColumn(tableName, columnProvider);
-		}
-
-		#endregion Column types
 	}
 }

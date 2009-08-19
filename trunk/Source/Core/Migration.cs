@@ -12,6 +12,7 @@
 using System.Reflection;
 using DbRefactor.Api;
 using DbRefactor.Providers;
+using DbRefactor.Runner;
 
 namespace DbRefactor
 {
@@ -80,7 +81,7 @@ namespace DbRefactor
 
 		protected void ExecuteFile(string filePath)
 		{
-			Provider.ExecuteFile(filePath);
+			Provider.ExecuteFile(filePath, MigrationHelper.GetMigrationVersion(GetType()));
 		}
 
 		/// <summary>
@@ -90,7 +91,7 @@ namespace DbRefactor
 		/// <returns>A stream containing the file data.</returns>
 		protected void ExecuteResource(string resourcePath)
 		{
-			Provider.ExecuteResource(Assembly.GetCallingAssembly().FullName, resourcePath);
+			Provider.ExecuteResource(Assembly.GetCallingAssembly().FullName, resourcePath, MigrationHelper.GetMigrationVersion(GetType()));
 		}
 
 		public NewTable CreateTable(string name)

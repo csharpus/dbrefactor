@@ -1,5 +1,6 @@
 using System;
 using DbRefactor.Api;
+using DbRefactor.Factories;
 using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
 using DbRefactor.Tools;

@@ -1,3 +1,4 @@
+using DbRefactor.Factories;
 using DbRefactor.Providers;
 using DbRefactor.Tools;
 using NUnit.Framework;

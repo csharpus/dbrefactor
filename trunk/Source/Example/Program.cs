@@ -1,6 +1,6 @@
 using System.Configuration;
 using System.Reflection;
-using DbRefactor.Providers;
+using DbRefactor.Factories;
 
 namespace Example
 {

@@ -11,7 +11,7 @@
 
 using System.IO;
 using System.Reflection;
-using DbRefactor.Providers;
+using DbRefactor.Factories;
 using NAnt.Core;
 using NAnt.Core.Attributes;
 using Migrator.NAnt.Loggers;

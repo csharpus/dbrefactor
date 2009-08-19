@@ -18,6 +18,7 @@ using System.Linq.Expressions;
 using DbRefactor.Api;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Exceptions;
+using DbRefactor.Factories;
 using DbRefactor.Infrastructure;
 using DbRefactor.Providers.Properties;
 

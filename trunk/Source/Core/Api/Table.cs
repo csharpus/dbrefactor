@@ -18,7 +18,6 @@ namespace DbRefactor.Api
 	public abstract class Table
 	{
 		private readonly TransformationProvider provider;
-		protected IDatabaseEnvironment databaseEnvironment;
 		public string TableName { get; set; }
 
 		protected TransformationProvider Provider

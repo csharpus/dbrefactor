@@ -56,11 +56,15 @@
     <Compile Include="Api\DeleteTable.cs" />
     <Compile Include="Api\ExecuteEngine.cs" />
     <Compile Include="Api\NewTable.cs" />
+    <Compile Include="Api\OtherTypeColumn.cs" />
     <Compile Include="Api\QueryTable.cs" />
     <Compile Include="Api\SelectScalarTable.cs" />
     <Compile Include="Api\SelectTable.cs" />
     <Compile Include="Api\Table.cs" />
     <Compile Include="Api\UpdateTable.cs" />
+    <Compile Include="Factories\ApiFactory.cs" />
+    <Compile Include="Factories\ColumnPropertyProviderFactory.cs" />
+    <Compile Include="Factories\ColumnProviderFactory.cs" />
     <Compile Include="Extended\TypeExtensions.cs" />
     <Compile Include="Infrastructure\DesignByContract\DesignByContract.cs" />
     <Compile Include="Infrastructure\Loggers\ConsoleLogger.cs" />
@@ -69,7 +73,7 @@
     <Compile Include="Infrastructure\Loggers\ILogger.cs" />
     <Compile Include="Infrastructure\Loggers\ILogWriter.cs" />
     <Compile Include="Infrastructure\Loggers\Logger.cs" />
-    <Compile Include="Providers\ConstraintGenerationService.cs" />
+    <Compile Include="Providers\ConstraintNameService.cs" />
     <Compile Include="Providers\Properties\EmptyProvider.cs" />
     <Compile Include="Providers\TransformationProviderExistence.cs" />
     <Compile Include="Providers\TransformationProviderMigration.cs" />
@@ -110,7 +114,7 @@
     <Compile Include="Providers\Columns\IntProvider.cs" />
     <Compile Include="Providers\Columns\LongProvider.cs" />
     <Compile Include="Providers\Properties\NotNullProvider.cs" />
-    <Compile Include="Providers\ProviderFactory.cs" />
+    <Compile Include="Factories\ProviderFactory.cs" />
     <Compile Include="Engines\SqlServer\SqlServerEnvironment.cs" />
     <Compile Include="Providers\Columns\StringProvider.cs" />
     <Compile Include="Providers\Columns\TextProvider.cs" />

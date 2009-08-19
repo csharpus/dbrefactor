@@ -15,7 +15,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using DbRefactor.Providers;
-using System;
 using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Tools
@@ -177,19 +176,6 @@ namespace DbRefactor.Tools
 		public string Dump()
 		{
 			return Dump(false);
-		}
-
-		private static string FormatDateTime(DateTime date)
-		{
-			return date.Year.ToString("0000")
-			       + date.Month.ToString("00")
-			       + date.Day.ToString("00")
-			       + " "
-			       + date.Hour.ToString("00")
-			       + ":"
-			       + date.Minute.ToString("00")
-			       + ":"
-			       + date.Second.ToString("00");
 		}
 	}
 }

@@ -10,11 +10,13 @@
 #endregion
 
 using System.Reflection;
+using DbRefactor.Api;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Infrastructure;
 using DbRefactor.Infrastructure.Loggers;
+using DbRefactor.Providers;
 
-namespace DbRefactor.Providers
+namespace DbRefactor.Factories
 {
 	public class ProviderFactory
 	{
@@ -33,16 +35,6 @@ namespace DbRefactor.Providers
 
 		private static ColumnProviderFactory columnProviderFactory;
 
-		internal static ColumnPropertyProviderFactory columnPropertyProviderFactory;
-
-		internal static ColumnPropertyProviderFactory ColumnPropertyProviderFactory
-		{
-			get
-			{
-				return columnPropertyProviderFactory;
-			}
-		}
-
 		public TransformationProvider Create(string connectionString, ILogger logger)
 		{
 			var sqlServerEnvironment = new SqlServerEnvironment(connectionString, logger);
@@ -53,7 +45,11 @@ namespace DbRefactor.Providers
 			var sqlServerColumnMapper = new SqlServerColumnMapper(codeGenerationService, sqlServerTypes, sqlGenerationService, columnPropertyProviderFactory);
 			columnProviderFactory = new ColumnProviderFactory(codeGenerationService, sqlServerTypes, sqlGenerationService, columnPropertyProviderFactory);
 			var constraintNameService = new ConstraintNameService();
-			return new TransformationProvider(sqlServerEnvironment, sqlServerColumnMapper, columnPropertyProviderFactory, constraintNameService);
+			var provider = new TransformationProvider(sqlServerEnvironment, sqlServerColumnMapper, constraintNameService);
+			var apiFactory = new ApiFactory(provider, columnProviderFactory, columnPropertyProviderFactory, constraintNameService);
+			var database = new Database(provider, columnProviderFactory, constraintNameService, apiFactory);
+			provider.database = database;
+			return provider;
 		}
 
 		public Migrator CreateMigrator(string provider, string connectionString, string category, Assembly assembly, bool trace)

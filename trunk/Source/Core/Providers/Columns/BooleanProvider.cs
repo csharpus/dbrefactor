@@ -14,6 +14,7 @@
 using System;
 using DbRefactor.Api;
 using DbRefactor.Engines.SqlServer;
+using DbRefactor.Factories;
 using DbRefactor.Infrastructure;
 
 namespace DbRefactor.Providers.Columns

@@ -1,4 +1,5 @@
 #region License
+
 //The contents of this file are subject to the Mozilla Public License
 //Version 1.1 (the "License"); you may not use this file except in
 //compliance with the License. You may obtain a copy of the License at
@@ -7,6 +8,7 @@
 //basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
 //License for the specific language governing rights and limitations
 //under the License.
+
 #endregion
 
 using System;
@@ -55,7 +57,6 @@ namespace DbRefactor
 		private void BeginTransaction()
 		{
 			provider.BeginTransaction();
-			
 		}
 
 		/// <summary>
@@ -72,7 +73,9 @@ namespace DbRefactor
 		{
 			BeginTransaction();
 
-			if (CurrentVersion == version)
+			var currentVersion = GetVersion();
+
+			if (currentVersion == version)
 			{
 				RunGlobalSetUp();
 				if (version == LastVersion)
@@ -81,21 +84,21 @@ namespace DbRefactor
 				}
 				return;
 			}
-			int originalVersion = CurrentVersion;
+			int originalVersion = currentVersion;
 			bool goingUp = originalVersion < version;
 			Migration migration;
-			int v;	// the currently running migration number
+			int v; // the currently running migration number
 
 			if (goingUp)
 			{
 				// When we migrate to an upper version,
 				// tranformations of the current version are
 				// already applied, so we started at the next version.
-				v = CurrentVersion + 1;
+				v = currentVersion + 1;
 			}
 			else
 			{
-				v = CurrentVersion;
+				v = currentVersion;
 			}
 
 			logger.Started(originalVersion, version);
@@ -110,9 +113,7 @@ namespace DbRefactor
 					string migrationName = ToHumanName(migration.GetType().Name);
 
 					migration.Database = provider.GetDatabase();
-						migration.Provider = provider;
-					
-					
+					migration.Provider = provider;
 
 					try
 					{
@@ -139,7 +140,6 @@ namespace DbRefactor
 
 						throw;
 					}
-
 				}
 				else
 				{
@@ -149,8 +149,7 @@ namespace DbRefactor
 
 				if (goingUp)
 				{
-					if (v == version)
-						break;
+					if (v == version) break;
 					v++;
 				}
 				else
@@ -159,15 +158,14 @@ namespace DbRefactor
 					// When we go back to previous versions
 					// we don't invoke Down() of the current
 					// version.
-					if (v == version)
-						break;
+					if (v == version) break;
 				}
-				provider.CurrentVersion = v;
+				UpdateVersion(v);
 			}
 
 			// Update and commit all changes
-			provider.CurrentVersion = version;
-			
+			UpdateVersion(version);
+
 
 			provider.Commit();
 			logger.Finished(originalVersion, version);
@@ -184,6 +182,32 @@ namespace DbRefactor
 				logger.Exception(v, "Global Tear down", ex);
 				//throw;
 			}
+		}
+
+		private int GetVersion()
+		{
+			if (!provider.TableExists("SchemaInfo")) return 0;
+			object version = provider.SelectScalar("Version", "SchemaInfo", new {Category});
+			return Convert.ToInt32(version);
+		}
+
+		private void UpdateVersion(int version)
+		{
+			CreateSchemaInfoTable();
+			int count = provider.Update("SchemaInfo", new {Version = version}, new {Category});
+			if (count == 0)
+			{
+				provider.Insert("SchemaInfo", new {Version = version, Category});
+			}
+		}
+
+		private void CreateSchemaInfoTable()
+		{
+			if (provider.TableExists("SchemaInfo")) return;
+			provider.GetDatabase().CreateTable("SchemaInfo")
+				.Int("Version").PrimaryKey()
+				.String("Category", 50, String.Empty)
+				.Execute();
 		}
 
 		/// <summary>
@@ -210,25 +234,11 @@ namespace DbRefactor
 		}
 
 		/// <summary>
-		/// Returns the current version of the database.
-		/// </summary>
-		public int CurrentVersion
-		{
-			get
-			{
-				return provider.CurrentVersion;
-			}
-		}
-
-		/// <summary>
 		/// Returns registered migration <see cref="System.Type">types</see>.
 		/// </summary>
 		public List<Type> MigrationsTypes
 		{
-			get
-			{
-				return migrationsTypes;
-			}
+			get { return migrationsTypes; }
 		}
 
 		/// <summary>
@@ -236,14 +246,8 @@ namespace DbRefactor
 		/// </summary>
 		public ILogger Logger
 		{
-			get
-			{
-				return logger;
-			}
-			set
-			{
-				logger = value;
-			}
+			get { return logger; }
+			set { logger = value; }
 		}
 
 
@@ -319,7 +323,7 @@ namespace DbRefactor
 			{
 				if (GetMigrationVersion(t) == version)
 				{
-					return (Migration)Activator.CreateInstance(t);
+					return (Migration) Activator.CreateInstance(t);
 				}
 			}
 			throw new DbRefactorException(String.Format("Migration {0} was not found", version));
@@ -334,7 +338,7 @@ namespace DbRefactor
 			foreach (Type t in asm.GetTypes())
 			{
 				var attrib = (SetUpMigrationAttribute)
-					Attribute.GetCustomAttribute(t, typeof(SetUpMigrationAttribute));
+				             Attribute.GetCustomAttribute(t, typeof (SetUpMigrationAttribute));
 				if (attrib != null)
 				{
 					setupList.Add(t);
@@ -358,22 +362,22 @@ namespace DbRefactor
 
 		private void RunGlobalSetUp()
 		{
-			ExecuteSetupMethodWith(typeof(MigratorSetUp));
+			ExecuteSetupMethodWith(typeof (MigratorSetUp));
 		}
 
 		private void RunSetUp()
 		{
-			ExecuteSetupMethodWith(typeof(MigrationSetUp));
+			ExecuteSetupMethodWith(typeof (MigrationSetUp));
 		}
 
 		private void RunGlobalTearDown()
 		{
-			ExecuteSetupMethodWith(typeof(MigratorTearDown));
+			ExecuteSetupMethodWith(typeof (MigratorTearDown));
 		}
 
 		private void RunTearDown()
 		{
-			ExecuteSetupMethodWith(typeof(MigrationTearDown));
+			ExecuteSetupMethodWith(typeof (MigrationTearDown));
 		}
 
 		private void ExecuteSetupMethodWith(Type attributeType)
@@ -394,7 +398,7 @@ namespace DbRefactor
 			}
 			if (globalSetupMethod != null)
 			{
-				globalSetupMethod.Invoke(setupObject, new object[] { });
+				globalSetupMethod.Invoke(setupObject, new object[] {});
 			}
 		}
 	}

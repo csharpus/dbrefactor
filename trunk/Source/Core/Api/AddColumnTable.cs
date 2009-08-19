@@ -12,8 +12,8 @@
 #endregion
 
 using System;
-using DbRefactor.Engines.SqlServer;
 using DbRefactor.Exceptions;
+using DbRefactor.Factories;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 
@@ -25,16 +25,15 @@ namespace DbRefactor.Api
 		private readonly ConstraintNameService constraintNameService;
 		private readonly TransformationProvider provider;
 		private readonly ColumnProviderFactory factory;
-		private readonly ColumnPropertyProviderFactory propertyFactory;
 		private ColumnProvider currentColumn;
 
-		public AddColumnTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory propertyFactory, string tableName, ConstraintNameService constraintNameService)
+		public AddColumnTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, string tableName,
+		                      ConstraintNameService constraintNameService)
 		{
 			this.tableName = tableName;
 			this.constraintNameService = constraintNameService;
 			this.provider = provider;
 			factory = columnProviderFactory;
-			this.propertyFactory = propertyFactory;
 		}
 
 		#region Column types

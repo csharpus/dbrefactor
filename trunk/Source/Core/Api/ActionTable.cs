@@ -12,30 +12,34 @@
 #endregion
 
 using System.Collections.Generic;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Factories;
 using DbRefactor.Infrastructure;
 using DbRefactor.Providers;
 
 namespace DbRefactor.Api
 {
-	public class ActionTable: Table
+	public class ActionTable : Table
 	{
 		private readonly TransformationProvider provider;
 		private readonly ColumnProviderFactory columnProviderFactory;
 		private readonly ColumnPropertyProviderFactory columnPropertyProviderFactory;
 		private readonly ConstraintNameService constraintNameService;
+		private readonly ApiFactory apiFactory;
 
-		public ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory columnPropertyProviderFactory, ConstraintNameService constraintNameService) : base(provider, tableName)
+		public ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory,
+		                   ColumnPropertyProviderFactory columnPropertyProviderFactory,
+		                   ConstraintNameService constraintNameService, ApiFactory apiFactory) : base(provider, tableName)
 		{
 			this.provider = provider;
 			this.columnProviderFactory = columnProviderFactory;
 			this.columnPropertyProviderFactory = columnPropertyProviderFactory;
 			this.constraintNameService = constraintNameService;
+			this.apiFactory = apiFactory;
 		}
 
 		public ActionColumn Column(string name)
 		{
-			return new ActionColumn(provider, TableName, name, columnProviderFactory);
+			return apiFactory.CreateActionColumn(TableName, name);
 		}
 
 		/// <summary>
@@ -121,7 +125,8 @@ namespace DbRefactor.Api
 
 		public AddColumnTable AddColumn()
 		{
-			return new AddColumnTable(provider, columnProviderFactory, columnPropertyProviderFactory, TableName, constraintNameService);
+			return new AddColumnTable(provider, columnProviderFactory, TableName,
+			                          constraintNameService);
 		}
 
 		public void RenameColumn(string oldName, string newName)
