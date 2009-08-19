@@ -21,7 +21,7 @@ namespace DbRefactor.Engines.SqlServer
 		{
 			switch(constraint)
 			{
-				case OnDelete.Cascade:
+				case OnDelete.Cascade: 
 					return "CASCADE";
 				case OnDelete.SetDefault:
 					return "SET DEFAULT";

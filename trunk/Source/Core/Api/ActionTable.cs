@@ -22,17 +22,14 @@ namespace DbRefactor.Api
 	{
 		private readonly TransformationProvider provider;
 		private readonly ColumnProviderFactory columnProviderFactory;
-		private readonly ColumnPropertyProviderFactory columnPropertyProviderFactory;
 		private readonly ConstraintNameService constraintNameService;
 		private readonly ApiFactory apiFactory;
 
 		public ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory,
-		                   ColumnPropertyProviderFactory columnPropertyProviderFactory,
 		                   ConstraintNameService constraintNameService, ApiFactory apiFactory) : base(provider, tableName)
 		{
 			this.provider = provider;
 			this.columnProviderFactory = columnProviderFactory;
-			this.columnPropertyProviderFactory = columnPropertyProviderFactory;
 			this.constraintNameService = constraintNameService;
 			this.apiFactory = apiFactory;
 		}

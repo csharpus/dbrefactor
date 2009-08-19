@@ -30,7 +30,7 @@ namespace DbRefactor.Factories
 
 		public ActionTable CreateActionTable(string table)
 		{
-			return new ActionTable(transformationProvider, table, columnProviderFactory, columnPropertyProviderFactory, constraintNameService, this);
+			return new ActionTable(transformationProvider, table, columnProviderFactory, constraintNameService, this);
 		}
 	}
 }

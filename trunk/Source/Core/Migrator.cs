@@ -26,7 +26,7 @@ namespace DbRefactor
 	{
 		private readonly TransformationProvider provider;
 		private readonly List<Type> migrationsTypes = new List<Type>();
-		private ILogger logger = new Logger(false);
+		private ILogger logger;
 
 		public string Category { get; set; }
 
@@ -187,7 +187,8 @@ namespace DbRefactor
 		private int GetVersion()
 		{
 			if (!provider.TableExists("SchemaInfo")) return 0;
-			object version = provider.SelectScalar("Version", "SchemaInfo", new {Category});
+			int version = provider.GetDatabase()
+				.Table("SchemaInfo").SelectScalar<int>("Version").Where(new {Category}).Execute();
 			return Convert.ToInt32(version);
 		}
 
@@ -246,7 +247,6 @@ namespace DbRefactor
 		/// </summary>
 		public ILogger Logger
 		{
-			get { return logger; }
 			set { logger = value; }
 		}
 
@@ -262,10 +262,6 @@ namespace DbRefactor
 			return MigrationHelper.GetMigrationVersion(t);
 		}
 
-		/// <summary>
-		/// Check for duplicated version in migrations.
-		/// </summary>
-		/// <exception cref="CheckForDuplicatedVersion">CheckForDuplicatedVersion</exception>
 		private void CheckForDuplicatedVersion()
 		{
 			var versions = new List<int>();
