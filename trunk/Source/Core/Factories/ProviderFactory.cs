@@ -15,6 +15,7 @@ using DbRefactor.Engines.SqlServer;
 using DbRefactor.Infrastructure;
 using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
+using DbRefactor.Runner;
 
 namespace DbRefactor.Factories
 {
@@ -35,7 +36,7 @@ namespace DbRefactor.Factories
 
 		private static ColumnProviderFactory columnProviderFactory;
 
-		public TransformationProvider Create(string connectionString, ILogger logger)
+		private FactoryInfo CreateAll(string connectionString, ILogger logger)
 		{
 			var sqlServerEnvironment = new SqlServerEnvironment(connectionString, logger);
 			var codeGenerationService = new CodeGenerationService();
@@ -49,14 +50,32 @@ namespace DbRefactor.Factories
 			var apiFactory = new ApiFactory(provider, columnProviderFactory, columnPropertyProviderFactory, constraintNameService);
 			var database = new Database(provider, columnProviderFactory, constraintNameService, apiFactory);
 			provider.database = database;
-			return provider;
+			return new FactoryInfo {Provider = provider, Database = database};
+		}
+
+		public TransformationProvider Create(string connectionString, ILogger logger)
+		{
+			return CreateAll(connectionString, logger).Provider;
+		}
+
+
+		private class FactoryInfo
+		{
+			public TransformationProvider Provider { get; set; }
+			public IDatabase Database { get; set; }
+		}
+
+		private MigrationTarget CreateTarget(string connectionString, ILogger logger, string category)
+		{
+			var info = CreateAll(connectionString, logger);
+			return new DatabaseMigrationTarget(info.Provider, info.Database, category);
 		}
 
 		public Migrator CreateMigrator(string provider, string connectionString, string category, Assembly assembly, bool trace)
 		{
 			var logger = new Logger(trace);
 			logger.Attach(new ConsoleWriter());
-			return new Migrator(Create(connectionString, logger), category, assembly, logger);
+			return new Migrator(CreateTarget(connectionString, logger, category), category, assembly, logger);
 		}
 	}
 }

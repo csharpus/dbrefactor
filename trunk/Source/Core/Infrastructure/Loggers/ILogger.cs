@@ -89,5 +89,7 @@ namespace DbRefactor.Infrastructure.Loggers
 		/// <param name="format">Le format ("{0}, blbla {1}") ou la chaîne à afficher.</param>
 		/// <param name="args">Les paramètres dans le cas d'un format au premier paramètre.</param>
 		void Trace(string format, params object[] args);
+
+		void Modify(string query);
 	}
 }

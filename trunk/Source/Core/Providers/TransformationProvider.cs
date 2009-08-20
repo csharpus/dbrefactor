@@ -15,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Reflection;
 using DbRefactor.Api;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Exceptions;
@@ -23,7 +22,6 @@ using DbRefactor.Extensions;
 using DbRefactor.Infrastructure;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Tools.DesignByContract;
-using System.IO;
 
 
 namespace DbRefactor.Providers
@@ -333,11 +331,11 @@ namespace DbRefactor.Providers
 		public int Insert(string table, object updateObject)
 		{
 			var providers = GetColumnProviders(table);
-			string operation = GetOperationValues(providers, updateObject);
-			var columns = String.Join(", ", providers.Select(p => p.Name).ToArray());
+			string operation = GetValues(providers, updateObject);
+			var columns = String.Join("], [", providers.Select(p => p.Name).ToArray()); // TODO we don't need providers here, but updateObject, that should be renamed
 
 			return ExecuteNonQuery(
-				"INSERT INTO [{0}] ({1}) VALUES ({2})",
+				"INSERT INTO [{0}] ([{1}]) VALUES ({2})",
 				table,
 				columns,
 				operation);
@@ -354,7 +352,7 @@ namespace DbRefactor.Providers
 		/// <summary>
 		/// Rollback the current migration. Called by the migration mediator.
 		/// </summary>
-		public void Rollback()
+		public void RollbackTransaction()
 		{
 			environment.RollbackTransaction();
 		}
@@ -362,54 +360,12 @@ namespace DbRefactor.Providers
 		/// <summary>
 		/// Commit the current transaction. Called by the migrations mediator.
 		/// </summary>
-		public void Commit()
+		public void CommitTransaction()
 		{
 			environment.CommitTransaction();
 		}
 
-		public void ExecuteFile(string fileName, int version)
-		{
-			Check.RequireNonEmpty(fileName, "fileName");
-			if (!File.Exists(fileName))
-			{
-				string migrationScriptPath = String.Format(@"{0}\Scripts\{1:000}\{2}", Directory.GetCurrentDirectory(),
-														   version, fileName);
-				Check.Ensure(File.Exists(migrationScriptPath), String.Format("Script file '{0}' has not found.", fileName));
-				fileName = migrationScriptPath;
-			}
-			string content = File.ReadAllText(fileName);
-			environment.ExecuteNonQuery(content);
-		}
-
-		public void ExecuteResource(string assemblyName, string resourceName, int version)
-		{
-			Check.RequireNonEmpty(assemblyName, "assemblyName");
-			Check.RequireNonEmpty(resourceName, "resourceName");
-
-			Assembly assembly = Assembly.Load(assemblyName);
-			resourceName = GetResource(resourceName, assembly, version);
-
-			Stream stream = assembly.GetManifestResourceStream(resourceName);
-			if (stream == null)
-				throw new DbRefactorException(String.Format("Could not locate embedded resource '{0}' in assembly '{1}'",
-				                                            resourceName, assemblyName));
-			string script;
-			using (var streamReader = new StreamReader(stream))
-			{
-				script = streamReader.ReadToEnd();
-			}
-			environment.ExecuteNonQuery(script);
-		}
-
-		private string GetResource(string resourceName, Assembly assembly, int version)
-		{
-			foreach (var resource in assembly.GetManifestResourceNames())
-			{
-				if (resource.Contains(String.Format("._{0:000}.{1}", version, resourceName)))
-					return resource;
-			}
-			return String.Empty;
-		}
+		
 
 		public void AddUnique(string name, string table, params string[] columns)
 		{
@@ -428,7 +384,6 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("CREATE NONCLUSTERED INDEX {0} ON [{1}] ({2}) ",
 			                name, table, String.Join(",", columns));
 		}
-
 
 		public void DropIndex(string table, params string[] columns)
 		{
@@ -532,13 +487,22 @@ namespace DbRefactor.Providers
 			}
 			return ExecuteNonQuery(query);
 		}
+		
+		private static string GetValues(IEnumerable<ColumnProvider> providers, object updateObject)
+		{
+			var updateValues = ParametersHelper.GetPropertyValues(updateObject);
+			var sqlUpdatePairs = from p in providers
+			                     join v in updateValues on p.Name equals v.Key
+			                     select String.Format("{0}", p.GetValueSql(v.Value));
+			return String.Join(", ", sqlUpdatePairs.ToArray());
+		}
 
 		private static string GetOperationValues(IEnumerable<ColumnProvider> providers, object updateObject)
 		{
 			var updateValues = ParametersHelper.GetPropertyValues(updateObject);
 			var sqlUpdatePairs = from p in providers
 			                     join v in updateValues on p.Name equals v.Key
-			                     select String.Format("{0} = {1}", p.Name, p.GetValueSql(v.Value));
+			                     select String.Format("[{0}] = {1}", p.Name, p.GetValueSql(v.Value));
 			return String.Join(", ", sqlUpdatePairs.ToArray());
 		}
 

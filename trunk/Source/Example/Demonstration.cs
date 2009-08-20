@@ -270,14 +270,12 @@ namespace Example
 	{
 		public override void Up()
 		{
-			string filePath = @"CreateProcedure_GetAllRoles.sql";
-			ExecuteFile(filePath);
+			ExecuteFile(@"CreateProcedure_GetAllRoles.sql");
 		}
 
 		public override void Down()
 		{
-			string filePath = @"DropProcedure_GetAllRoles.sql";
-			ExecuteFile(filePath);
+			ExecuteFile(@"DropProcedure_GetAllRoles.sql");
 		}
 	}
 
@@ -291,14 +289,12 @@ namespace Example
 	{
 		public override void Up()
 		{
-			string resourcePath = @"CreateProcedure_GetAllUsers.sql";
-			ExecuteResource(resourcePath);
+			ExecuteResource(@"CreateProcedure_GetAllUsers.sql");
 		}
 
 		public override void Down()
 		{
-			string resourcePath = @"Example.Scripts._014.DropProcedure_GetAllUsers.sql";
-			ExecuteResource(resourcePath);
+			ExecuteResource(@"Example.Scripts._014.DropProcedure_GetAllUsers.sql");
 		}
 	}
 

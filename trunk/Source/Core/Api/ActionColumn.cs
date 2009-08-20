@@ -12,7 +12,8 @@ namespace DbRefactor.Api
 		private readonly ConstraintNameService constraintNameService;
 		private readonly List<string> columnNames = new List<string>();
 
-		public ActionColumn(TransformationProvider provider, string tableName, string columnName, ApiFactory apiFactory, ConstraintNameService constraintNameService)
+		public ActionColumn(TransformationProvider provider, string tableName, string columnName, ApiFactory apiFactory,
+		                    ConstraintNameService constraintNameService)
 		{
 			this.provider = provider;
 			this.tableName = tableName;
@@ -29,7 +30,6 @@ namespace DbRefactor.Api
 
 		public void AddPrimaryKey()
 		{
-
 			provider.AddPrimaryKey(
 				constraintNameService.PrimaryKeyName(tableName, columnNames.ToArray()), tableName, columnNames.ToArray());
 		}
@@ -41,7 +41,8 @@ namespace DbRefactor.Api
 
 		public void AddUnique()
 		{
-			provider.AddUnique(constraintNameService.UniqueName(tableName, columnNames.ToArray()), tableName, columnNames.ToArray());
+			provider.AddUnique(constraintNameService.UniqueName(tableName, columnNames.ToArray()), tableName,
+			                   columnNames.ToArray());
 		}
 
 		public void DropUnique()
@@ -75,7 +76,8 @@ namespace DbRefactor.Api
 
 		public void SetDefault(object value)
 		{
-			provider.SetDefault(constraintNameService.DefaultName(tableName, columnNames.ToArray()), tableName, columnNames[0], value);
+			provider.SetDefault(constraintNameService.DefaultName(tableName, columnNames.ToArray()), tableName, columnNames[0],
+			                    value);
 		}
 
 //Table("Users").Column("Name").ConvertTo().String(100)
@@ -101,11 +103,12 @@ namespace DbRefactor.Api
 
 		public void AddForeignKeyTo(string primaryKeyTable, OnDelete onDeleteAction, params string[] primaryKeyColumns)
 		{
-			AddForeignKeyTo(constraintNameService.ForeignKeyName(tableName, primaryKeyTable), primaryKeyTable, onDeleteAction, primaryKeyColumns);
+			AddForeignKeyTo(constraintNameService.ForeignKeyName(tableName, primaryKeyTable), primaryKeyTable, onDeleteAction,
+			                primaryKeyColumns);
 		}
 
 		private void AddForeignKeyTo(string constraintName, string primaryKeyTable, OnDelete onDeleteAction,
-		                            params string[] primaryKeyColumns)
+		                             params string[] primaryKeyColumns)
 		{
 			provider.AddForeignKey(constraintName, tableName, columnNames.ToArray(), primaryKeyTable,
 			                       primaryKeyColumns, onDeleteAction);

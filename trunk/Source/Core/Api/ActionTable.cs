@@ -49,8 +49,7 @@ namespace DbRefactor.Api
 		/// <returns></returns>
 		public void Insert(object parameters)
 		{
-			List<string> operationParamList = ParametersHelper.GetParameters(parameters);
-			provider.Insert(TableName, operationParamList.ToArray());
+			provider.Insert(TableName, parameters);
 		}
 
 		/// <summary>

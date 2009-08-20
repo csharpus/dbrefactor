@@ -13,29 +13,27 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using DbRefactor.Exceptions;
 using DbRefactor.Infrastructure.Loggers;
-using DbRefactor.Providers;
 using DbRefactor.Runner;
 
 namespace DbRefactor
 {
 	public sealed class Migrator
 	{
-		private readonly TransformationProvider provider;
 		private readonly List<Type> migrationsTypes = new List<Type>();
 		private ILogger logger;
+		private readonly MigrationTarget migrationTarget;
 
 		public string Category { get; set; }
 
-		internal Migrator(TransformationProvider provider, string category, Assembly migrationAssembly, ILogger logger)
+		internal Migrator(MigrationTarget migrationTarget, string category, Assembly migrationAssembly, ILogger logger)
 		{
-			this.provider = provider;
-			this.provider.Category = category;
-
 			this.logger = logger;
+			this.migrationTarget = migrationTarget;
 			Category = category;
 
 			migrationsTypes.AddRange(GetMigrationTypes(Assembly.GetExecutingAssembly()));
@@ -56,7 +54,7 @@ namespace DbRefactor
 
 		private void BeginTransaction()
 		{
-			provider.BeginTransaction();
+			migrationTarget.BeginTransaction();
 		}
 
 		/// <summary>
@@ -73,7 +71,7 @@ namespace DbRefactor
 		{
 			BeginTransaction();
 
-			var currentVersion = GetVersion();
+			var currentVersion = migrationTarget.GetVersion();
 
 			if (currentVersion == version)
 			{
@@ -86,7 +84,7 @@ namespace DbRefactor
 			}
 			int originalVersion = currentVersion;
 			bool goingUp = originalVersion < version;
-			Migration migration;
+			BaseMigration migration;
 			int v; // the currently running migration number
 
 			if (goingUp)
@@ -112,9 +110,8 @@ namespace DbRefactor
 				{
 					string migrationName = ToHumanName(migration.GetType().Name);
 
-					migration.Database = provider.GetDatabase();
-					migration.Provider = provider;
-
+//					migration.Database = provider.GetDatabase();
+						
 					try
 					{
 						RunSetUp();
@@ -136,7 +133,7 @@ namespace DbRefactor
 
 						// Oho! error! We rollback changes.
 						logger.RollingBack(originalVersion);
-						provider.Rollback();
+						migrationTarget.RollbackTransaction();
 
 						throw;
 					}
@@ -160,14 +157,14 @@ namespace DbRefactor
 					// version.
 					if (v == version) break;
 				}
-				UpdateVersion(v);
+				migrationTarget.UpdateVersion(v);
 			}
 
 			// Update and commit all changes
-			UpdateVersion(version);
+			migrationTarget.UpdateVersion(version);
 
 
-			provider.Commit();
+			migrationTarget.CommitTransaction();
 			logger.Finished(originalVersion, version);
 
 			try
@@ -182,33 +179,6 @@ namespace DbRefactor
 				logger.Exception(v, "Global Tear down", ex);
 				//throw;
 			}
-		}
-
-		private int GetVersion()
-		{
-			if (!provider.TableExists("SchemaInfo")) return 0;
-			int version = provider.GetDatabase()
-				.Table("SchemaInfo").SelectScalar<int>("Version").Where(new {Category}).Execute();
-			return Convert.ToInt32(version);
-		}
-
-		private void UpdateVersion(int version)
-		{
-			CreateSchemaInfoTable();
-			int count = provider.Update("SchemaInfo", new {Version = version}, new {Category});
-			if (count == 0)
-			{
-				provider.Insert("SchemaInfo", new {Version = version, Category});
-			}
-		}
-
-		private void CreateSchemaInfoTable()
-		{
-			if (provider.TableExists("SchemaInfo")) return;
-			provider.GetDatabase().CreateTable("SchemaInfo")
-				.Int("Version").PrimaryKey()
-				.String("Category", 50, String.Empty)
-				.Execute();
 		}
 
 		/// <summary>
@@ -284,19 +254,8 @@ namespace DbRefactor
 		/// <returns>The migrations collection</returns>
 		private static List<Type> GetMigrationTypes(Assembly asm)
 		{
-			var migrations = new List<Type>();
-
-			foreach (Type t in asm.GetTypes())
-			{
-				if (MigrationHelper.IsMigration(t))
-				{
-					migrations.Add(t);
-				}
-			}
-
-			migrations.Sort(new MigrationTypeComparer(true));
-
-			return migrations;
+			return asm.GetTypes().Where(MigrationHelper.IsMigration)
+				.OrderBy(t => t, new MigrationTypeComparer(true)).ToList();
 		}
 
 		/// <summary>
@@ -313,13 +272,13 @@ namespace DbRefactor
 
 		#region Helper methods
 
-		private Migration GetMigration(int version)
+		private BaseMigration GetMigration(int version)
 		{
 			foreach (Type t in migrationsTypes)
 			{
 				if (GetMigrationVersion(t) == version)
 				{
-					return (Migration) Activator.CreateInstance(t);
+					return migrationTarget.CreateMigration(t);
 				}
 			}
 			throw new DbRefactorException(String.Format("Migration {0} was not found", version));

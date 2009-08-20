@@ -9,10 +9,14 @@
 //under the License.
 #endregion
 
+using System;
+using System.IO;
 using System.Reflection;
 using DbRefactor.Api;
+using DbRefactor.Exceptions;
 using DbRefactor.Providers;
 using DbRefactor.Runner;
+using DbRefactor.Tools.DesignByContract;
 
 namespace DbRefactor
 {
@@ -68,30 +72,61 @@ namespace DbRefactor
 	///// }
 	///// </code>
 	///// </example>
-	
-	public abstract class Migration
+
+
+	public abstract class Migration : BaseMigration, IDatabase
 	{
 		internal IDatabase Database { get; set; }
 		internal TransformationProvider Provider { get; set; }
 
-		protected void DropTable(string name)
+		public void DropTable(string name)
 		{
 			Database.DropTable(name);
 		}
 
-		protected void ExecuteFile(string filePath)
+		public void ExecuteFile(string fileName)
 		{
-			Provider.ExecuteFile(filePath, MigrationHelper.GetMigrationVersion(GetType()));
+			Check.RequireNonEmpty(fileName, "fileName");
+			if (!File.Exists(fileName))
+			{
+				string migrationScriptPath = String.Format(@"{0}\Scripts\{1:000}\{2}", Directory.GetCurrentDirectory(), MigrationHelper.GetMigrationVersion(GetType())
+														   , fileName);
+				Check.Ensure(File.Exists(migrationScriptPath), String.Format("Script file '{0}' has not found.", fileName));
+				fileName = migrationScriptPath;
+			}
+			string content = File.ReadAllText(fileName);
+			Database.Execute().NonQuery(content);
 		}
 
-		/// <summary>
-		/// Extracts an embedded file out of a given assembly.
-		/// </summary>
-		/// <param name="resourcePath">The name of the file to extract.</param>
-		/// <returns>A stream containing the file data.</returns>
-		protected void ExecuteResource(string resourcePath)
+		public void ExecuteResource(string resourceName)
 		{
-			Provider.ExecuteResource(Assembly.GetCallingAssembly().FullName, resourcePath, MigrationHelper.GetMigrationVersion(GetType()));
+			var assemblyName = Assembly.GetCallingAssembly().FullName;
+			Check.RequireNonEmpty(assemblyName, "assemblyName");
+			Check.RequireNonEmpty(resourceName, "resourceName");
+
+			Assembly assembly = Assembly.Load(assemblyName);
+			resourceName = GetResource(resourceName, assembly, MigrationHelper.GetMigrationVersion(GetType()));
+
+			Stream stream = assembly.GetManifestResourceStream(resourceName);
+			if (stream == null)
+				throw new DbRefactorException(String.Format("Could not locate embedded resource '{0}' in assembly '{1}'",
+															resourceName, assemblyName));
+			string script;
+			using (var streamReader = new StreamReader(stream))
+			{
+				script = streamReader.ReadToEnd();
+			}
+			Database.Execute().NonQuery(script);
+		}
+
+		private static string GetResource(string resourceName, Assembly assembly, int version)
+		{
+			foreach (var resource in assembly.GetManifestResourceNames())
+			{
+				if (resource.Contains(String.Format("._{0:000}.{1}", version, resourceName)))
+					return resource;
+			}
+			return String.Empty;
 		}
 
 		public NewTable CreateTable(string name)
@@ -108,8 +143,5 @@ namespace DbRefactor
 		{
 			return Database.Execute();
 		}
-
-		public abstract void Up();
-		public abstract void Down();
 	}
 }

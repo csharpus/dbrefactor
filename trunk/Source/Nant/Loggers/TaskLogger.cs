@@ -96,6 +96,10 @@ namespace Migrator.NAnt.Loggers
 		{
 			_task.Log(Level.Debug, "{0} {1}", "".PadLeft(_widthFirstColumn), String.Format(format, args));
 		}
-		
+
+		public void Modify(string query)
+		{
+			_task.Log(Level.Debug, query);
+		}
 	}
 }

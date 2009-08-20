@@ -115,6 +115,11 @@ namespace DbRefactor.Infrastructure.Loggers
 			Log(format, args);
 		}
 
+		public void Modify(string query)
+		{
+			Log(query);
+		}
+
 		private void UntracedWrite(string message, params object[] args)
 		{
 			foreach (ILogWriter writer in writers)
