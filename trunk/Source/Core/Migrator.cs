@@ -41,7 +41,6 @@ namespace DbRefactor
 			if (migrationAssembly != null)
 			{
 				migrationsTypes.AddRange(GetMigrationTypes(migrationAssembly));
-				setUpMigration = GetSetUpMigrationType(migrationAssembly);
 			}
 
 			this.logger.Trace("Loaded migrations:");
@@ -50,11 +49,6 @@ namespace DbRefactor
 				this.logger.Trace("{0} {1}", GetMigrationVersion(t).ToString().PadLeft(5), ToHumanName(t.Name));
 			}
 			CheckForDuplicatedVersion();
-		}
-
-		private void BeginTransaction()
-		{
-			migrationTarget.BeginTransaction();
 		}
 
 		/// <summary>
@@ -69,116 +63,99 @@ namespace DbRefactor
 		/// <param name="version">The version that must became the current one</param>
 		public void MigrateTo(int version)
 		{
-			BeginTransaction();
+			try
+			{
+				migrationTarget.BeginTransaction();
 
+				RunMigrations(version);
+
+				migrationTarget.CommitTransaction();
+			}
+			catch
+			{
+				// Oho! error! We rollback changes.
+				
+				migrationTarget.RollbackTransaction();
+				throw;
+			}
+		}
+
+		private void RunMigrations(int version)
+		{
 			var currentVersion = migrationTarget.GetVersion();
 
-			if (currentVersion == version)
-			{
-				RunGlobalSetUp();
-				if (version == LastVersion)
-				{
-					RunGlobalTearDown();
-				}
-				return;
-			}
 			int originalVersion = currentVersion;
 			bool goingUp = originalVersion < version;
 			BaseMigration migration;
-			int v; // the currently running migration number
+			int currentlyRunningMigrationNumber;
 
 			if (goingUp)
 			{
 				// When we migrate to an upper version,
 				// tranformations of the current version are
 				// already applied, so we started at the next version.
-				v = currentVersion + 1;
+				currentlyRunningMigrationNumber = currentVersion + 1;
 			}
 			else
 			{
-				v = currentVersion;
+				currentlyRunningMigrationNumber = currentVersion;
 			}
 
 			logger.Started(originalVersion, version);
-			RunGlobalSetUp();
 
 			while (true)
 			{
-				migration = GetMigration(v);
+				migration = GetMigration(currentlyRunningMigrationNumber);
 
 				if (migration != null)
 				{
 					string migrationName = ToHumanName(migration.GetType().Name);
-
-//					migration.Database = provider.GetDatabase();
 						
 					try
 					{
-						RunSetUp();
 						if (goingUp)
 						{
-							logger.MigrateUp(v, migrationName);
+							logger.MigrateUp(currentlyRunningMigrationNumber, migrationName);
 							migration.Up();
 						}
 						else
 						{
-							logger.MigrateDown(v, migrationName);
+							logger.MigrateDown(currentlyRunningMigrationNumber, migrationName);
 							migration.Down();
 						}
-						RunTearDown();
 					}
 					catch (Exception ex)
 					{
-						logger.Exception(v, migrationName, ex);
-
-						// Oho! error! We rollback changes.
+						logger.Exception(currentlyRunningMigrationNumber, migrationName, ex);
 						logger.RollingBack(originalVersion);
-						migrationTarget.RollbackTransaction();
-
 						throw;
 					}
 				}
 				else
 				{
 					// The migration number is not found
-					logger.Skipping(v);
+					logger.Skipping(currentlyRunningMigrationNumber);
 				}
 
 				if (goingUp)
 				{
-					if (v == version) break;
-					v++;
+					if (currentlyRunningMigrationNumber == version) break;
+					currentlyRunningMigrationNumber++;
 				}
 				else
 				{
-					v--;
+					currentlyRunningMigrationNumber--;
 					// When we go back to previous versions
 					// we don't invoke Down() of the current
 					// version.
-					if (v == version) break;
+					if (currentlyRunningMigrationNumber == version) break;
 				}
-				migrationTarget.UpdateVersion(v);
+				migrationTarget.UpdateVersion(currentlyRunningMigrationNumber);
 			}
 
 			// Update and commit all changes
 			migrationTarget.UpdateVersion(version);
-
-
-			migrationTarget.CommitTransaction();
 			logger.Finished(originalVersion, version);
-
-			try
-			{
-				if (version == LastVersion)
-				{
-					RunGlobalTearDown();
-				}
-			}
-			catch (Exception ex)
-			{
-				logger.Exception(v, "Global Tear down", ex);
-				//throw;
-			}
 		}
 
 		/// <summary>
@@ -285,76 +262,5 @@ namespace DbRefactor
 		}
 
 		#endregion
-
-		private static Type GetSetUpMigrationType(Assembly asm)
-		{
-			var setupList = new List<Type>();
-
-			foreach (Type t in asm.GetTypes())
-			{
-				var attrib = (SetUpMigrationAttribute)
-				             Attribute.GetCustomAttribute(t, typeof (SetUpMigrationAttribute));
-				if (attrib != null)
-				{
-					setupList.Add(t);
-				}
-			}
-
-			if (setupList.Count > 1)
-			{
-				throw new DbRefactorException("Found more than one classes with SetUpMigrationAttribute");
-			}
-
-			if (setupList.Count == 0)
-			{
-				return null;
-			}
-
-			return setupList[0];
-		}
-
-		private readonly Type setUpMigration;
-
-		private void RunGlobalSetUp()
-		{
-			ExecuteSetupMethodWith(typeof (MigratorSetUp));
-		}
-
-		private void RunSetUp()
-		{
-			ExecuteSetupMethodWith(typeof (MigrationSetUp));
-		}
-
-		private void RunGlobalTearDown()
-		{
-			ExecuteSetupMethodWith(typeof (MigratorTearDown));
-		}
-
-		private void RunTearDown()
-		{
-			ExecuteSetupMethodWith(typeof (MigrationTearDown));
-		}
-
-		private void ExecuteSetupMethodWith(Type attributeType)
-		{
-			if (setUpMigration == null)
-			{
-				return;
-			}
-			object setupObject = Activator.CreateInstance(setUpMigration);
-			MethodInfo[] methods = setUpMigration.GetMethods();
-			MethodInfo globalSetupMethod = null;
-			foreach (MethodInfo method in methods)
-			{
-				if (method.GetCustomAttributes(attributeType, false).Length > 0)
-				{
-					globalSetupMethod = method;
-				}
-			}
-			if (globalSetupMethod != null)
-			{
-				globalSetupMethod.Invoke(setupObject, new object[] {});
-			}
-		}
 	}
 }

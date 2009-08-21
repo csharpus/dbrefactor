@@ -34,9 +34,9 @@ namespace DbRefactor.Tests.Integration
 
 		private void CreateProvider()
 		{
-			Provider =
-				new ProviderFactory().Create(ConnectionString, new ConsoleLogger());
-			Database = Provider.GetDatabase();
+			var info = new ProviderFactory().CreateAll(ConnectionString, new ConsoleLogger());
+			Provider = info.Provider;
+			Database = info.Database;
 		}
 	}
 }

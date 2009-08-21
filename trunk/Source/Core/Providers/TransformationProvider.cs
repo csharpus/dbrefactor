@@ -15,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using DbRefactor.Api;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
@@ -28,13 +27,6 @@ namespace DbRefactor.Providers
 {
 	public sealed partial class TransformationProvider
 	{
-		public IDatabase GetDatabase()
-		{
-			return database;
-		}
-
-		public IDatabase database;
-
 		private readonly IDatabaseEnvironment environment;
 		private readonly SqlServerColumnMapper sqlServerColumnMapper;
 		private readonly ConstraintNameService constraintNameService;
@@ -328,11 +320,11 @@ namespace DbRefactor.Providers
 			return environment.ExecuteScalar(String.Format(sql, values));
 		}
 
-		public int Insert(string table, object updateObject)
+		public int Insert(string table, object insertObject)
 		{
 			var providers = GetColumnProviders(table);
-			string operation = GetValues(providers, updateObject);
-			var columns = String.Join("], [", providers.Select(p => p.Name).ToArray()); // TODO we don't need providers here, but updateObject, that should be renamed
+			string operation = GetValues(providers, insertObject);
+			var columns = String.Join("], [", GetColumnNames(insertObject));
 
 			return ExecuteNonQuery(
 				"INSERT INTO [{0}] ([{1}]) VALUES ({2})",
@@ -364,8 +356,6 @@ namespace DbRefactor.Providers
 		{
 			environment.CommitTransaction();
 		}
-
-		
 
 		public void AddUnique(string name, string table, params string[] columns)
 		{
@@ -464,7 +454,7 @@ namespace DbRefactor.Providers
 
 		public IDataReader Select(string tableName, string[] columns, object whereParameters)
 		{
-			string query = String.Format("SELECT {0} FROM {1}", columns.ComaSeparated(), tableName);
+			string query = String.Format("SELECT {0} FROM [{1}]", columns.ComaSeparated(), tableName);
 			var providers = GetColumnProviders(tableName);
 			string whereClause = GetWhereClauseValues(providers, whereParameters);
 			if (whereClause != String.Empty)
@@ -486,6 +476,11 @@ namespace DbRefactor.Providers
 				query += String.Format(" WHERE {0}", whereClause);
 			}
 			return ExecuteNonQuery(query);
+		}
+
+		private static string[] GetColumnNames(object insertObject)
+		{
+			return ParametersHelper.GetPropertyValues(insertObject).Select(v => String.Format("[{0}]", v.Key)).ToArray();
 		}
 		
 		private static string GetValues(IEnumerable<ColumnProvider> providers, object updateObject)
@@ -518,7 +513,7 @@ namespace DbRefactor.Providers
 		private static string EqualitySql(string name, string valueSql)
 		{
 			string equalitySign = valueSql != "null" ? "=" : "is";
-			return String.Format("{0} {1} {2}", name, equalitySign, valueSql);
+			return String.Format("[{0}] {1} {2}", name, equalitySign, valueSql);
 		}
 
 		public int Delete(string tableName, object whereParameters)
@@ -537,7 +532,7 @@ namespace DbRefactor.Providers
 		{
 			var providers = GetColumnProviders(tableName);
 			string whereClause = GetWhereClauseValues(providers, whereParameters);
-			return ExecuteScalar("SELECT {0} FROM {1} WHERE {2}", column, tableName, whereClause);
+			return ExecuteScalar("SELECT {0} FROM [{1}] WHERE {2}", column, tableName, whereClause);
 		}
 
 		public void DropForeignKey(string foreignKeyTable, string[] foreignKeyColumns, string primaryKeyTable,

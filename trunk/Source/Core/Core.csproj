@@ -63,6 +63,7 @@
     <Compile Include="Api\Table.cs" />
     <Compile Include="Api\UpdateTable.cs" />
     <Compile Include="BaseMigration.cs" />
+    <Compile Include="Exceptions\IncorrectQueryException.cs" />
     <Compile Include="Factories\ApiFactory.cs" />
     <Compile Include="Factories\ColumnPropertyProviderFactory.cs" />
     <Compile Include="Factories\ColumnProviderFactory.cs" />
@@ -122,7 +123,6 @@
     <Compile Include="Extensions\StringListExtensions.cs" />
     <Compile Include="Providers\TransformationProvider.cs" />
     <Compile Include="Engines\SqlServer\SqlServerTypeToSqlProvider.cs" />
-    <Compile Include="Attributes.cs" />
     <Compile Include="Providers\Properties\UniqueProvider.cs" />
     <Compile Include="Infrastructure\CodeGenerationHelper.cs" />
     <Compile Include="Tools\DataDumper.cs" />

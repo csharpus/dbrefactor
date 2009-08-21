@@ -13,12 +13,13 @@
 
 using System.Data;
 using System.Data.SqlClient;
+using DbRefactor.Exceptions;
 using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
 
 namespace DbRefactor.Engines.SqlServer
 {
-	sealed class SqlServerEnvironment : IDatabaseEnvironment
+	internal sealed class SqlServerEnvironment : IDatabaseEnvironment
 	{
 		private readonly string connectionString;
 		private readonly ILogger logger;
@@ -35,10 +36,7 @@ namespace DbRefactor.Engines.SqlServer
 
 		internal IDbConnection Connection
 		{
-			get
-			{
-				return connection;
-			}
+			get { return connection; }
 		}
 
 		#region IDatabaseEnvironment Members
@@ -48,7 +46,14 @@ namespace DbRefactor.Engines.SqlServer
 			logger.Log(sql);
 			IDbCommand cmd = BuildCommand(sql);
 			cmd.CommandTimeout = 120;
-			return cmd.ExecuteNonQuery();
+			try
+			{
+				return cmd.ExecuteNonQuery();
+			}
+			catch (SqlException e)
+			{
+				throw new IncorrectQueryException(sql, e);
+			}
 		}
 
 		private IDbCommand BuildCommand(string sql)
@@ -67,14 +72,28 @@ namespace DbRefactor.Engines.SqlServer
 		{
 			logger.Log(sql);
 			IDbCommand cmd = BuildCommand(sql);
-			return cmd.ExecuteReader();
+			try
+			{
+				return cmd.ExecuteReader();
+			}
+			catch (SqlException e)
+			{
+				throw new IncorrectQueryException(sql, e);
+			}
 		}
 
 		object IDatabaseEnvironment.ExecuteScalar(string sql)
 		{
 			logger.Log(sql);
 			IDbCommand cmd = BuildCommand(sql);
-			return cmd.ExecuteScalar();
+			try
+			{
+				return cmd.ExecuteScalar();
+			}
+			catch (SqlException e)
+			{
+				throw new IncorrectQueryException(sql, e);
+			}
 		}
 
 		/// <summary>
@@ -91,10 +110,7 @@ namespace DbRefactor.Engines.SqlServer
 
 		internal IDbTransaction Transaction
 		{
-			get
-			{
-				return transaction;
-			}
+			get { return transaction; }
 		}
 
 		private void EnsureHasConnection()
@@ -142,6 +158,7 @@ namespace DbRefactor.Engines.SqlServer
 			}
 			transaction = null;
 		}
+
 		#endregion
 	}
 }

@@ -36,7 +36,7 @@ namespace DbRefactor.Factories
 
 		private static ColumnProviderFactory columnProviderFactory;
 
-		private FactoryInfo CreateAll(string connectionString, ILogger logger)
+		public FactoryInfo CreateAll(string connectionString, ILogger logger)
 		{
 			var sqlServerEnvironment = new SqlServerEnvironment(connectionString, logger);
 			var codeGenerationService = new CodeGenerationService();
@@ -49,7 +49,6 @@ namespace DbRefactor.Factories
 			var provider = new TransformationProvider(sqlServerEnvironment, sqlServerColumnMapper, constraintNameService);
 			var apiFactory = new ApiFactory(provider, columnProviderFactory, columnPropertyProviderFactory, constraintNameService);
 			var database = new Database(provider, columnProviderFactory, constraintNameService, apiFactory);
-			provider.database = database;
 			return new FactoryInfo {Provider = provider, Database = database};
 		}
 
@@ -58,8 +57,7 @@ namespace DbRefactor.Factories
 			return CreateAll(connectionString, logger).Provider;
 		}
 
-
-		private class FactoryInfo
+		public class FactoryInfo
 		{
 			public TransformationProvider Provider { get; set; }
 			public IDatabase Database { get; set; }
