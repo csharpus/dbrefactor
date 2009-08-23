@@ -78,12 +78,16 @@ namespace DbRefactor
 				migrationTarget.RollbackTransaction();
 				throw new Exception("Error", e);
 			}
+			finally
+			{
+				migrationTarget.CloseConnection();
+			}
 		}
 
 		private void RunMigrations(int version)
 		{
 			var currentVersion = migrationTarget.GetVersion();
-
+			if (version == currentVersion) return;
 			int originalVersion = currentVersion;
 			bool goingUp = originalVersion < version;
 			BaseMigration migration;
@@ -113,6 +117,7 @@ namespace DbRefactor
 						
 					try
 					{
+						migrationTarget.BeginTransaction();
 						if (goingUp)
 						{
 							logger.MigrateUp(currentlyRunningMigrationNumber, migrationName);
@@ -123,9 +128,11 @@ namespace DbRefactor
 							logger.MigrateDown(currentlyRunningMigrationNumber, migrationName);
 							migration.Down();
 						}
+						migrationTarget.CommitTransaction();
 					}
 					catch (Exception ex)
 					{
+						migrationTarget.RollbackTransaction();
 						logger.Exception(currentlyRunningMigrationNumber, migrationName, ex);
 						logger.RollingBack(originalVersion);
 						throw new Exception("Error", ex);

@@ -11,6 +11,7 @@
 
 #endregion
 
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using DbRefactor.Exceptions;
@@ -134,7 +135,7 @@ namespace DbRefactor.Engines.SqlServer
 				}
 				finally
 				{
-					connection.Close();
+					// connection.Close();
 				}
 			}
 			transaction = null;
@@ -153,10 +154,15 @@ namespace DbRefactor.Engines.SqlServer
 				}
 				finally
 				{
-					connection.Close();
+					// connection.Close();
 				}
 			}
 			transaction = null;
+		}
+
+		public void CloseConnection()
+		{
+			connection.Close();
 		}
 
 		#endregion

@@ -1,6 +1,5 @@
 using System;
 using System.Data.SqlClient;
-using System.Runtime.Serialization;
 
 namespace DbRefactor.Exceptions
 {

@@ -557,5 +557,10 @@ namespace DbRefactor.Providers
 				DropConstraint(foreignKeyTable, key);
 			}
 		}
+
+		public void CloseConnection()
+		{
+			environment.CloseConnection();
+		}
 	}
 }

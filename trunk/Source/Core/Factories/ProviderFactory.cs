@@ -26,15 +26,15 @@ namespace DbRefactor.Factories
 			return Create(connectionString, Logger.NullLogger);
 		}
 
-		internal static ColumnProviderFactory ColumnProviderFactory
-		{
-			get
-			{
-				return columnProviderFactory;
-			}
-		}
+		//internal static ColumnProviderFactory ColumnProviderFactory
+		//{
+		//    get
+		//    {
+		//        return columnProviderFactory;
+		//    }
+		//}
 
-		private static ColumnProviderFactory columnProviderFactory;
+		//private static ColumnProviderFactory columnProviderFactory;
 
 		public FactoryInfo CreateAll(string connectionString, ILogger logger)
 		{
@@ -44,7 +44,7 @@ namespace DbRefactor.Factories
 			var sqlServerTypes = new SqlServerTypes();
 			var columnPropertyProviderFactory = new ColumnPropertyProviderFactory(new SqlServerColumnProperties());
 			var sqlServerColumnMapper = new SqlServerColumnMapper(codeGenerationService, sqlServerTypes, sqlGenerationService, columnPropertyProviderFactory);
-			columnProviderFactory = new ColumnProviderFactory(codeGenerationService, sqlServerTypes, sqlGenerationService, columnPropertyProviderFactory);
+			var columnProviderFactory = new ColumnProviderFactory(codeGenerationService, sqlServerTypes, sqlGenerationService, columnPropertyProviderFactory);
 			var constraintNameService = new ConstraintNameService();
 			var provider = new TransformationProvider(sqlServerEnvironment, sqlServerColumnMapper, constraintNameService);
 			var apiFactory = new ApiFactory(provider, columnProviderFactory, columnPropertyProviderFactory, constraintNameService);

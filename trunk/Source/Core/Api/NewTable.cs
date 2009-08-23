@@ -33,6 +33,14 @@ namespace DbRefactor.Api
 			columns = new List<ColumnProvider>();
 		}
 
+		internal ColumnProviderFactory ColumnFactory
+		{
+			get
+			{
+				return factory;
+			}
+		}
+
 		internal void AddColumn(ColumnProvider provider)
 		{
 			columns.Add(provider);

@@ -12,6 +12,8 @@ namespace DbRefactor.Runner
 		public abstract void BeginTransaction();
 		public abstract void CommitTransaction();
 		public abstract void RollbackTransaction();
+
+		public abstract void CloseConnection();
 	}
 
 	public class DatabaseMigrationTarget : MigrationTarget
@@ -74,6 +76,11 @@ namespace DbRefactor.Runner
 		public override void RollbackTransaction()
 		{
 			provider.RollbackTransaction();
+		}
+
+		public override void CloseConnection()
+		{
+			provider.CloseConnection();
 		}
 	}
 }

@@ -28,5 +28,7 @@ namespace DbRefactor.Providers
 		void RollbackTransaction();
 
 		void CommitTransaction();
+
+		void CloseConnection();
 	}
 }

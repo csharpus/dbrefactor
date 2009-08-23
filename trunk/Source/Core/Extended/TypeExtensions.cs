@@ -12,7 +12,6 @@
 #endregion
 
 using DbRefactor.Api;
-using DbRefactor.Factories;
 
 namespace DbRefactor.Extended
 {
@@ -20,43 +19,38 @@ namespace DbRefactor.Extended
 	{
 		public static NewTable Binary(this NewTable newTable, string name)
 		{
-			newTable.AddColumn(Factory.CreateBinary(name));
+			newTable.AddColumn(newTable.ColumnFactory.CreateBinary(name));
 			return newTable;
 		}
 
 		public static NewTable Binary(this NewTable newTable, string name, byte[] defaultValue)
 		{
-			newTable.AddColumn(Factory.CreateBinary(name, defaultValue));
+			newTable.AddColumn(newTable.ColumnFactory.CreateBinary(name, defaultValue));
 			return newTable;
 		}
 
 		public static NewTable Float(this NewTable newTable, string name)
 		{
-			newTable.AddColumn(Factory.CreateFloat(name, null));
+			newTable.AddColumn(newTable.ColumnFactory.CreateFloat(name, null));
 			return newTable;
 		}
 
 		public static NewTable Float(this NewTable newTable, string name, float defaultValue)
 		{
-			newTable.AddColumn(Factory.CreateFloat(name, defaultValue));
+			newTable.AddColumn(newTable.ColumnFactory.CreateFloat(name, defaultValue));
 			return newTable;
 		}
 
 		public static NewTable Double(this NewTable newTable, string name)
 		{
-			newTable.AddColumn(Factory.CreateDouble(name, null));
+			newTable.AddColumn(newTable.ColumnFactory.CreateDouble(name, null));
 			return newTable;
 		}
 
 		public static NewTable Double(this NewTable newTable, string name, double defaultValue)
 		{
-			newTable.AddColumn(Factory.CreateDouble(name, defaultValue));
+			newTable.AddColumn(newTable.ColumnFactory.CreateDouble(name, defaultValue));
 			return newTable;
-		}
-
-		private static ColumnProviderFactory Factory
-		{
-			get { return ProviderFactory.ColumnProviderFactory; }
 		}
 	}
 }
