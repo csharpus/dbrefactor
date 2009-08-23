@@ -331,7 +331,10 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("User").Select("Id", "Name").Where(new {Id = 1, Name = "John"}).Execute();
+			using(var reader = Table("User").Select("Id", "Name").Where(new {Id = 1, Name = "John"}).Execute())
+			{
+				
+			}
 		}
 
 		public override void Down()

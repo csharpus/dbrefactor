@@ -480,7 +480,7 @@ namespace DbRefactor.Providers
 
 		private static string[] GetColumnNames(object insertObject)
 		{
-			return ParametersHelper.GetPropertyValues(insertObject).Select(v => String.Format("[{0}]", v.Key)).ToArray();
+			return ParametersHelper.GetPropertyValues(insertObject).Select(v => v.Key).ToArray();
 		}
 		
 		private static string GetValues(IEnumerable<ColumnProvider> providers, object updateObject)

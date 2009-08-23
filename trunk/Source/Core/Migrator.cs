@@ -71,12 +71,12 @@ namespace DbRefactor
 
 				migrationTarget.CommitTransaction();
 			}
-			catch
+			catch(Exception e)
 			{
 				// Oho! error! We rollback changes.
-				
+				logger.Exception(version, "Unknown", e);
 				migrationTarget.RollbackTransaction();
-				throw;
+				throw new Exception("Error", e);
 			}
 		}
 
@@ -128,7 +128,7 @@ namespace DbRefactor
 					{
 						logger.Exception(currentlyRunningMigrationNumber, migrationName, ex);
 						logger.RollingBack(originalVersion);
-						throw;
+						throw new Exception("Error", ex);
 					}
 				}
 				else
