@@ -21,8 +21,16 @@ using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Tools
 {
-	internal class SchemaDumper
+	public class SchemaDumper
 	{
+		// Future options:
+		// Generate several files instead of one
+		// Add a letter to the migration names
+		// Add a number to the migration names
+		// use three symbols for migration name numbers
+		// Override all constraint names
+		// Override only generated constraint names
+		// Use namespace for migrations
 		private readonly TransformationProvider provider;
 
 		public SchemaDumper(TransformationProvider transformationProvider)
@@ -37,7 +45,7 @@ namespace DbRefactor.Tools
 			writer.WriteLine("using DbRefactor;");
 			writer.WriteLine();
 			writer.WriteLine("[Migration(1)]");
-			writer.WriteLine("public class SchemaDump : Migration");
+			writer.WriteLine("public class M001_SchemaDump : Migration");
 			writer.WriteLine("{");
 			writer.WriteLine("\tpublic override void Up()");
 			writer.WriteLine("\t{");
@@ -119,9 +127,8 @@ namespace DbRefactor.Tools
 			var keys = provider.GetForeignKeys();
 			foreach (var key in keys)
 			{
-				values += String.Format("Table(\"{0}\").AddForeignKey(\"{1}\", \"{2}\").References(\"{3}\", \"{4}\")",
+				values += String.Format("Table(\"{0}\").Column(\"{1}\").AddForeignKeyTo(\"{2}\", \"{3}\")",
 										key.ForeignTable,
-										key.Name,
 										key.ForeignColumn,
 										key.PrimaryTable,
 										key.PrimaryColumn);
@@ -136,9 +143,11 @@ namespace DbRefactor.Tools
 			var keys = provider.GetForeignKeys();
 			foreach (var key in keys)
 			{
-				values += String.Format("Table(\"{0}\").DropForeignKey(\"{1}\")",
+				values += String.Format("Table(\"{0}\").Column(\"{1}\").DropForeignKey(\"{2}\", \"{3}\")",
 										key.ForeignTable,
-										key.Name);
+										key.ForeignColumn,
+										key.PrimaryTable,
+										key.PrimaryColumn);
 				values += Environment.NewLine;
 			}
 			return values;

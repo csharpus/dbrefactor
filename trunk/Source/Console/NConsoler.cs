@@ -1,5 +1,5 @@
 ﻿//
-// NConsoler 0.9.2
+// NConsoler 0.9.3
 // http://nconsoler.csharpus.com
 //
 
@@ -61,7 +61,7 @@ namespace NConsoler
 		/// <param name="targetType">Type where to search for Action methods</param>
 		public static void Validate(Type targetType)
 		{
-			new Consolery(targetType, new string[] { }, new ConsoleMessenger()).ValidateMetadata();
+			new Consolery(targetType, new string[] {}, new ConsoleMessenger()).ValidateMetadata();
 		}
 
 		private readonly Type _targetType;
@@ -183,14 +183,13 @@ namespace NConsoler
 				ConvertToDateTime(parameter);
 				return true;
 			}
-			catch (NConsolerException)
+			catch(NConsolerException)
 			{
 				return false;
 			}
 		}
 
-		private bool SingleActionWithOnlyOptionalParametersSpecified()
-		{
+		private bool SingleActionWithOnlyOptionalParametersSpecified() {
 			if (IsMulticommand) return false;
 			MethodInfo method = _actionMethods[0];
 			return OnlyOptionalParametersSpecified(method);
@@ -207,7 +206,7 @@ namespace NConsoler
 			}
 			return true;
 		}
-
+		
 
 		private void RunAction()
 		{
@@ -268,8 +267,8 @@ namespace NConsoler
 		private bool IsHelpRequested()
 		{
 			return (_args.Length == 0 && !SingleActionWithOnlyOptionalParametersSpecified())
-				|| (_args.Length > 0 && (_args[0] == "/?"
-				|| _args[0] == "/help"
+				|| (_args.Length > 0 && (_args[0] == "/?" 
+				|| _args[0] == "/help" 
 				|| _args[0] == "/h"
 				|| _args[0] == "help"));
 		}
@@ -307,10 +306,10 @@ namespace NConsoler
 
 					foreach (string altName in optional.AltNames)
 					{
-						aliases.Add(altName,
+						aliases.Add(altName.ToLower(),
 							new ParameterData(parameterValues.Count, info.ParameterType));
 					}
-					aliases.Add(info.Name,
+					aliases.Add(info.Name.ToLower(),
 						new ParameterData(parameterValues.Count, info.ParameterType));
 					parameterValues.Add(optional.Default);
 				}
@@ -579,13 +578,13 @@ namespace NConsoler
 		{
 			if (parameter.StartsWith("/-"))
 			{
-				return parameter.Substring(2);
+				return parameter.Substring(2).ToLower();
 			}
 			if (parameter.Contains(":"))
 			{
-				return parameter.Substring(1, parameter.IndexOf(":") - 1);
+				return parameter.Substring(1, parameter.IndexOf(":") - 1).ToLower();
 			}
-			return parameter.Substring(1);
+			return parameter.Substring(1).ToLower();
 		}
 
 		private static string ParameterValue(string parameter)
@@ -628,17 +627,17 @@ namespace NConsoler
 				{
 					continue;
 				}
-				parameterNames.Add(parameter.Name);
+				parameterNames.Add(parameter.Name.ToLower());
 				OptionalAttribute optional = GetOptional(parameter);
 				foreach (string altName in optional.AltNames)
 				{
-					parameterNames.Add(altName);
+					parameterNames.Add(altName.ToLower());
 				}
 			}
 			foreach (string optionalParameter in OptionalParameters(method))
 			{
 				string name = ParameterName(optionalParameter);
-				if (!parameterNames.Contains(name))
+				if (!parameterNames.Contains(name.ToLower()))
 				{
 					throw new NConsolerException("Unknown parameter name {0}", optionalParameter);
 				}
@@ -700,8 +699,8 @@ namespace NConsoler
 
 		private static bool CanBeNull(Type type)
 		{
-			return type == typeof(string)
-				|| type == typeof(string[])
+			return type == typeof(string) 
+				|| type == typeof(string[]) 
 				|| type == typeof(int[]);
 		}
 
@@ -749,23 +748,23 @@ namespace NConsoler
 			{
 				if (IsRequired(parameter))
 				{
-					parameterNames.Add(parameter.Name);
+					parameterNames.Add(parameter.Name.ToLower());
 				}
 				else
 				{
-					if (parameterNames.Contains(parameter.Name))
+					if (parameterNames.Contains(parameter.Name.ToLower()))
 					{
 						throw new NConsolerException("Found duplicated parameter name \"{0}\" in method \"{1}\". Please check alt names for optional parameters", parameter.Name, method.Name);
 					}
-					parameterNames.Add(parameter.Name);
+					parameterNames.Add(parameter.Name.ToLower());
 					OptionalAttribute optional = GetOptional(parameter);
 					foreach (string altName in optional.AltNames)
 					{
-						if (parameterNames.Contains(altName))
+						if (parameterNames.Contains(altName.ToLower()))
 						{
 							throw new NConsolerException("Found duplicated parameter name \"{0}\" in method \"{1}\". Please check alt names for optional parameters", altName, method.Name);
 						}
-						parameterNames.Add(altName);
+						parameterNames.Add(altName.ToLower());
 					}
 				}
 			}

@@ -47,7 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Boot.cs" />
-    <Compile Include="Consolery.cs" />
+    <Compile Include="NConsoler.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\core\Core.csproj">

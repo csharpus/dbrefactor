@@ -7,14 +7,13 @@ namespace DbRefactor.Factories
 	{
 		private readonly TransformationProvider transformationProvider;
 		private readonly ColumnProviderFactory columnProviderFactory;
-		private readonly ColumnPropertyProviderFactory columnPropertyProviderFactory;
 		private readonly ConstraintNameService constraintNameService;
 
-		public ApiFactory(TransformationProvider transformationProvider, ColumnProviderFactory columnProviderFactory, ColumnPropertyProviderFactory columnPropertyProviderFactory, ConstraintNameService constraintNameService)
+		public ApiFactory(TransformationProvider transformationProvider, ColumnProviderFactory columnProviderFactory,
+		                  ConstraintNameService constraintNameService)
 		{
 			this.transformationProvider = transformationProvider;
 			this.columnProviderFactory = columnProviderFactory;
-			this.columnPropertyProviderFactory = columnPropertyProviderFactory;
 			this.constraintNameService = constraintNameService;
 		}
 

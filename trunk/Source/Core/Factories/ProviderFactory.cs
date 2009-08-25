@@ -47,7 +47,7 @@ namespace DbRefactor.Factories
 			var columnProviderFactory = new ColumnProviderFactory(codeGenerationService, sqlServerTypes, sqlGenerationService, columnPropertyProviderFactory);
 			var constraintNameService = new ConstraintNameService();
 			var provider = new TransformationProvider(sqlServerEnvironment, sqlServerColumnMapper, constraintNameService);
-			var apiFactory = new ApiFactory(provider, columnProviderFactory, columnPropertyProviderFactory, constraintNameService);
+			var apiFactory = new ApiFactory(provider, columnProviderFactory, constraintNameService);
 			var database = new Database(provider, columnProviderFactory, constraintNameService, apiFactory);
 			return new FactoryInfo {Provider = provider, Database = database};
 		}
