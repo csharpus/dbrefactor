@@ -12,7 +12,7 @@ namespace DbRefactor.Api
 		private readonly ConstraintNameService constraintNameService;
 		private readonly List<string> columnNames = new List<string>();
 
-		public ActionColumn(TransformationProvider provider, string tableName, string columnName, ApiFactory apiFactory,
+		internal ActionColumn(TransformationProvider provider, string tableName, string columnName, ApiFactory apiFactory,
 		                    ConstraintNameService constraintNameService)
 		{
 			this.provider = provider;

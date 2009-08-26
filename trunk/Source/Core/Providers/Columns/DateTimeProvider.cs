@@ -14,13 +14,13 @@
 using System;
 using System.Linq.Expressions;
 using DbRefactor.Api;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 using DbRefactor.Factories;
 using DbRefactor.Infrastructure;
 
 namespace DbRefactor.Providers.Columns
 {
-	public class DateTimeProvider : ColumnProvider
+	internal class DateTimeProvider : ColumnProvider
 	{
 		public DateTimeProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
 			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)

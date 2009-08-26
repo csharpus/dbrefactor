@@ -27,8 +27,8 @@ namespace DbRefactor.Api
 		private readonly ColumnProviderFactory factory;
 		private ColumnProvider currentColumn;
 
-		public AddColumnTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, string tableName,
-		                      ConstraintNameService constraintNameService)
+		internal AddColumnTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, string tableName,
+		                        ConstraintNameService constraintNameService)
 		{
 			this.tableName = tableName;
 			this.constraintNameService = constraintNameService;

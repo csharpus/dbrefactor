@@ -14,11 +14,11 @@
 using System;
 using System.Linq.Expressions;
 using DbRefactor.Api;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 
 namespace DbRefactor.Providers.Properties
 {
-	public class NotNullProvider : PropertyProvider
+	internal class NotNullProvider : PropertyProvider
 	{
 		public NotNullProvider(IColumnProperties columnProperties) : base(columnProperties)
 		{

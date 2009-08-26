@@ -14,11 +14,11 @@
 using System;
 using System.Linq.Expressions;
 using DbRefactor.Api;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 
 namespace DbRefactor.Providers.Properties
 {
-	public class UniqueProvider : PropertyProvider
+	internal class UniqueProvider : PropertyProvider
 	{
 		private readonly string name;
 

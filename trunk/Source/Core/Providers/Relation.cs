@@ -1,6 +1,6 @@
 namespace DbRefactor.Providers
 {
-	public class Relation
+	internal class Relation
 	{
 		public Relation(string parent, string child)
 		{

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace DbRefactor.Providers
 {
-	public class ConstraintNameService
+	internal class ConstraintNameService
 	{
 		public string UniqueName(string table, string column)
 		{

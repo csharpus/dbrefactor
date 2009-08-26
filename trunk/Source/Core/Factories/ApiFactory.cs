@@ -3,7 +3,7 @@ using DbRefactor.Providers;
 
 namespace DbRefactor.Factories
 {
-	public class ApiFactory
+	internal class ApiFactory
 	{
 		private readonly TransformationProvider transformationProvider;
 		private readonly ColumnProviderFactory columnProviderFactory;

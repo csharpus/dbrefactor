@@ -18,7 +18,7 @@ using System.IO;
 
 namespace DbRefactor.Infrastructure
 {
-	public class CodeGenerationService : ICodeGenerationService
+	internal class CodeGenerationService : ICodeGenerationService
 	{
 		public string PrimitiveValue(object value)
 		{

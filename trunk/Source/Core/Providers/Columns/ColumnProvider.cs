@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq.Expressions;
 using DbRefactor.Api;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 using DbRefactor.Exceptions;
 using DbRefactor.Factories;
 using DbRefactor.Infrastructure;
@@ -24,7 +24,7 @@ using DbRefactor.Providers.Properties;
 
 namespace DbRefactor.Providers.Columns
 {
-	public abstract class ColumnProvider
+	internal abstract class ColumnProvider
 	{
 		private readonly ICodeGenerationService codeGenerationService;
 		private readonly ISqlTypes sqlTypes;

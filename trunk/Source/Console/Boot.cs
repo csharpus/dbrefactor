@@ -11,7 +11,6 @@
 using System;
 using DbRefactor.Factories;
 using DbRefactor.Infrastructure.Loggers;
-using DbRefactor.Tools;
 using NConsoler;
 using System.Reflection;
 
@@ -25,6 +24,7 @@ namespace DbRefactor.Console
 		[STAThread]
 		public static void Main(string[] argv)
 		{
+			//DbRefactor.Engines.SqlServer.ConstraintFilter
 			Consolery.Run(typeof(Boot), argv);
 		}
 
@@ -59,8 +59,8 @@ namespace DbRefactor.Console
 		[Action]
 		public static void Dump(string provider, string connectionString, string outputFolder)
 		{
-			var transformationProvider = new ProviderFactory().Create(connectionString, new ConsoleLogger());
-			new SchemaDumper(transformationProvider).DumpTo(outputFolder);
+			var dumper = new ProviderFactory().CreateSchemaDumper(connectionString, new ConsoleLogger());
+			dumper.DumpTo(outputFolder);
 		}
 	}
 }

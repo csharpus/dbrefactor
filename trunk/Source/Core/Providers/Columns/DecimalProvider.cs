@@ -14,13 +14,13 @@
 using System;
 using System.Linq.Expressions;
 using DbRefactor.Api;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 using DbRefactor.Factories;
 using DbRefactor.Infrastructure;
 
 namespace DbRefactor.Providers.Columns
 {
-	public class DecimalProvider : ColumnProvider
+	internal class DecimalProvider : ColumnProvider
 	{
 		private readonly int precision;
 		private readonly int radix;

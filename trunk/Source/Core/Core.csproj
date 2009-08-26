@@ -63,6 +63,9 @@
     <Compile Include="Api\Table.cs" />
     <Compile Include="Api\UpdateTable.cs" />
     <Compile Include="BaseMigration.cs" />
+    <Compile Include="Engines\IColumnProperties.cs" />
+    <Compile Include="Engines\SqlServer\SqlServerColumnProperties.cs" />
+    <Compile Include="Engines\SqlServer\SqlServerTypes.cs" />
     <Compile Include="Exceptions\IncorrectQueryException.cs" />
     <Compile Include="Factories\ApiFactory.cs" />
     <Compile Include="Factories\ColumnPropertyProviderFactory.cs" />
@@ -122,7 +125,7 @@
     <Compile Include="Providers\Columns\TextProvider.cs" />
     <Compile Include="Extensions\StringListExtensions.cs" />
     <Compile Include="Providers\TransformationProvider.cs" />
-    <Compile Include="Engines\SqlServer\SqlServerTypeToSqlProvider.cs" />
+    <Compile Include="Engines\ISqlTypes.cs" />
     <Compile Include="Providers\Properties\UniqueProvider.cs" />
     <Compile Include="Infrastructure\CodeGenerationHelper.cs" />
     <Compile Include="Tools\DataDumper.cs" />

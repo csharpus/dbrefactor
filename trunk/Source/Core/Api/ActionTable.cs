@@ -11,9 +11,7 @@
 
 #endregion
 
-using System.Collections.Generic;
 using DbRefactor.Factories;
-using DbRefactor.Infrastructure;
 using DbRefactor.Providers;
 
 namespace DbRefactor.Api
@@ -25,7 +23,7 @@ namespace DbRefactor.Api
 		private readonly ConstraintNameService constraintNameService;
 		private readonly ApiFactory apiFactory;
 
-		public ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory,
+		internal ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory,
 		                   ConstraintNameService constraintNameService, ApiFactory apiFactory) : base(provider, tableName)
 		{
 			this.provider = provider;

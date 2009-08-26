@@ -23,7 +23,7 @@ namespace DbRefactor.Tools
 	{
 		private readonly TransformationProvider provider;
 
-		public DataDumper(TransformationProvider provider)
+		internal DataDumper(TransformationProvider provider)
 		{
 			this.provider = provider;
 		}

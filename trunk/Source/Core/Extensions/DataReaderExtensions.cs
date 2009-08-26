@@ -3,7 +3,7 @@ using System.Data;
 
 namespace DbRefactor.Extensions
 {
-	public static class DataReaderExtensions
+	internal static class DataReaderExtensions
 	{
 		public static IEnumerable<IDataReader> AsReadable(this IDataReader reader)
 		{

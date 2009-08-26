@@ -9,7 +9,7 @@ namespace DbRefactor.Api
 		private readonly string tableName;
 		private readonly string[] selectColumns;
 
-		public SelectTable(TransformationProvider provider, string tableName, string[] selectColumns)
+		internal SelectTable(TransformationProvider provider, string tableName, string[] selectColumns)
 		{
 			this.provider = provider;
 			this.tableName = tableName;

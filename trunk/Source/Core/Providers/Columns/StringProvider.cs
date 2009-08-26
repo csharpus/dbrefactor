@@ -14,17 +14,19 @@
 using System;
 using System.Linq.Expressions;
 using DbRefactor.Api;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 using DbRefactor.Factories;
 using DbRefactor.Infrastructure;
 
 namespace DbRefactor.Providers.Columns
 {
-	public class StringProvider : ColumnProvider
+	internal class StringProvider : ColumnProvider
 	{
 		private readonly int size;
 
-		public StringProvider(string name, object defaultValue, int size, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
+		public StringProvider(string name, object defaultValue, int size, ICodeGenerationService codeGenerationService,
+		                      ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService,
+		                      ColumnPropertyProviderFactory columnPropertyProviderFactory)
 			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)
 		{
 			this.size = size;
@@ -47,7 +49,7 @@ namespace DbRefactor.Providers.Columns
 
 		protected override string ValueSql(object value)
 		{
-			return SQLTypes.StringValue((string)value);
+			return SQLTypes.StringValue((string) value);
 		}
 	}
 }

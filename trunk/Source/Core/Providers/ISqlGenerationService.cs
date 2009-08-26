@@ -5,14 +5,14 @@ using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Providers
 {
-	public interface ISqlGenerationService
+	internal interface ISqlGenerationService
 	{
 		string GenerateCreateColumnSql(ColumnProvider columnProvider);
 		string GenerateAlterColumnSql(ColumnProvider provider);
 		string GenerateAddColumnSql(ColumnProvider provider);
 	}
 
-	public class SQLGenerationService : ISqlGenerationService
+	internal class SqlGenerationService : ISqlGenerationService
 	{
 		public string GenerateCreateColumnSql(ColumnProvider columnProvider)
 		{

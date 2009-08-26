@@ -1,11 +1,11 @@
 using System;
 using System.Linq.Expressions;
 using DbRefactor.Api;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 
 namespace DbRefactor.Providers.Properties
 {
-	public abstract class PropertyProvider
+	internal abstract class PropertyProvider
 	{
 		private readonly IColumnProperties columnProperties;
 

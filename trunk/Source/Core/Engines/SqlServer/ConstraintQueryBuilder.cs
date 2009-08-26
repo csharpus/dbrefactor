@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DbRefactor.Engines.SqlServer
 {
-	public class ConstraintFilter
+	internal class ConstraintFilter
 	{
 		public string Name { get; set; }
 		public string TableName { get; set; }
@@ -11,7 +11,7 @@ namespace DbRefactor.Engines.SqlServer
 		public string ConstraintType { get; set; }
 	}
 
-	public class DatabaseConstraint
+	internal class DatabaseConstraint
 	{
 		public string Name { get; set; }
 		public string TableSchema { get; set; }
@@ -20,7 +20,7 @@ namespace DbRefactor.Engines.SqlServer
 		public string ConstraintType { get; set; }
 	}
 
-	public class ConstraintQueryBuilder
+	internal class ConstraintQueryBuilder
 	{
 		private readonly ConstraintFilter filter;
 		private readonly List<string> restrictions = new List<string>();

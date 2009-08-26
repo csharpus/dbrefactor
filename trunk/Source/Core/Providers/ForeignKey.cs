@@ -1,6 +1,6 @@
 namespace DbRefactor.Providers
 {
-	public class ForeignKey
+	internal class ForeignKey
 	{
 		public string Name { get; set; }
 		public string PrimaryTable { get; set; }

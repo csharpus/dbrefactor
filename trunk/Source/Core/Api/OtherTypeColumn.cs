@@ -11,7 +11,7 @@ namespace DbRefactor.Api
 		private readonly ColumnProviderFactory factory;
 		private readonly TransformationProvider provider;
 
-		public OtherTypeColumn(string tableName, string columnName, ColumnProviderFactory factory,
+		internal OtherTypeColumn(string tableName, string columnName, ColumnProviderFactory factory,
 		                       TransformationProvider provider)
 		{
 			this.tableName = tableName;

@@ -33,7 +33,7 @@ namespace DbRefactor.Tools
 		// Use namespace for migrations
 		private readonly TransformationProvider provider;
 
-		public SchemaDumper(TransformationProvider transformationProvider)
+		internal SchemaDumper(TransformationProvider transformationProvider)
 		{
 			provider = transformationProvider;
 		}

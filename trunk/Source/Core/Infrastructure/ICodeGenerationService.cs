@@ -15,7 +15,7 @@ using System;
 
 namespace DbRefactor.Infrastructure
 {
-	public interface ICodeGenerationService
+	internal interface ICodeGenerationService
 	{
 		string PrimitiveValue(object value);
 		string DateTimeValue(DateTime dateTime);

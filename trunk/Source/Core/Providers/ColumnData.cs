@@ -1,6 +1,6 @@
 namespace DbRefactor.Providers
 {
-	public class ColumnData
+	internal class ColumnData
 	{
 		public string DataType { get; set; }
 

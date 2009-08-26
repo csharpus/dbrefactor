@@ -1,9 +1,9 @@
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 using DbRefactor.Providers.Properties;
 
 namespace DbRefactor.Factories
 {
-	public class ColumnPropertyProviderFactory
+	internal class ColumnPropertyProviderFactory
 	{
 		private readonly IColumnProperties columnProperties;
 

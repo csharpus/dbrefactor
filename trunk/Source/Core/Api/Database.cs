@@ -18,7 +18,7 @@ namespace DbRefactor.Api
 		private readonly ConstraintNameService constraintNameService;
 		private readonly ApiFactory apiFactory;
 
-		public Database(TransformationProvider transformationProvider, ColumnProviderFactory columnProviderFactory,
+		internal Database(TransformationProvider transformationProvider, ColumnProviderFactory columnProviderFactory,
 		                ConstraintNameService constraintNameService, ApiFactory apiFactory)
 		{
 			this.transformationProvider = transformationProvider;

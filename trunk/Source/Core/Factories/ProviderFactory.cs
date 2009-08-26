@@ -9,6 +9,7 @@
 //under the License.
 #endregion
 
+using System;
 using System.Reflection;
 using DbRefactor.Api;
 using DbRefactor.Engines.SqlServer;
@@ -16,31 +17,22 @@ using DbRefactor.Infrastructure;
 using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
 using DbRefactor.Runner;
+using DbRefactor.Tools;
 
 namespace DbRefactor.Factories
 {
 	public class ProviderFactory
 	{
-		public TransformationProvider Create(string connectionString)
+		internal TransformationProvider Create(string connectionString)
 		{
 			return Create(connectionString, Logger.NullLogger);
 		}
 
-		//internal static ColumnProviderFactory ColumnProviderFactory
-		//{
-		//    get
-		//    {
-		//        return columnProviderFactory;
-		//    }
-		//}
-
-		//private static ColumnProviderFactory columnProviderFactory;
-
-		public FactoryInfo CreateAll(string connectionString, ILogger logger)
+		internal FactoryInfo CreateAll(string connectionString, ILogger logger)
 		{
 			var sqlServerEnvironment = new SqlServerEnvironment(connectionString, logger);
 			var codeGenerationService = new CodeGenerationService();
-			var sqlGenerationService = new SQLGenerationService();
+			var sqlGenerationService = new SqlGenerationService();
 			var sqlServerTypes = new SqlServerTypes();
 			var columnPropertyProviderFactory = new ColumnPropertyProviderFactory(new SqlServerColumnProperties());
 			var sqlServerColumnMapper = new SqlServerColumnMapper(codeGenerationService, sqlServerTypes, sqlGenerationService, columnPropertyProviderFactory);
@@ -52,12 +44,12 @@ namespace DbRefactor.Factories
 			return new FactoryInfo {Provider = provider, Database = database};
 		}
 
-		public TransformationProvider Create(string connectionString, ILogger logger)
+		internal TransformationProvider Create(string connectionString, ILogger logger)
 		{
 			return CreateAll(connectionString, logger).Provider;
 		}
 
-		public class FactoryInfo
+		internal class FactoryInfo
 		{
 			public TransformationProvider Provider { get; set; }
 			public IDatabase Database { get; set; }
@@ -74,6 +66,11 @@ namespace DbRefactor.Factories
 			var logger = new Logger(trace);
 			logger.Attach(new ConsoleWriter());
 			return new Migrator(CreateTarget(connectionString, logger, category), category, assembly, logger);
+		}
+
+		public SchemaDumper CreateSchemaDumper(string connectionString, ConsoleLogger logger)
+		{
+			return new SchemaDumper(Create(connectionString, logger));
 		}
 	}
 }

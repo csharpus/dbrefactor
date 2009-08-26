@@ -9,7 +9,7 @@ using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Providers
 {
-	public sealed partial class TransformationProvider
+	internal sealed partial class TransformationProvider
 	{
 		private ColumnProvider GetColumnProvider(string tableName, string columnName)
 		{
@@ -92,7 +92,7 @@ namespace DbRefactor.Providers
 			return GetConstraints(filter).Select(c => c.Name).ToList();
 		}
 
-		public List<DatabaseConstraint> GetUniqueConstraints(string table, string[] columns)
+		internal List<DatabaseConstraint> GetUniqueConstraints(string table, string[] columns)
 		{
 			var filter = new ConstraintFilter { TableName = table, ColumnNames = columns, ConstraintType = "UQ" };
 			return GetConstraints(filter).ToList();

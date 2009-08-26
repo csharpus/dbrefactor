@@ -8,7 +8,7 @@ namespace DbRefactor.Api
 		private readonly string tableName;
 		private readonly object updateObject;
 
-		public UpdateTable(TransformationProvider provider, string tableName, object updateObject)
+		internal UpdateTable(TransformationProvider provider, string tableName, object updateObject)
 		{
 			this.provider = provider;
 			this.tableName = tableName;

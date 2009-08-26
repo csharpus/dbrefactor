@@ -9,8 +9,8 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DbRefactor.NAnt</RootNamespace>
     <AssemblyName>DbRefactor.NAnt</AssemblyName>
-    <SignAssembly>False</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\migrator_2005.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyOriginatorKeyFile>DbRefactor.snk</AssemblyOriginatorKeyFile>
     <DelaySign>False</DelaySign>
     <AssemblyOriginatorKeyMode>File</AssemblyOriginatorKeyMode>
     <FileUpgradeFlags>
@@ -58,6 +58,9 @@
       <Project>{1FEE70A4-AAD7-4C60-BE60-3F7DC03A8C4D}</Project>
       <Name>Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DbRefactor.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

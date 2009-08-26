@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace DbRefactor.Infrastructure
 {
-	public static class CodeGenerationHelper
+	internal static class CodeGenerationHelper
 	{
 		public static string GenerateMethodCall(string name, IEnumerable<string> arguments)
 		{

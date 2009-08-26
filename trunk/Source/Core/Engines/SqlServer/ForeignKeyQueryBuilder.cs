@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DbRefactor.Engines.SqlServer
 {
-	public class ForeignKeyFilter
+	internal class ForeignKeyFilter
 	{
 		public string Name { get; set; }
 		public string ForeignKeyTable { get; set; }
@@ -12,7 +12,7 @@ namespace DbRefactor.Engines.SqlServer
 		public string[] PrimaryKeyColumns { get; set; }
 	}
 
-	public class ForeignKeyQueryBuilder
+	internal class ForeignKeyQueryBuilder
 	{
 		private readonly ForeignKeyFilter filter;
 		private readonly List<string> restrictions = new List<string>();

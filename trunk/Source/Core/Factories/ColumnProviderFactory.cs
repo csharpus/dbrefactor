@@ -1,12 +1,12 @@
 using System;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 using DbRefactor.Infrastructure;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Factories
 {
-	public class ColumnProviderFactory
+	internal class ColumnProviderFactory
 	{
 		private readonly ICodeGenerationService codeGenerationService;
 		private readonly ISqlTypes sqlTypes;

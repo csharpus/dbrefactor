@@ -25,7 +25,7 @@ using DbRefactor.Tools.DesignByContract;
 
 namespace DbRefactor.Providers
 {
-	public sealed partial class TransformationProvider
+	internal sealed partial class TransformationProvider
 	{
 		private readonly IDatabaseEnvironment environment;
 		private readonly SqlServerColumnMapper sqlServerColumnMapper;

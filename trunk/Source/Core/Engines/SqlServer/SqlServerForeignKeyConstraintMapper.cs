@@ -15,7 +15,7 @@ using System;
 
 namespace DbRefactor.Engines.SqlServer
 {
-	sealed class SqlServerForeignKeyConstraintMapper
+	internal sealed class SqlServerForeignKeyConstraintMapper
 	{
 		public string Resolve(OnDelete constraint)
 		{

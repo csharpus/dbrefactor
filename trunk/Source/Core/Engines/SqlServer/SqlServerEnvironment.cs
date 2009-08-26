@@ -11,7 +11,6 @@
 
 #endregion
 
-using System;
 using System.Data;
 using System.Data.SqlClient;
 using DbRefactor.Exceptions;
@@ -129,14 +128,7 @@ namespace DbRefactor.Engines.SqlServer
 		{
 			if (transaction != null && connection != null && connection.State == ConnectionState.Open)
 			{
-				try
-				{
-					transaction.Rollback();
-				}
-				finally
-				{
-					// connection.Close();
-				}
+				transaction.Rollback();
 			}
 			transaction = null;
 		}
@@ -148,14 +140,7 @@ namespace DbRefactor.Engines.SqlServer
 		{
 			if (transaction != null && connection != null && connection.State == ConnectionState.Open)
 			{
-				try
-				{
-					transaction.Commit();
-				}
-				finally
-				{
-					// connection.Close();
-				}
+				transaction.Commit();
 			}
 			transaction = null;
 		}

@@ -3,21 +3,21 @@ using System.Collections.Generic;
 
 namespace DbRefactor.Engines.SqlServer
 {
-	public class Index
+	internal class Index
 	{
 		public string Name { get; set; }
 		public string TableName { get; set; }
 		public string ColumnName { get; set; }
 	}
 
-	public class IndexFilter
+	internal class IndexFilter
 	{
 		public string Name { get; set; }
 		public string TableName { get; set; }
 		public string ColumnName { get; set; }
 	}
 
-	public class IndexQueryBuilder
+	internal class IndexQueryBuilder
 	{
 		private readonly IndexFilter filter;
 

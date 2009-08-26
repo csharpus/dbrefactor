@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DbRefactor.Extensions
 {
-	public static class StringListExtensions
+	internal static class StringListExtensions
 	{
 		public static string ComaSeparated(this IEnumerable<string> list)
 		{

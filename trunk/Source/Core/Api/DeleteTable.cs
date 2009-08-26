@@ -7,7 +7,7 @@ namespace DbRefactor.Api
 		private readonly TransformationProvider provider;
 		private readonly string tableName;
 
-		public DeleteTable(TransformationProvider provider, string tableName)
+		internal DeleteTable(TransformationProvider provider, string tableName)
 		{
 			this.provider = provider;
 			this.tableName = tableName;

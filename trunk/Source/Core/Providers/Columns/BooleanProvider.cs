@@ -13,13 +13,13 @@
 
 using System;
 using DbRefactor.Api;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 using DbRefactor.Factories;
 using DbRefactor.Infrastructure;
 
 namespace DbRefactor.Providers.Columns
 {
-	public class BooleanProvider : ColumnProvider
+	internal class BooleanProvider : ColumnProvider
 	{
 		public BooleanProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
 			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)

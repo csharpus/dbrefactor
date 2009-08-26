@@ -4,7 +4,7 @@ using DbRefactor.Providers;
 
 namespace DbRefactor.Runner
 {
-	public abstract class MigrationTarget
+	internal abstract class MigrationTarget
 	{
 		public abstract int GetVersion();
 		public abstract void UpdateVersion(int version);
@@ -16,7 +16,7 @@ namespace DbRefactor.Runner
 		public abstract void CloseConnection();
 	}
 
-	public class DatabaseMigrationTarget : MigrationTarget
+	internal class DatabaseMigrationTarget : MigrationTarget
 	{
 		private readonly TransformationProvider provider;
 		private readonly IDatabase database;

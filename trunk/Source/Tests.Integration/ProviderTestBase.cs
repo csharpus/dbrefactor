@@ -10,7 +10,7 @@ namespace DbRefactor.Tests.Integration
 {
 	public class ProviderTestBase
 	{
-		protected TransformationProvider Provider;
+		internal TransformationProvider Provider;
 		protected IDatabase Database;
 
 		[SetUp]

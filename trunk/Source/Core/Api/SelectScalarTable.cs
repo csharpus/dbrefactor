@@ -8,7 +8,7 @@ namespace DbRefactor.Api
 		private readonly string tableName;
 		private readonly string column;
 
-		public SelectScalarTable(TransformationProvider provider, string tableName, string column)
+		internal SelectScalarTable(TransformationProvider provider, string tableName, string column)
 		{
 			this.provider = provider;
 			this.tableName = tableName;

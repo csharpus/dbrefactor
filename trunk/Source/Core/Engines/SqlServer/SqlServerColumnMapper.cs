@@ -18,7 +18,7 @@ using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Engines.SqlServer
 {
-	public class SqlServerColumnMapper
+	internal class SqlServerColumnMapper
 	{
 		private readonly ICodeGenerationService codeGenerationService;
 		private readonly ISqlTypes sqlTypes;

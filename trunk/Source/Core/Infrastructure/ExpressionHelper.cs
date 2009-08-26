@@ -16,7 +16,7 @@ using System.Linq.Expressions;
 
 namespace DbRefactor.Infrastructure
 {
-	public static class ExpressionHelper
+	internal static class ExpressionHelper
 	{
 		public static object ValueFromExpression(Expression expression)
 		{

@@ -7,7 +7,7 @@ namespace DbRefactor.Api
 	{
 		private readonly TransformationProvider transformationProvider;
 
-		public ExecuteEngine(TransformationProvider transformationProvider)
+		internal ExecuteEngine(TransformationProvider transformationProvider)
 		{
 			this.transformationProvider = transformationProvider;
 		}

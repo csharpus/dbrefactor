@@ -1,11 +1,11 @@
 using System;
 using System.Linq.Expressions;
 using DbRefactor.Api;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 
 namespace DbRefactor.Providers.Properties
 {
-	public class IdentityProvider : PropertyProvider
+	internal class IdentityProvider : PropertyProvider
 	{
 		public IdentityProvider(IColumnProperties columnProperties) : base(columnProperties)
 		{

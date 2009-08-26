@@ -20,16 +20,15 @@ namespace DbRefactor.Api
 		private readonly TransformationProvider provider;
 		public string TableName { get; set; }
 
-		protected TransformationProvider Provider
+		internal TransformationProvider Provider
 		{
 			get { return provider; }
 		}
 
-		protected Table(TransformationProvider provider, string tableName)
+		internal Table(TransformationProvider provider, string tableName)
 		{
 			this.provider = provider;
 			TableName = tableName;
 		}
-
 	}
 }

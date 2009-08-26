@@ -1,11 +1,11 @@
 using System;
 using System.Linq.Expressions;
 using DbRefactor.Api;
-using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines;
 
 namespace DbRefactor.Providers.Properties
 {
-	public class PrimaryKeyProvider : PropertyProvider
+	internal class PrimaryKeyProvider : PropertyProvider
 	{
 		private readonly string name;
 
