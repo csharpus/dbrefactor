@@ -9,7 +9,6 @@
 //under the License.
 #endregion
 
-using System;
 using System.Reflection;
 using DbRefactor.Api;
 using DbRefactor.Engines.SqlServer;
@@ -63,7 +62,7 @@ namespace DbRefactor.Factories
 
 		public Migrator CreateMigrator(string provider, string connectionString, string category, Assembly assembly, bool trace)
 		{
-			var logger = new Logger(trace);
+			var logger = new Logger();
 			logger.Attach(new ConsoleWriter());
 			return new Migrator(CreateTarget(connectionString, logger, category), category, assembly, logger);
 		}

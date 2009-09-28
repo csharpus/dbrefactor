@@ -12,9 +12,9 @@
 using System.IO;
 using System.Reflection;
 using DbRefactor.Factories;
+using DbRefactor.NAnt.Loggers;
 using NAnt.Core;
 using NAnt.Core.Attributes;
-using Migrator.NAnt.Loggers;
 
 namespace DbRefactor.NAnt
 {

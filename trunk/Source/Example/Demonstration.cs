@@ -140,12 +140,12 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("User").RenameColumn("Description", "PersonalInformation");
+			Table("User").Column("Description").RenameTo("PersonalInformation");
 		}
 
 		public override void Down()
 		{
-			Table("User").RenameColumn("PersonalInformation", "Description");
+			Table("User").Column("PersonalInformation").RenameTo("Description");
 		}
 	}
 	

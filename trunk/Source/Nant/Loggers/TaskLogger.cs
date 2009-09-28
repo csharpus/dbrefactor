@@ -12,29 +12,29 @@ using System;
 using DbRefactor.Infrastructure.Loggers;
 using NAnt.Core;
 
-namespace Migrator.NAnt.Loggers
+namespace DbRefactor.NAnt.Loggers
 {
 	/// <summary>
 	/// NAnt task logger for the migration mediator
 	/// </summary>
 	public class TaskLogger : ILogger
 	{
-		private int _widthFirstColumn = 5;
-		private Task _task;
+		private const int WidthFirstColumn = 5;
+		private readonly Task task;
 		
 		public TaskLogger(Task task)
 		{
-			_task = task;
+			this.task = task;
 		}
 		
 		protected void LogInfo(string format, params object[] args)
 		{
-			_task.Log(Level.Info, format, args);
+			task.Log(Level.Info, format, args);
 		}
 		
 		protected void LogError(string format, params object[] args)
 		{
-			_task.Log(Level.Error, format, args);
+			task.Log(Level.Error, format, args);
 		}
 		
 		public void Started(int currentVersion, int finalVersion)
@@ -44,7 +44,7 @@ namespace Migrator.NAnt.Loggers
 		
 		public void MigrateUp(int version, string migrationName)
 		{
-			LogInfo("{0} {1}", version.ToString().PadLeft(_widthFirstColumn), migrationName);
+			LogInfo("{0} {1}", version.ToString().PadLeft(WidthFirstColumn), migrationName);
 		}
 		
 		public void MigrateDown(int version, string migrationName)
@@ -64,7 +64,7 @@ namespace Migrator.NAnt.Loggers
 		
 		public void Exception(int version, string migrationName, Exception ex)
 		{
-			LogInfo("{0} Error in migration {1} : {2}", "".PadLeft(_widthFirstColumn), version, ex.Message);
+			LogInfo("{0} Error in migration {1} : {2}", "".PadLeft(WidthFirstColumn), version, ex.Message);
 			
 			LogError(ex.Message);
 			LogError(ex.StackTrace);
@@ -84,22 +84,27 @@ namespace Migrator.NAnt.Loggers
 		
 		public void Log(string format, params object[] args)
 		{
-			LogInfo("{0} {1}", "".PadLeft(_widthFirstColumn), String.Format(format, args));
+			LogInfo("{0} {1}", "".PadLeft(WidthFirstColumn), String.Format(format, args));
 		}
 		
 		public void Warn(string format, params object[] args)
 		{
-			LogInfo("{0} [Warning] {1}", "".PadLeft(_widthFirstColumn), String.Format(format, args));
+			LogInfo("{0} [Warning] {1}", "".PadLeft(WidthFirstColumn), String.Format(format, args));
 		}		
 		
 		public void Trace(string format, params object[] args)
 		{
-			_task.Log(Level.Debug, "{0} {1}", "".PadLeft(_widthFirstColumn), String.Format(format, args));
+			task.Log(Level.Debug, "{0} {1}", "".PadLeft(WidthFirstColumn), String.Format(format, args));
 		}
 
 		public void Modify(string query)
 		{
-			_task.Log(Level.Debug, query);
+			task.Log(Level.Debug, query);
+		}
+
+		public void Query(string query)
+		{
+			
 		}
 	}
 }

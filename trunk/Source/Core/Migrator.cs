@@ -43,11 +43,6 @@ namespace DbRefactor
 				migrationsTypes.AddRange(GetMigrationTypes(migrationAssembly));
 			}
 
-			this.logger.Trace("Loaded migrations:");
-			foreach (Type t in migrationsTypes)
-			{
-				this.logger.Trace("{0} {1}", GetMigrationVersion(t).ToString().PadLeft(5), ToHumanName(t.Name));
-			}
 			CheckForDuplicatedVersion();
 		}
 
@@ -105,8 +100,6 @@ namespace DbRefactor
 				currentlyRunningMigrationNumber = currentVersion;
 			}
 
-			logger.Started(originalVersion, version);
-
 			while (true)
 			{
 				migration = GetMigration(currentlyRunningMigrationNumber);
@@ -160,9 +153,7 @@ namespace DbRefactor
 				migrationTarget.UpdateVersion(currentlyRunningMigrationNumber);
 			}
 
-			// Update and commit all changes
 			migrationTarget.UpdateVersion(version);
-			logger.Finished(originalVersion, version);
 		}
 
 		/// <summary>

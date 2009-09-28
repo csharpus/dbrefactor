@@ -105,14 +105,6 @@ namespace DbRefactor.Api
 			provider.RenameTable(TableName, newName);
 		}
 
-		/// <summary>
-		/// Delete table from database
-		/// </summary>
-		public void DropTable()
-		{
-			provider.DropTable(TableName);
-		}
-
 		#endregion Table operations
 
 		#region Column operations
@@ -121,11 +113,6 @@ namespace DbRefactor.Api
 		{
 			return new AddColumnTable(provider, columnProviderFactory, TableName,
 			                          constraintNameService);
-		}
-
-		public void RenameColumn(string oldName, string newName)
-		{
-			provider.RenameColumn(TableName, oldName, newName);
 		}
 
 		public void DropColumn(string column)

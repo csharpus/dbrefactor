@@ -70,7 +70,7 @@ namespace DbRefactor.Engines.SqlServer
 
 		IDataReader IDatabaseEnvironment.ExecuteQuery(string sql)
 		{
-			logger.Log(sql);
+			logger.Query(sql);
 			IDbCommand cmd = BuildCommand(sql);
 			try
 			{
@@ -84,7 +84,7 @@ namespace DbRefactor.Engines.SqlServer
 
 		object IDatabaseEnvironment.ExecuteScalar(string sql)
 		{
-			logger.Log(sql);
+			logger.Query(sql);
 			IDbCommand cmd = BuildCommand(sql);
 			try
 			{

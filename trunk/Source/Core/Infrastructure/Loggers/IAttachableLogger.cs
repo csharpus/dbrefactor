@@ -8,15 +8,9 @@
 //License for the specific language governing rights and limitations
 //under the License.
 #endregion
-using System;
 
 namespace DbRefactor.Infrastructure.Loggers
 {
-	/// <summary>
-	/// ILogger interface. 
-	/// Implicit in this interface is that the logger will delegate actual
-	/// logging to the <see cref="ISimpleWriter"/>(s) that have been attached
-	/// </summary>
 	public interface IAttachableLogger: ILogger
 	{
 		/// <summary>

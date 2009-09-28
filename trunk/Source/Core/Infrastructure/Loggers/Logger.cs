@@ -19,9 +19,8 @@ namespace DbRefactor.Infrastructure.Loggers
 	public class Logger : IAttachableLogger
 	{
 		private const int WidthFirstColumn = 5;
-		private readonly bool trace;
 		private readonly List<ILogWriter> writers = new List<ILogWriter>();
-		private static readonly ILogger nullLogger = new Logger(false);
+		private static readonly ILogger nullLogger = new Logger();
 
 		public static ILogger NullLogger
 		{
@@ -31,13 +30,11 @@ namespace DbRefactor.Infrastructure.Loggers
 			}
 		}
 
-		public Logger(bool trace)
+		public Logger()
 		{
-			this.trace = trace;
 		}
 
-		public Logger(bool trace, params ILogWriter[] writers)
-			: this(trace)
+		public Logger(params ILogWriter[] writers)
 		{
 			this.writers.AddRange(writers);
 		}
@@ -52,14 +49,9 @@ namespace DbRefactor.Infrastructure.Loggers
 			writers.Remove(writer);
 		}
 
-		public void Started(int currentVersion, int finalVersion)
-		{
-			WriteLine("Current version : {0}", currentVersion);
-		}
-
 		public void MigrateUp(int version, string migrationName)
 		{
-			WriteLine("{0} {1}", version.ToString().PadLeft(WidthFirstColumn), migrationName);
+			WriteLine("Migration {0} {1}", version.ToString().PadLeft(WidthFirstColumn), migrationName);
 		}
 
 		public void MigrateDown(int version, string migrationName)
@@ -79,23 +71,18 @@ namespace DbRefactor.Infrastructure.Loggers
 
 		public void Exception(int version, string migrationName, Exception ex)
 		{
-			UntracedWriteLine("{0} Error in migration {1} : {2}", "".PadLeft(WidthFirstColumn), version, ex.Message);
-			UntracedWriteLine("========= Error detail =========");
-			UntracedWriteLine(ex.ToString());
-			UntracedWriteLine(ex.StackTrace);
-			Exception iex = ex.InnerException;
-			while (ex.InnerException != null)
-			{
-				UntracedWriteLine("Caused by: {0}", ex.InnerException);
-				UntracedWriteLine(ex.InnerException.StackTrace);
-				iex = iex.InnerException;
-			}
-			UntracedWriteLine("======================================");
-		}
-
-		public void Finished(int originalVersion, int currentVersion)
-		{
-			WriteLine("Migrated to version {0}", currentVersion);
+			WriteLine("{0} Error in migration {1} : {2}", "".PadLeft(WidthFirstColumn), version, ex.Message);
+			WriteLine("========= Error detail =========");
+			WriteLine(ex.ToString());
+			WriteLine(ex.StackTrace);
+			//Exception innerException = ex.InnerException;
+			//while (innerException != null)
+			//{
+			//    WriteLine("Caused by: {0}", innerException);
+			//    WriteLine(innerException.StackTrace);
+			//    innerException = innerException.InnerException;
+			//}
+			WriteLine("======================================");
 		}
 
 		public void Log(string format, params object[] args)
@@ -104,23 +91,17 @@ namespace DbRefactor.Infrastructure.Loggers
 			WriteLine(format, args);
 		}
 
-		public void Warn(string format, params object[] args)
-		{
-			Write("{0} Warning! : ", "".PadLeft(WidthFirstColumn));
-			WriteLine(format, args);
-		}
-
-		public void Trace(string format, params object[] args)
-		{
-			Log(format, args);
-		}
-
 		public void Modify(string query)
 		{
 			Log(query);
 		}
 
-		private void UntracedWrite(string message, params object[] args)
+		public void Query(string query)
+		{
+			
+		}
+
+		private void Write(string message, params object[] args)
 		{
 			foreach (ILogWriter writer in writers)
 			{
@@ -128,7 +109,7 @@ namespace DbRefactor.Infrastructure.Loggers
 			}
 		}
 
-		private void UntracedWriteLine(string message, params object[] args)
+		private void WriteLine(string message, params object[] args)
 		{
 			foreach (ILogWriter writer in writers)
 			{
@@ -136,24 +117,9 @@ namespace DbRefactor.Infrastructure.Loggers
 			}
 		}
 
-		private void Write(string message, params object[] args)
-		{
-			if (!trace) return;
-			UntracedWrite(message, args);
-		}
-
-		private void WriteLine(string message, params object[] args)
-		{
-			if (!trace) return;
-			UntracedWriteLine(message, args);
-		}
-
-		#region Static Logger Helpers
-
 		public static ILogger ConsoleLogger()
 		{
-			return new Logger(false, new ConsoleWriter());
+			return new Logger(new ConsoleWriter());
 		}
-		#endregion
 	}
 }

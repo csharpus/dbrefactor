@@ -1,15 +1,14 @@
 ﻿using System;
-using DbRefactor.Providers;
 using DbRefactor.Tools;
 using NUnit.Framework;
 
 namespace DbRefactor.Tests.Integration
 {
 	[TestFixture]
-	public class GenericProviderTests : ProviderTestBase
+	public class ObjectManipulationTests : ProviderTestBase
 	{
 		[Test]
-		public void should_create_table()
+		public void Can_create_table()
 		{
 			Database.CreateTable("Test").Int("Id").Execute();
 
@@ -18,7 +17,19 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void should_drop_table()
+		public void Can_create_table_using_column_providers()
+		{
+			Assert.False(Provider.TableExists("A"));
+			Assert.False(Provider.ColumnExists("A", "B"));
+
+			Database.CreateTable("A").Int("B").Execute();
+
+			Assert.True(Provider.TableExists("A"));
+			Assert.True(Provider.ColumnExists("A", "B"));
+		}
+
+		[Test]
+		public void Can_drop_table()
 		{
 			Database.CreateTable("Test").Int("Id").Execute();
 			Database.DropTable("Test");
@@ -27,17 +38,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void should_add_column()
-		{
-			Database.CreateTable("Test").Int("Id").Execute();
-			Database.Table("Test").AddColumn().String("Name", 5).Execute();
-
-			Assert.That(Provider.ColumnExists("Test", "Name"), Is.True);
-		}
-
-
-		[Test]
-		public void should_create_schema_dump()
+		public void Should_create_schema_dump()
 		{
 			//var dumper = new SchemaDumper(@"Data Source=.\SQLEXPRESS;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
 			//dumper.Dump();
@@ -85,7 +86,7 @@ namespace DbRefactor.Tests.Integration
 
 
 		[Test]
-		public void should_generate_method_call_from_lambda()
+		public void Should_generate_method_call_from_lambda()
 		{
 			//var codeGenerationService = MockRepository.GenerateMock<ICodeGenerationService>();
 			//codeGenerationService.Expect(s => s.PrimitiveValue(1)).Return("1");
@@ -96,42 +97,13 @@ namespace DbRefactor.Tests.Integration
 			//Assert.That(ToCsharpStringComplex(new[] { "1" }), Is.EqualTo("4m"));
 		}
 
-		[Migration(1)]
-		public class CreateForeignKeyMigration : UpMigration
-		{
-			public override void Up()
-			{
-				throw new NotImplementedException();
-			}
-		}
-
-		private TMigration CreateMigration<TMigration>()
-			where TMigration : Migration, new()
-		{
-			return new TMigration
-			       	{
-						Database = Database,
-			       		Provider = Provider
-			       	};
-		}
-
 		[Test]
-		public void Can_create_table_using_column_providers()
+		public void Can_rename_table()
 		{
-			Assert.False(Provider.TableExists("A"));
-			Assert.False(Provider.ColumnExists("A", "B"));
-
 			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").Column("B").RenameTo("C");
 
-			Assert.True(Provider.TableExists("A"));
-			Assert.True(Provider.ColumnExists("A", "B"));
-		}
-	}
-
-	public abstract class UpMigration : Migration
-	{
-		public override void Down()
-		{
+			Assert.True(Provider.ColumnExists("A", "C"));
 		}
 	}
 }

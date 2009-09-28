@@ -118,5 +118,10 @@ namespace DbRefactor.Api
 		{
 			provider.DropForeignKey(tableName, columnNames.ToArray(), primaryKeyTable, primaryKeyColumns);
 		}
+
+		public void RenameTo(string newName)
+		{
+			provider.RenameColumn(tableName, columnNames[0], newName);
+		}
 	}
 }

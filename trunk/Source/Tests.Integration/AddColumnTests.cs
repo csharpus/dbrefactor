@@ -66,5 +66,14 @@ namespace DbRefactor.Tests.Integration
 
 			Assert.That(Provider.PrimaryKeyExists("PK_A_C"));
 		}
+
+		[Test]
+		public void Can_drop_column()
+		{
+			Database.CreateTable("A").Int("B").Int("C").Execute();
+			Database.Table("A").DropColumn("C");
+
+			Assert.False(Provider.ColumnExists("A", "C"));
+		}
 	}
 }

@@ -2,7 +2,7 @@
 {
 	public class ConsoleLogger : Logger
 	{
-		public ConsoleLogger() : base(true, new ConsoleWriter())
+		public ConsoleLogger() : base(new ConsoleWriter())
 		{
 			
 		}

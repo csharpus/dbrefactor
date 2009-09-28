@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace DbRefactor.Tests.Integration
 {
 	[TestFixture]
-	public class SqlServerConstraintsTests : ProviderTestBase
+	public class AlterTableTests : ProviderTestBase
 	{
 		[Test]
 		public void Can_change_type()
@@ -14,7 +14,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_add_unique()
+		public void Can_add_unique()
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").AddUnique();
@@ -23,7 +23,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_drop_unique()
+		public void Can_drop_unique()
 		{
 			Database.CreateTable("A").Int("B").Unique().Execute();
 			Database.Table("A").Column("B").DropUnique();
@@ -32,7 +32,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_add_unique_for_several_columns()
+		public void Can_add_unique_for_several_columns()
 		{
 			Database.CreateTable("A").Int("B").Int("C").Execute();
 			Database.Table("A").Column("B").Column("C").AddUnique();
@@ -41,7 +41,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_drop_unique_for_several_columns()
+		public void Can_drop_unique_for_several_columns()
 		{
 			Database.CreateTable("A")
 				.Int("B")
@@ -53,7 +53,8 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void Can_add_two_unique_indexes()
+		[Ignore("Do we need this test (at least here)? It is actually testing target database")]
+		public void Can_add_complex_unique_for_the_same_column_several_times()
 		{
 			Database.CreateTable("A")
 				.Int("B")
@@ -75,7 +76,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_add_index()
+		public void Can_add_index()
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").AddIndex();
@@ -84,7 +85,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_drop_index()
+		public void Can_drop_index()
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").AddIndex();
@@ -94,7 +95,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_add_index_for_several_columns()
+		public void Can_add_index_for_several_columns()
 		{
 			Database.CreateTable("A").Int("B").Int("C").Execute();
 			Database.Table("A").Column("B").Column("C").AddIndex();
@@ -103,7 +104,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_drop_index_for_several_columns()
+		public void Can_drop_index_for_several_columns()
 		{
 			Database.CreateTable("A").Int("B").Int("C").Execute();
 			Database.Table("A").Column("B").Column("C").AddIndex();
@@ -122,7 +123,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_make_column_nullable()
+		public void Can_make_column_nullable()
 		{
 			Database.CreateTable("A").Int("B").NotNull().Execute();
 			Database.Table("A").Column("B").SetNull();
@@ -131,7 +132,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_make_column_not_null()
+		public void Can_make_column_not_null()
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").SetNotNull();
@@ -140,21 +141,21 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_set_default_value()
+		public void Can_set_default_value()
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").SetDefault(1);
 		}
 
 		[Test]
-		public void can_drop_default_value()
+		public void Can_drop_default_value()
 		{
 			Database.CreateTable("A").Int("B", 1).Execute();
 			Database.Table("A").Column("B").DropDefault();
 		}
 
 		[Test]
-		public void can_add_foreign_key()
+		public void Can_add_foreign_key()
 		{
 			Database.CreateTable("A").Int("B").PrimaryKey().Execute();
 			Database.CreateTable("A1").Int("B1").Execute();
@@ -164,7 +165,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_drop_foreign_key()
+		public void Can_drop_foreign_key()
 		{
 			Database.CreateTable("A").Int("B").PrimaryKey().Execute();
 			Database.CreateTable("A1").Int("B1").Execute();
@@ -175,7 +176,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_add_foreign_key_for_several_columns()
+		public void Can_add_foreign_key_for_several_columns()
 		{
 			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
 			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
@@ -186,7 +187,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_drop_foreign_key_for_several_columns()
+		public void Can_drop_foreign_key_for_several_columns()
 		{
 			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
 			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
@@ -198,7 +199,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_add_primary_key()
+		public void Can_add_primary_key()
 		{
 			Database.CreateTable("A").Int("B").NotNull().Execute();
 			Database.Table("A").Column("B").AddPrimaryKey();
@@ -207,7 +208,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_drop_primary_key()
+		public void Can_drop_primary_key()
 		{
 			Database.CreateTable("A").Int("B").NotNull().Execute();
 			Database.Table("A").Column("B").AddPrimaryKey();
@@ -217,7 +218,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_add_primary_key_for_several_columns()
+		public void Can_add_primary_key_for_several_columns()
 		{
 			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
 			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
@@ -226,7 +227,7 @@ namespace DbRefactor.Tests.Integration
 		}
 
 		[Test]
-		public void can_drop_primary_key_for_several_columns()
+		public void Can_drop_primary_key_for_several_columns()
 		{
 			Database.CreateTable("A").Int("B").NotNull().Int("C").NotNull().Execute();
 			Database.Table("A").Column("B").Column("C").AddPrimaryKey();
@@ -234,5 +235,10 @@ namespace DbRefactor.Tests.Integration
 
 			Assert.False(Provider.PrimaryKeyExists("PK_A_B_C"));
 		}
+
+		// TODO: Add fail verification tests for:
+		// - using incorrect columns
+		// - inconsistent number of columns in foreign key for several columns
+		// Guess it is just verification test that databases provide needed information for resolving errors
 	}
 }
