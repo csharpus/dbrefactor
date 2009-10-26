@@ -19,16 +19,16 @@ namespace DbRefactor.Runner
 	{
 		private static MigrationAttribute GetMigrationAttribute(Type t)
 		{
-			var attrib = (MigrationAttribute)Attribute
-			                                 	.GetCustomAttribute(t, typeof(MigrationAttribute));
-			
+			var attrib = (MigrationAttribute) Attribute
+			                                  	.GetCustomAttribute(t, typeof (MigrationAttribute));
+
 			return attrib;
 		}
 
 		public static int GetMigrationVersion(Type t)
 		{
 			MigrationAttribute attribute = GetMigrationAttribute(t);
-			if(attribute == null)
+			if (attribute == null)
 			{
 				throw new ArgumentException("Specified type doesn't marked as a Migration", "t");
 			}
@@ -38,10 +38,8 @@ namespace DbRefactor.Runner
 		public static bool IsMigration(Type t)
 		{
 			MigrationAttribute attribute = GetMigrationAttribute(t);
-			return attribute != null 
-			       && 
-			       (typeof (Migration).IsAssignableFrom(t) 
-			       )
+			return attribute != null
+			       && (typeof (Migration).IsAssignableFrom(t))
 			       && !attribute.Ignore;
 		}
 	}

@@ -3,7 +3,7 @@ using System.Data.SqlClient;
 
 namespace DbRefactor.Exceptions
 {
-	public class IncorrectQueryException : Exception
+	public class IncorrectQueryException : DbRefactorException
 	{
 		private readonly string sql = String.Empty;
 
@@ -13,7 +13,7 @@ namespace DbRefactor.Exceptions
 			this.sql = sql;
 		}
 
-		public string SQL
+		public string Sql
 		{
 			get { return sql; }
 		}

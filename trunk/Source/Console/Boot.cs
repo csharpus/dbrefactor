@@ -24,7 +24,7 @@ namespace DbRefactor.Console
 		[STAThread]
 		public static void Main(string[] argv)
 		{
-			//DbRefactor.Engines.SqlServer.ConstraintFilter
+			System.Diagnostics.Debugger.Break();
 			Consolery.Run(typeof(Boot), argv);
 		}
 
@@ -44,7 +44,6 @@ namespace DbRefactor.Console
 			string category)
 		{
 			Assembly asm = Assembly.LoadFrom(migrationAssembly);
-
 			var migrator = new ProviderFactory().CreateMigrator(provider, connectionString, category, asm, trace);
 			if (version == -1)
 			{

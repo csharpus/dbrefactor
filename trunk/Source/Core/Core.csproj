@@ -128,6 +128,9 @@
     <Compile Include="Engines\ISqlTypes.cs" />
     <Compile Include="Providers\Properties\UniqueProvider.cs" />
     <Compile Include="Infrastructure\CodeGenerationHelper.cs" />
+    <Compile Include="Runner\MigrationReader.cs" />
+    <Compile Include="Runner\MigrationService.cs" />
+    <Compile Include="Runner\MigratorFactory.cs" />
     <Compile Include="Tools\DataDumper.cs" />
     <Compile Include="Infrastructure\ExpressionHelper.cs" />
     <Compile Include="Infrastructure\ParametersHelper.cs" />
