@@ -10,6 +10,7 @@
 #endregion
 
 using System;
+using System.Runtime.Serialization;
 
 namespace DbRefactor.Exceptions
 {
@@ -19,6 +20,8 @@ namespace DbRefactor.Exceptions
 	public class MigrationException : DbRefactorException
 	{
 		public MigrationException(string migration, int version, Exception innerException)
-			: base(String.Format("Exception in migration {0} (#{1})", migration, version), innerException) {}
+			: base(String.Format("Exception in migration '{0}' (#{1})", migration, version), innerException) {}
 	}
+
+
 }

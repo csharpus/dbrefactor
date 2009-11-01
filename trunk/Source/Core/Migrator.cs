@@ -112,12 +112,12 @@ namespace DbRefactor
 						migrationTarget.BeginTransaction();
 						if (goingUp)
 						{
-							logger.MigrateUp(currentlyRunningMigrationNumber, migrationName);
+							logger.MigrateTo(currentlyRunningMigrationNumber, migrationName);
 							migration.Up();
 						}
 						else
 						{
-							logger.MigrateDown(currentlyRunningMigrationNumber, migrationName);
+							logger.MigrateTo(currentlyRunningMigrationNumber, migrationName);
 							migration.Down();
 						}
 						migrationTarget.CommitTransaction();
@@ -125,7 +125,7 @@ namespace DbRefactor
 					catch (Exception ex)
 					{
 						migrationTarget.RollbackTransaction();
-						logger.Exception(currentlyRunningMigrationNumber, migrationName, ex);
+							logger.Exception(currentlyRunningMigrationNumber, migrationName, ex);
 						logger.RollingBack(originalVersion);
 						throw;
 					}

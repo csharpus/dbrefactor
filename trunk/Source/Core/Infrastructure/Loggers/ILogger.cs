@@ -23,14 +23,7 @@ namespace DbRefactor.Infrastructure.Loggers
 		/// </summary>
 		/// <param name="version">Version we are migrating to</param>
 		/// <param name="migrationName">Migration name</param>
-		void MigrateUp(int version, string migrationName);
-
-		/// <summary>
-		/// Log that we are migrating down
-		/// </summary>
-		/// <param name="version">Version we are migrating to</param>
-		/// <param name="migrationName">Migration name</param>
-		void MigrateDown(int version, string migrationName);
+		void MigrateTo(int version, string migrationName);
 
 		/// <summary>
 		/// Inform that a migration corresponding to the number of

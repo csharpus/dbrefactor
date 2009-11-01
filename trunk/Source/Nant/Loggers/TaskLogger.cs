@@ -42,19 +42,19 @@ namespace DbRefactor.NAnt.Loggers
 			LogInfo("Current version : {0}", currentVersion);
 		}
 		
-		public void MigrateUp(int version, string migrationName)
+		public void MigrateTo(int version, string migrationName)
 		{
 			LogInfo("{0} {1}", version.ToString().PadLeft(WidthFirstColumn), migrationName);
 		}
 		
 		public void MigrateDown(int version, string migrationName)
 		{
-			MigrateUp(version, migrationName);
+			MigrateTo(version, migrationName);
 		}
 		
 		public void Skipping(int version)
 		{
-			MigrateUp(version, "<Migration not found>");
+			MigrateTo(version, "<Migration not found>");
 		}
 		
 		public void RollingBack(int originalVersion)

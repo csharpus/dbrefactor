@@ -49,14 +49,9 @@ namespace DbRefactor.Infrastructure.Loggers
 			writers.Remove(writer);
 		}
 
-		public void MigrateUp(int version, string migrationName)
+		public void MigrateTo(int version, string migrationName)
 		{
 			WriteLine("Migration {0} {1}", version.ToString().PadLeft(WidthFirstColumn), migrationName);
-		}
-
-		public void MigrateDown(int version, string migrationName)
-		{
-			MigrateUp(version, migrationName);
 		}
 
 		public void Skipping(int version)

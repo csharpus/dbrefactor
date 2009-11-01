@@ -4,7 +4,7 @@ using DbRefactor.Providers;
 
 namespace DbRefactor.Runner
 {
-	internal abstract class MigrationTarget
+	internal abstract class MigrationTarget : IMigrationTarget
 	{
 		public abstract int GetVersion();
 		public abstract void UpdateVersion(int version);
@@ -14,6 +14,17 @@ namespace DbRefactor.Runner
 		public abstract void RollbackTransaction();
 
 		public abstract void CloseConnection();
+	}
+
+	public interface IMigrationTarget
+	{
+		int GetVersion();
+		void UpdateVersion(int version);
+		BaseMigration CreateMigration(Type type);
+		void BeginTransaction();
+		void CommitTransaction();
+		void RollbackTransaction();
+		void CloseConnection();
 	}
 
 	internal class DatabaseMigrationTarget : MigrationTarget

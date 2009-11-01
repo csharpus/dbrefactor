@@ -63,7 +63,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProviderTestBase.cs" />
     <Compile Include="ObjectManipulationTests.cs" />
-    <Compile Include="Runner\MigrationServiceTests.cs" />
+    <Compile Include="Runner\MigrationReaderTests.cs" />
+    <Compile Include="Runner\MigrationRunnerTests.cs" />
     <Compile Include="SqlGenerationVerificationTests.cs" />
     <Compile Include="AlterTableTests.cs" />
   </ItemGroup>
@@ -71,6 +72,10 @@
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{1FEE70A4-AAD7-4C60-BE60-3F7DC03A8C4D}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Example\Example.csproj">
+      <Project>{42F23730-3B9E-4178-A3A4-DEEF6518B941}</Project>
+      <Name>Example</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
