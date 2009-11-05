@@ -24,7 +24,7 @@ namespace DbRefactor.Console
 		[STAThread]
 		public static void Main(string[] argv)
 		{
-			System.Diagnostics.Debugger.Break();
+//			System.Diagnostics.Debugger.Break();
 			Consolery.Run(typeof(Boot), argv);
 		}
 
