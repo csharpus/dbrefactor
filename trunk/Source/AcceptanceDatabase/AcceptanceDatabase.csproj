@@ -5,15 +5,13 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{31A96D1C-0166-4E46-8B91-D570EB8B22D8}</ProjectGuid>
+    <ProjectGuid>{F29CCB76-58C6-4591-B7A5-D12F2C441B7F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DbRefactor.Tests.Integration</RootNamespace>
-    <AssemblyName>DbRefactor.Tests.Integration</AssemblyName>
+    <RootNamespace>AcceptanceDatabase</RootNamespace>
+    <AssemblyName>AcceptanceDatabase</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>DbRefactor.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,14 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.5.0.9122, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Dependencies\NUnit\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="Rhino.Mocks, Version=3.3.0.906, Culture=neutral, PublicKeyToken=0b3305902db7183f, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Dependencies\RhinoMocks\Rhino.Mocks.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -55,37 +45,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddColumnTests.cs" />
-    <Compile Include="CreateTableTests.cs" />
-    <Compile Include="CrudTests.cs" />
-    <Compile Include="DataDumperTest.cs" />
-    <Compile Include="MigrationTests.cs" />
+    <Compile Include="Migrations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ProviderTestBase.cs" />
-    <Compile Include="ObjectManipulationTests.cs" />
-    <Compile Include="Runner\AcceptanceTests.cs" />
-    <Compile Include="Runner\MigrationReaderTests.cs" />
-    <Compile Include="Runner\MigrationRunnerTests.cs" />
-    <Compile Include="Runner\MigrationServiceTests.cs" />
-    <Compile Include="SqlGenerationVerificationTests.cs" />
-    <Compile Include="AlterTableTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Console\Console.csproj">
-      <Project>{FBE3A83A-D0F8-4D72-AF8D-9EF772569A31}</Project>
-      <Name>Console</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{1FEE70A4-AAD7-4C60-BE60-3F7DC03A8C4D}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Example\Example.csproj">
-      <Project>{42F23730-3B9E-4178-A3A4-DEEF6518B941}</Project>
-      <Name>Example</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="DbRefactor.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

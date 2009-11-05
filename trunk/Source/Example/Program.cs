@@ -12,9 +12,8 @@ namespace Example
 				"SqlServer",
 				ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
 				null,
-				Assembly.GetExecutingAssembly(),
 				false);
-			migrator.MigrateToLastVersion();
+			migrator.MigrateToLastVersion(Assembly.GetExecutingAssembly());
 		}
 	}
 }

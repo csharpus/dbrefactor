@@ -29,7 +29,7 @@ namespace DbRefactor.Tests.Integration
 			}
 		}
 
-		private const string ConnectionString =
+		public const string ConnectionString =
 			@"Data Source=.\SQLEXPRESS;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI";
 
 		private void CreateProvider()

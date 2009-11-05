@@ -6,7 +6,13 @@ using DbRefactor.Infrastructure.Loggers;
 
 namespace DbRefactor.Runner
 {
-	public class MigrationRunner
+	public interface IMigrationRunner
+	{
+		void MigrateUp(IEnumerable<IVersionedMigration> migrations);
+		void MigrateDown(IEnumerable<IVersionedMigration> migrations);
+	}
+
+	public class MigrationRunner : IMigrationRunner
 	{
 		private readonly IMigrationTarget migrationTarget;
 		private readonly ILogger logger;
@@ -17,44 +23,23 @@ namespace DbRefactor.Runner
 			this.logger = logger;
 		}
 
-		internal void MigrateUp(IEnumerable<IVersionedMigration> migrations)
+		public void MigrateUp(IEnumerable<IVersionedMigration> migrations)
 		{
-			Migrate(migrations.OrderBy(m => m.Version), m => m.Up());
+			var orderdMigrations = migrations.OrderBy(m => m.Version).ToList();
+			RunMigrations(orderdMigrations, m => m.Up());
+			UpdateVersion(orderdMigrations.Last().Version);
 		}
 
-		internal void MigrateDown(IEnumerable<IVersionedMigration> migrations)
+		public void MigrateDown(IEnumerable<IVersionedMigration> migrations)
 		{
-			Migrate(migrations.OrderByDescending(m => m.Version), m => m.Down());
+			var orderdMigrations = migrations.OrderByDescending(m => m.Version).ToList();
+			RunMigrations(orderdMigrations, m => m.Down());
+			UpdateVersion(orderdMigrations.Last().Version - 1);
 		}
 
-		private void Migrate(IEnumerable<IVersionedMigration> migrations, Action<IVersionedMigration> directionMethod)
+		private void UpdateVersion(int version)
 		{
-			RunMigrations(migrations, directionMethod);
-			UpdateVersion(migrations);
-		}
-
-		private void UpdateVersion(IEnumerable<IVersionedMigration> migrations)
-		{
-			migrationTarget.UpdateVersion(migrations.Last().Version);
-		}
-
-		private void RunMigrationsInTransaction(IEnumerable<IVersionedMigration> migrations,
-		                                        Action<IVersionedMigration> directionMethod)
-		{
-			try
-			{
-				migrationTarget.BeginTransaction();
-				RunMigrations(migrations, directionMethod);
-			}
-			catch (Exception)
-			{
-				migrationTarget.RollbackTransaction();
-				throw;
-			}
-			finally
-			{
-				migrationTarget.CloseConnection();
-			}
+			migrationTarget.UpdateVersion(version);
 		}
 
 		private void RunMigrations(IEnumerable<IVersionedMigration> migrations, Action<IVersionedMigration> directionMethod)

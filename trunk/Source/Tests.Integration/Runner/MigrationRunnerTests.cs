@@ -26,7 +26,7 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void should_update_version()
+		public void Should_update_version()
 		{
 			const int lattestVersion = 2;
 			var migrations = new List<IVersionedMigration>();
@@ -41,5 +41,25 @@ namespace DbRefactor.Tests.Integration.Runner
 			migrationSerivce.MigrateUp(migrations);
 			migrationTarget.AssertWasCalled(t => t.UpdateVersion(lattestVersion));
 		}
+
+		[Test]
+		public void Should_update_version_down()
+		{
+			const int lattestVersion = 2;
+			var migrations = new List<IVersionedMigration>();
+			var m1 = MockRepository.GenerateStub<IVersionedMigration>();
+			var m2 = MockRepository.GenerateStub<IVersionedMigration>();
+			m1.Expect(m => m.Version).Return(1);
+			m2.Expect(m => m.Version).Return(lattestVersion);
+			var migrationTarget = MockRepository.GenerateMock<IMigrationTarget>();
+			var logger = MockRepository.GenerateStub<ILogger>();
+			migrations.Add(m1);
+			migrations.Add(m2);
+			var migrationSerivce = new MigrationRunner(migrationTarget, logger);
+			migrationSerivce.MigrateDown(migrations);
+			migrationTarget.AssertWasCalled(t => t.UpdateVersion(0));
+		}
+
+		
 	}
 }

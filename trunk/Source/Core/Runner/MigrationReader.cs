@@ -7,7 +7,12 @@ using DbRefactor.Exceptions;
 
 namespace DbRefactor.Runner
 {
-	public class MigrationReader
+	public interface IMigrationReader
+	{
+		IEnumerable<IVersionedMigration> ReadFrom(Assembly assembly);
+	}
+
+	public class MigrationReader : IMigrationReader
 	{
 		private readonly IMigrationTarget migrationTarget;
 

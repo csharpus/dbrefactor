@@ -78,7 +78,10 @@ namespace DbRefactor.Providers
 
 		private static string GetCreateColumnsSql(IEnumerable<ColumnProvider> columns)
 		{
-			return columns.Select(col => col.GetCreateColumnSql()).ComaSeparated();
+			return columns.Select(col => col.GetCreateColumnSql())
+				.WithTabsOnStart(2)
+				.WithNewLinesOnStart()
+				.ComaSeparated();
 		}
 
 		public void DropUnique(string table, params string[] columnNames)

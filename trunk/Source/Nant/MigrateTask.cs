@@ -101,13 +101,13 @@ namespace DbRefactor.NAnt
 		{
 			Assembly asm = Assembly.LoadFrom(migrationsAssembly.FullName);
 
-			var mig = new ProviderFactory().CreateMigrator(provider, connectionString, null, asm, trace);
-			mig.Logger = new TaskLogger(this);
+			var mig = new ProviderFactory().CreateMigrator(provider, connectionString, null, trace);
+			//mig.Logger = new TaskLogger(this);
 			
 			if (to == -1)
-				mig.MigrateToLastVersion();
+				mig.MigrateToLastVersion(asm);
 			else
-				mig.MigrateTo(to);
+				mig.MigrateTo(asm, to);
 		}
 	}
 }

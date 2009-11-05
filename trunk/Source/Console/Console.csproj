@@ -7,7 +7,7 @@
     <ProjectGuid>{FBE3A83A-D0F8-4D72-AF8D-9EF772569A31}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DbRefactor.Console</RootNamespace>
+    <RootNamespace>DbRefactor.Cli</RootNamespace>
     <AssemblyName>DbRefactor</AssemblyName>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>DbRefactor.snk</AssemblyOriginatorKeyFile>
@@ -50,13 +50,13 @@
     <Compile Include="NConsoler.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\core\Core.csproj">
+    <None Include="DbRefactor.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj">
       <Project>{1FEE70A4-AAD7-4C60-BE60-3F7DC03A8C4D}</Project>
       <Name>Core</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="DbRefactor.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

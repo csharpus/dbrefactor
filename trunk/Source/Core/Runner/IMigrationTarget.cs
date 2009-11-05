@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using DbRefactor.Api;
+using DbRefactor.Extensions;
 using DbRefactor.Providers;
 
 namespace DbRefactor.Runner
@@ -51,8 +53,15 @@ namespace DbRefactor.Runner
 		public override void UpdateVersion(int version)
 		{
 			CreateSchemaInfoTable();
-			int count = provider.Update("SchemaInfo", new { Version = version }, new { Category = category });
-			if (count == 0)
+			bool recordExists = database.Table("SchemaInfo")
+				.Select("Version")
+				.Where(new {Category = DBNull.Value}).Execute().AsReadable()
+				.Any();
+			if (recordExists)
+			{
+				provider.Update("SchemaInfo", new { Version = version }, new { Category = category });
+			}
+			else
 			{
 				provider.Insert("SchemaInfo", new { Version = version, Category = category });
 			}

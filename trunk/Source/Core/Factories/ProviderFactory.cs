@@ -60,11 +60,17 @@ namespace DbRefactor.Factories
 			return new DatabaseMigrationTarget(info.Provider, info.Database, category);
 		}
 
-		public Migrator CreateMigrator(string provider, string connectionString, string category, Assembly assembly, bool trace)
+		private MigrationService CreateMigrationService(string connectionString, string category, ILogger logger)
+		{
+			var target = CreateTarget(connectionString, logger, category);
+			return new MigrationService(target, new MigrationRunner(target, logger), new MigrationReader(target));
+		}
+
+		public Migrator CreateMigrator(string provider, string connectionString, string category, bool trace)
 		{
 			var logger = new Logger();
 			logger.Attach(new ConsoleWriter());
-			return new Migrator(CreateTarget(connectionString, logger, category), category, assembly, logger);
+			return new Migrator(CreateMigrationService(connectionString, category, logger));
 		}
 
 		public SchemaDumper CreateSchemaDumper(string connectionString, ConsoleLogger logger)

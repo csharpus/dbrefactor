@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DbRefactor</RootNamespace>
-    <AssemblyName>DbRefactor</AssemblyName>
+    <AssemblyName>DbRefactor.Core</AssemblyName>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>DbRefactor.snk</AssemblyOriginatorKeyFile>
     <DelaySign>False</DelaySign>
@@ -133,6 +133,7 @@
     </Compile>
     <Compile Include="Runner\MigrationReader.cs" />
     <Compile Include="Runner\MigrationRunner.cs" />
+    <Compile Include="Runner\MigrationService.cs" />
     <Compile Include="Runner\MigratorFactory.cs" />
     <Compile Include="Runner\VersionedMigration.cs" />
     <Compile Include="Tools\DataDumper.cs" />
