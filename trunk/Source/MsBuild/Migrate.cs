@@ -12,14 +12,13 @@
 using System;
 using System.ComponentModel;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using DbRefactor.Factories;
 using Microsoft.Build.Utilities;
 using Microsoft.Build.Framework;
 
-namespace MSBuild
+namespace MsBuild
 {
-	public class MigrationRunner : Task
+	public class Migrate : Task
 	{
 		[Required, Description("The database provider (SqlServer)")]
 		public string Provider { get; set; }
@@ -38,7 +37,7 @@ namespace MSBuild
 		[DefaultValue(null), Description ("To define another set of migrations")]
 		public string Category { get; set; }
 
-		public MigrationRunner()
+		public Migrate()
 		{
 		}
 
