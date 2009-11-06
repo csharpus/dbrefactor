@@ -8,8 +8,8 @@
     <ProjectGuid>{506B49CB-32D2-4D9E-A463-BAD4C5A55257}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MSBuild</RootNamespace>
-    <AssemblyName>MSBuild</AssemblyName>
+    <RootNamespace>DbRefactor.MSBuild</RootNamespace>
+    <AssemblyName>DbRefactor.MSBuild</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

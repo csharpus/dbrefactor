@@ -31,15 +31,12 @@ namespace DbRefactor.MsBuild
 
 		[DefaultValue(-1), Description("To specific version to migrate the database to")]
 		public int Version { get; set; } 
+
 		[DefaultValue(false), Description("Show debug information")]
 		public bool Trace { get; set; }
 
 		[DefaultValue(null), Description ("To define another set of migrations")]
 		public string Category { get; set; }
-
-		public MigrateTask()
-		{
-		}
 
 		public override bool Execute()
 		{
@@ -49,7 +46,7 @@ namespace DbRefactor.MsBuild
 				if (assembly == null)
 					return false;
 
-				var migrator = new ProviderFactory().CreateMigrator(
+				var migrator = new DbRefactorFactory().CreateSqlServerMigrator(
 					Provider,
 					ConnectionString,
 					null,
@@ -69,9 +66,7 @@ namespace DbRefactor.MsBuild
 				Log.LogErrorFromException(ex);
 				return false;
 			}
-
 			return true;
-
 		}
 	}
 }

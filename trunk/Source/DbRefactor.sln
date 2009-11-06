@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Integration", "Tests.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcceptanceDatabase", "AcceptanceDatabase\AcceptanceDatabase.csproj", "{F29CCB76-58C6-4591-B7A5-D12F2C441B7F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsBuild", "Build\MsBuild.csproj", "{506B49CB-32D2-4D9E-A463-BAD4C5A55257}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSBuild", "MsBuild\MSBuild.csproj", "{506B49CB-32D2-4D9E-A463-BAD4C5A55257}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
