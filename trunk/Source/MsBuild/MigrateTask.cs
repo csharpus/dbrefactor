@@ -16,9 +16,9 @@ using DbRefactor.Factories;
 using Microsoft.Build.Utilities;
 using Microsoft.Build.Framework;
 
-namespace MsBuild
+namespace DbRefactor.MsBuild
 {
-	public class Migrate : Task
+	public class MigrateTask : Task
 	{
 		[Required, Description("The database provider (SqlServer)")]
 		public string Provider { get; set; }
@@ -37,7 +37,7 @@ namespace MsBuild
 		[DefaultValue(null), Description ("To define another set of migrations")]
 		public string Category { get; set; }
 
-		public Migrate()
+		public MigrateTask()
 		{
 		}
 
