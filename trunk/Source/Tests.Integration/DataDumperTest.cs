@@ -12,8 +12,9 @@ namespace DbRefactor.Tests.Integration
 		[Ignore]
 		public void DumpTest()
 		{
-			TransformationProvider provider =
-				new ProviderFactory().Create(@"Data Source=.\SQLExpress;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
+			var factory = new SqlServerFactory(@"Data Source=.\SQLExpress;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
+			
+			TransformationProvider provider = factory.GetProvider();
 			var d = new DataDumper(provider);
 			string result = d.Dump(true);
 		}

@@ -8,7 +8,7 @@ namespace Example
 	{
 		static void Main()
 		{
-			var migrator = new ProviderFactory().CreateMigrator(
+			var migrator = new DbRefactorFactory().CreateSqlServerMigrator(
 				"SqlServer",
 				ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
 				null,

@@ -32,7 +32,8 @@ namespace DbRefactor.Providers
 
 		public string[] GetTables()
 		{
-			const string query = "SELECT [name] FROM sysobjects WHERE xtype = 'U'";
+			//const string query = "SELECT [name] FROM sysobjects WHERE xtype = 'U'";
+			const string query = "SELECT [TABLE_NAME] AS [name] FROM information_schema.tables";
 			return ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
 		}
 
@@ -89,6 +90,12 @@ namespace DbRefactor.Providers
 		public List<string> GetConstraints(string table, string[] columns)
 		{
 			var filter = new ConstraintFilter { TableName = table, ColumnNames = columns };
+			return GetConstraints(filter).Select(c => c.Name).ToList();
+		}
+
+		public List<string> GetConstraints(string table)
+		{
+			var filter = new ConstraintFilter { TableName = table };
 			return GetConstraints(filter).Select(c => c.Name).ToList();
 		}
 

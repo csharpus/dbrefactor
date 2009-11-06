@@ -2,8 +2,7 @@ using NUnit.Framework;
 
 namespace DbRefactor.Tests.Integration
 {
-	[TestFixture]
-	public class CreateTableTests : ProviderTestBase
+	public abstract class CreateTableTests : ProviderTestBase
 	{
 		[Test]
 		public void Can_create_not_null_column()

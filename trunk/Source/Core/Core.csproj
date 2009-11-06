@@ -47,6 +47,10 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.SqlServerCe, Version=3.5.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dependencies\SqlServerCe\System.Data.SqlServerCe.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -64,6 +68,7 @@
     <Compile Include="Api\UpdateTable.cs" />
     <Compile Include="BaseMigration.cs" />
     <Compile Include="Engines\IColumnProperties.cs" />
+    <Compile Include="Engines\SqlServer\Compact\SqlServerCeEnvironment.cs" />
     <Compile Include="Engines\SqlServer\SqlServerColumnProperties.cs" />
     <Compile Include="Engines\SqlServer\SqlServerTypes.cs" />
     <Compile Include="Exceptions\IncorrectQueryException.cs" />
@@ -119,7 +124,7 @@
     <Compile Include="Providers\Columns\IntProvider.cs" />
     <Compile Include="Providers\Columns\LongProvider.cs" />
     <Compile Include="Providers\Properties\NotNullProvider.cs" />
-    <Compile Include="Factories\ProviderFactory.cs" />
+    <Compile Include="Factories\DbRefactorFactory.cs" />
     <Compile Include="Engines\SqlServer\SqlServerEnvironment.cs" />
     <Compile Include="Providers\Columns\StringProvider.cs" />
     <Compile Include="Providers\Columns\TextProvider.cs" />

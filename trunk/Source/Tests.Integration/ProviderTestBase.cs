@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace DbRefactor.Tests.Integration
 {
-	public class ProviderTestBase
+	public abstract class ProviderTestBase
 	{
 		internal TransformationProvider Provider;
 		protected IDatabase Database;
@@ -29,14 +29,26 @@ namespace DbRefactor.Tests.Integration
 			}
 		}
 
+		public virtual string GetConnectionString()
+		{
+			return ConnectionString;
+		}
+
+		protected virtual ProviderFactory CreateProviderFactory()
+		{
+			return new SqlServerFactory(GetConnectionString(), new ConsoleLogger(), null);
+		}
+
 		public const string ConnectionString =
 			@"Data Source=.\SQLEXPRESS;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI";
 
 		private void CreateProvider()
 		{
-			var info = new ProviderFactory().CreateAll(ConnectionString, new ConsoleLogger());
-			Provider = info.Provider;
-			Database = info.Database;
+			var factory = CreateProviderFactory();
+			factory.Init();
+			//var info = new DbRefactorFactory().CreateAll(ConnectionString, new ConsoleLogger());
+			Provider = factory.GetProvider();
+			Database = factory.GetDatabase();
 		}
 	}
 }

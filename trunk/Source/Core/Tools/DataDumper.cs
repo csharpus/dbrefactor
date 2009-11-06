@@ -14,6 +14,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 
@@ -55,7 +56,16 @@ namespace DbRefactor.Tools
 				writer.WriteLine("set identity_insert [{0}] off", table);
 			}
 		}
-
+		private void DropConstraints(string table)
+		{
+			//provider.GetColumnProviders()
+			var constraints = provider.GetConstraints(table);
+			foreach (var constraint in constraints)
+			{
+				writer.WriteLine("alter table [{0}] drop constraint [{1}]", table, constraint);
+			}
+		}
+		
 		private void DisableConstraints(string table)
 		{
 			writer.WriteLine("alter table [{0}] nocheck constraint all", table);
@@ -80,10 +90,11 @@ namespace DbRefactor.Tools
 		{
 			shouldDelete = true;
 			writer = new StringWriter();
-			List<string> tables = provider.GetTablesSortedByDependency();
+			List<string> tables = provider.GetTables().ToList();//GetTablesSortedByDependency();
 			foreach (string table in tables)
 			{
-				DisableConstraints(table);
+				DropConstraints(table);
+				//DisableConstraints(table);
 			}
 			foreach (string table in tables)
 			{

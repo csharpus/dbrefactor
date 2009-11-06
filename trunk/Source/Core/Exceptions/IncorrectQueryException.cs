@@ -1,5 +1,4 @@
 using System;
-using System.Data.SqlClient;
 
 namespace DbRefactor.Exceptions
 {
@@ -7,7 +6,7 @@ namespace DbRefactor.Exceptions
 	{
 		private readonly string sql = String.Empty;
 
-		public IncorrectQueryException(string sql, SqlException innerException)
+		public IncorrectQueryException(string sql, Exception innerException)
 			: base(GetMessage(sql, innerException), innerException)
 		{
 			this.sql = sql;
@@ -18,7 +17,7 @@ namespace DbRefactor.Exceptions
 			get { return sql; }
 		}
 
-		private static string GetMessage(string sql, SqlException sqlException)
+		private static string GetMessage(string sql, Exception sqlException)
 		{
 			return String.Format("Couldn't execute query: \r\n {0} \r\n {1}", sql, sqlException.Message);
 		}

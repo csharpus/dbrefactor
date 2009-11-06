@@ -69,6 +69,9 @@
     <Compile Include="Runner\MigrationServiceTests.cs" />
     <Compile Include="SqlGenerationVerificationTests.cs" />
     <Compile Include="AlterTableTests.cs" />
+    <Compile Include="Engines\SqlServer2008Tests.cs" />
+    <Compile Include="Engines\SqlServerCeTests.cs" />
+    <Compile Include="Engines\SqlServer2005Tests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Console\Console.csproj">
@@ -86,6 +89,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="DbRefactor.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Database\SqlServerCe.sdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
