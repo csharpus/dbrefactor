@@ -83,6 +83,16 @@ namespace DbRefactor.Tests.Integration.Runner
 			CollectionAssert.AreEqual(new[] { migration2, migration3 }, migrationCollection);
 		}
 
+		[Test]
+		public void Should_not_run_migrations_when_current_is_lattest()
+		{
+			target.Expect(t => t.GetVersion()).Return(3);
+			runner.Expect(r => r.MigrateUp(null)).IgnoreArguments().Repeat.Never();
+			runner.Expect(r => r.MigrateDown(null)).IgnoreArguments().Repeat.Never();
+			migrationService.MigrateToLastVersion(null);
+			runner.VerifyAllExpectations();
+		}
+
 		private static IVersionedMigration FakeMigration(int version)
 		{
 			var migration = MockRepository.GenerateStub<IVersionedMigration>();

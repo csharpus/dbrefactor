@@ -87,7 +87,7 @@ namespace DbRefactor.Engines.SqlServer
 
 		public string String(int size)
 		{
-			return string.Format("varchar({0})", size);
+			return string.Format("nvarchar({0})", size);
 		}
 
 		public string StringValue(string value)

@@ -58,6 +58,7 @@ namespace DbRefactor.Runner
 		private void Migrate(int version, IEnumerable<IVersionedMigration> migrations)
 		{
 			int currentVersion = migrationTarget.GetVersion();
+			if (version == currentVersion) return; // nothing to migrate
 			if (version > currentVersion)
 			{
 				var filteredMigrations = migrations.Where(m => m.Version > currentVersion 
