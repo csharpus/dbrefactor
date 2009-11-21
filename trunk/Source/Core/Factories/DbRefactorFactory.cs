@@ -41,6 +41,20 @@ namespace DbRefactor.Factories
 			providerFactory.Init();
 			return new SchemaDumper(providerFactory.GetProvider());
 		}
+
+		public DataDumper CreateDataDumper(string connectionString)
+		{
+			var providerFactory = new SqlServerFactory(connectionString, Logger.NullLogger, null);
+			providerFactory.Init();
+			return new DataDumper(providerFactory.GetProvider());
+		}
+
+		public Database CreateDatabase(string connectionString)
+		{
+			var providerFactory = new SqlServerFactory(connectionString, Logger.NullLogger, null);
+			providerFactory.Init();
+			return providerFactory.GetDatabase();
+		}
 	}
 
 	internal class FactoryInfo

@@ -1,4 +1,5 @@
-﻿using DbRefactor.Providers;
+﻿using DbRefactor.Exceptions;
+using DbRefactor.Providers;
 
 namespace DbRefactor.Api
 {
@@ -30,7 +31,12 @@ namespace DbRefactor.Api
 
 		public T Execute()
 		{
-			return (T)provider.SelectScalar(column, tableName, whereParameters);
+			var value = provider.SelectScalar(column, tableName, whereParameters);
+			if (value == null)
+			{
+				throw new DbRefactorException("Could not select scalar value because no data was found");
+			}
+			return (T)value;
 		}
 	}
 }

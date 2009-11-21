@@ -112,7 +112,7 @@ namespace DbRefactor.Tools
 		{
 			shouldDelete = true;
 			writer = new StringWriter();
-			List<string> tables = provider.GetTablesSortedByDependency();
+			List<string> tables = provider.GetTablesSortedByDependency().Except(new[] { "SchemaInfo" }).ToList();
 			foreach (string table in tables)
 			{
 				DisableConstraints(table);
