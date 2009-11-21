@@ -9,7 +9,7 @@ namespace DbRefactor.Tests.Integration
 		public void Can_add_column_to_table()
 		{
 			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").AddColumn().Int("C").Execute();
+			Database.Table("A").AddColumn(c => c.Int("C"));
 
 			Assert.True(Provider.ColumnExists("A", "C"));
 		}
@@ -26,7 +26,7 @@ namespace DbRefactor.Tests.Integration
 		public void Can_add_not_null_column_to_table()
 		{
 			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").AddColumn().Int("C").NotNull().Execute();
+			Database.Table("A").AddColumn(c => c.Int("C").NotNull());
 
 			Assert.False(Provider.IsNullable("A", "C"));
 		}
@@ -35,7 +35,7 @@ namespace DbRefactor.Tests.Integration
 		public void Can_add_unique_column_to_table()
 		{
 			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").AddColumn().Int("C").Unique().Execute();
+			Database.Table("A").AddColumn(c => c.Int("C").Unique());
 
 			Assert.True(Provider.UniqueExists("UQ_A_C"));
 		}
@@ -44,7 +44,7 @@ namespace DbRefactor.Tests.Integration
 		public void Can_add_identity_column_to_table()
 		{
 			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").AddColumn().Int("C").NotNull().Identity().Execute();
+			Database.Table("A").AddColumn(c => c.Int("C").NotNull().Identity());
 
 			Assert.True(Provider.IsIdentity("A", "C"));
 		}
@@ -53,7 +53,7 @@ namespace DbRefactor.Tests.Integration
 		public void Can_add_column_with_default_value()
 		{
 			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").AddColumn().Int("C", 1).Execute();
+			Database.Table("A").AddColumn(c => c.Int("C", 1));
 
 			Assert.True(Provider.IsDefault("A", "C"));
 		}
@@ -62,7 +62,7 @@ namespace DbRefactor.Tests.Integration
 		public void Can_add_primary_key_column_to_table()
 		{
 			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").AddColumn().Int("C").PrimaryKey().Execute();
+			Database.Table("A").AddColumn(c => c.Int("C").PrimaryKey());
 
 			Assert.That(Provider.PrimaryKeyExists("PK_A_C"));
 		}

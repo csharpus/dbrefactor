@@ -11,6 +11,8 @@
 
 #endregion
 
+using System;
+using System.Data;
 using DbRefactor.Factories;
 using DbRefactor.Providers;
 
@@ -24,7 +26,7 @@ namespace DbRefactor.Api
 		private readonly ApiFactory apiFactory;
 
 		internal ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory,
-		                   ConstraintNameService constraintNameService, ApiFactory apiFactory) : base(provider, tableName)
+		                     ConstraintNameService constraintNameService, ApiFactory apiFactory) : base(provider, tableName)
 		{
 			this.provider = provider;
 			this.columnProviderFactory = columnProviderFactory;
@@ -32,66 +34,51 @@ namespace DbRefactor.Api
 			this.apiFactory = apiFactory;
 		}
 
+		/// <summary>
+		/// Provides an access for column level operations
+		/// </summary>
 		public ActionColumn Column(string name)
 		{
 			return apiFactory.CreateActionColumn(TableName, name);
 		}
 
+		public IDataReader Select(params string[] columns)
+		{
+			return provider.Select(TableName, columns, new {});
+		}
+
 		/// <summary>
 		/// Insert new record to database table
 		/// </summary>
-		/// <param name="parameters">This is parameters for operation Insert.<br />
-		/// To add parameters you could use next syntaxes
-		/// Table(TableName).Insert(new {ColumnName1=Parameter1, ColumName2="StringParameter2", ...})
+		/// <param name="values">
+		/// <example>
+		/// The syntax is:
+		/// <code>
+		/// new {ColumnName1 = 100, ColumName2 = "a string", ...}
+		/// </code>
+		/// </example>
 		/// </param>
 		/// <returns></returns>
-		public void Insert(object parameters)
+		public void Insert(object values)
 		{
-			provider.Insert(TableName, parameters);
+			provider.Insert(TableName, values);
 		}
 
 		/// <summary>
-		/// Update record(s) in database table
+		/// Condition for Select, SelectScalar, Update and Delete operations
 		/// </summary>
-		/// <param name="parameters">This is parameters for operation Update.<br />
-		/// To add parameters you could use follow syntax
-		/// Table(TableName).Update(new {ColumnName1=Parameter1, ColumName2="StringParameter2", ...})
+		/// <param name="whereParameters">
+		/// <example>
+		/// The syntax is:
+		/// <code>
+		/// new {ColumnName1 = 100, ColumName2 = "a string", ...}
+		/// </code>.
+		/// For several conditions 'and' operation is applied
+		/// </example>
 		/// </param>
-		/// <returns></returns>
-		public UpdateTable Update(object parameters)
+		public WhereTable Where(object whereParameters)
 		{
-			return new UpdateTable(provider, TableName, parameters);
-		}
-
-		/// <summary>
-		/// Delete record(s) in datbase table.
-		/// To filter deleted rows use method Where
-		/// </summary>
-		/// <returns></returns>
-		public DeleteTable Delete()
-		{
-			return new DeleteTable(provider, TableName);
-		}
-
-		/// <summary>
-		/// Select single value from database table
-		/// </summary>
-		/// <typeparam name="T">Type of return value</typeparam>
-		/// <param name="column">Data table field</param>
-		/// <returns></returns>
-		public SelectScalarTable<T> SelectScalar<T>(string column)
-		{
-			return new SelectScalarTable<T>(provider, TableName, column);
-		}
-
-		/// <summary>
-		/// Select multiple values from database table
-		/// </summary>
-		/// <param name="what">Data table columns</param>
-		/// <returns></returns>
-		public SelectTable Select(params string[] what)
-		{
-			return new SelectTable(provider, TableName, what);
+			return new WhereTable(provider, TableName, whereParameters);
 		}
 
 		#region Table operations
@@ -109,10 +96,18 @@ namespace DbRefactor.Api
 
 		#region Column operations
 
-		public AddColumnTable AddColumn()
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="column">Lambda expression for column definition. The syntax is:
+		/// <example>
+		/// c => c.Int("ColumnName").NotNull().Identity()
+		/// </example>
+		/// </param>
+		public void AddColumn(Func<AddColumnTable, AddColumnTable> column)
 		{
-			return new AddColumnTable(provider, columnProviderFactory, TableName,
-			                          constraintNameService);
+			var columnTable = new AddColumnTable(columnProviderFactory, TableName, constraintNameService);
+			provider.AddColumn(TableName, column(columnTable).CurrentColumn);
 		}
 
 		public void DropColumn(string column)

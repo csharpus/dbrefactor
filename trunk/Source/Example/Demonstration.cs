@@ -62,7 +62,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("User").AddColumn().Int("RoleId", 2).NotNull().Execute();
+			Table("User").AddColumn(c => c.Int("RoleId", 2).NotNull());
 		}
 
 		public override void Down()
@@ -103,8 +103,8 @@ namespace Example
 
 		public override void Down()
 		{
-			Table("Role").Delete().Where(new {Name = "Administrator"});
-			Table("Role").Delete().Where(new { Name = "Manager" });
+			Table("Role").Where(new { Name = "Administrator" }).Delete();
+			Table("Role").Where(new { Name = "Manager" }).Delete();
 		}
 	}
 
@@ -128,7 +128,7 @@ namespace Example
 
 		public override void Down()
 		{
-			Table("User").Delete().Where(new { FirstName = "Robert", LastName = "Tompson" });
+			Table("User").Where(new { FirstName = "Robert", LastName = "Tompson" }).Delete();
 		}
 	}
 
@@ -158,7 +158,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			Table("User").Update(new {PersonalInformation = "none..."}).Where(new {PersonalInformation = DBNull.Value});
+			Table("User").Where(new { PersonalInformation = DBNull.Value }).Update(new { PersonalInformation = "none..." });
 
 			Table("User").Column("PersonalInformation").ConvertTo().String(1000);
 			Table("User").Column("PersonalInformation").SetNull();
@@ -168,7 +168,7 @@ namespace Example
 		{
 			Table("User").Column("PersonalInformation").ConvertTo().Text();
 			Table("User").Column("PersonalInformation").SetNotNull();
-			Table("User").Update(new { PersonalInformation = DBNull.Value }).Where(new { PersonalInformation = "none..." });
+			Table("User").Where(new { PersonalInformation = "none..." }).Update(new { PersonalInformation = DBNull.Value });
 		}
 	}
 
@@ -213,7 +213,7 @@ namespace Example
 				}
 				foreach (var user in systemUsers)
 				{
-					Table("User").Update(new {Name = "System/" + user}).Where(new {Name = user});
+					Table("User").Where(new {Name = user}).Update(new {Name = "System/" + user});
 				}
 			}
 		
@@ -331,7 +331,7 @@ namespace Example
 	{
 		public override void Up()
 		{
-			using(var reader = Table("User").Select("Id", "Name").Where(new {Id = 1, Name = "John"}).Execute())
+			using(var reader = Table("User").Where(new {Id = 1, Name = "John"}).Select("Id", "Name"))
 			{
 				
 			}

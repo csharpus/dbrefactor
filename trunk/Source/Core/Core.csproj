@@ -57,15 +57,11 @@
     <Compile Include="Api\ActionColumn.cs" />
     <Compile Include="Api\ActionTable.cs" />
     <Compile Include="Api\AddColumnTable.cs" />
-    <Compile Include="Api\DeleteTable.cs" />
     <Compile Include="Api\ExecuteEngine.cs" />
     <Compile Include="Api\NewTable.cs" />
     <Compile Include="Api\OtherTypeColumn.cs" />
-    <Compile Include="Api\QueryTable.cs" />
-    <Compile Include="Api\SelectScalarTable.cs" />
-    <Compile Include="Api\SelectTable.cs" />
     <Compile Include="Api\Table.cs" />
-    <Compile Include="Api\UpdateTable.cs" />
+    <Compile Include="Api\WhereTable.cs" />
     <Compile Include="BaseMigration.cs" />
     <Compile Include="Engines\IColumnProperties.cs" />
     <Compile Include="Engines\SqlServer\Compact\SqlServerCeEnvironment.cs" />
@@ -84,6 +80,7 @@
     <Compile Include="Infrastructure\Loggers\ILogWriter.cs" />
     <Compile Include="Infrastructure\Loggers\Logger.cs" />
     <Compile Include="Providers\ConstraintNameService.cs" />
+    <Compile Include="Providers\DependencySorter.cs" />
     <Compile Include="Providers\Properties\EmptyProvider.cs" />
     <Compile Include="Providers\TransformationProviderExistence.cs" />
     <Compile Include="Providers\TransformationProviderSchema.cs" />
@@ -92,7 +89,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Migration.cs" />
     <Compile Include="MigrationAttribute.cs" />
-    <Compile Include="Runner\MigrationComparer.cs" />
     <Compile Include="Exceptions\MigrationException.cs" />
     <Compile Include="Migrator.cs" />
     <Compile Include="Infrastructure\CodeGenerationService.cs" />
@@ -106,7 +102,6 @@
     <Compile Include="Providers\Properties\IdentityProvider.cs" />
     <Compile Include="Providers\Properties\PrimaryKeyProvider.cs" />
     <Compile Include="Providers\Properties\PropertyProvider.cs" />
-    <Compile Include="Providers\Relation.cs" />
     <Compile Include="Engines\SqlServer\SqlServerColumnMapper.cs" />
     <Compile Include="Providers\Columns\BinaryProvider.cs" />
     <Compile Include="Providers\Columns\BooleanProvider.cs" />

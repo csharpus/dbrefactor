@@ -90,13 +90,19 @@ namespace DbRefactor.Providers
 		public List<string> GetConstraints(string table, string[] columns)
 		{
 			var filter = new ConstraintFilter { TableName = table, ColumnNames = columns };
-			return GetConstraints(filter).Select(c => c.Name).ToList();
+			return GetConstraints(filter).Select(c => c.Name).Distinct().ToList();
 		}
 
-		public List<string> GetConstraints(string table)
+		public List<string> GetConstraintNames(string table)
 		{
 			var filter = new ConstraintFilter { TableName = table };
-			return GetConstraints(filter).Select(c => c.Name).ToList();
+			return GetConstraints(filter).Select(c => c.Name).Distinct().ToList();
+		}
+
+		public List<DatabaseConstraint> GetConstraints(string table)
+		{
+			var filter = new ConstraintFilter { TableName = table };
+			return GetConstraints(filter);
 		}
 
 		internal List<DatabaseConstraint> GetUniqueConstraints(string table, string[] columns)
@@ -115,7 +121,8 @@ namespace DbRefactor.Providers
 					ForeignTable = r["ForeignTable"].ToString(),
 					ForeignColumn = r["ForeignColumn"].ToString(),
 					PrimaryTable = r["PrimaryTable"].ToString(),
-					PrimaryColumn = r["PrimaryColumn"].ToString()
+					PrimaryColumn = r["PrimaryColumn"].ToString(),
+					ForeignNullable = Convert.ToBoolean(r["ForeignNullable"])
 				}).ToList();
 		}
 
@@ -136,60 +143,9 @@ namespace DbRefactor.Providers
 			return GetForeignKeys(new ForeignKeyFilter());
 		}
 
-		private List<Relation> GetTablesRelations()
-		{
-			var keys = GetForeignKeys();
-			var relations = new List<Relation>();
-			foreach (var key in keys)
-			{
-				relations.Add(new Relation(
-								key.PrimaryTable,
-								key.ForeignTable));
-			}
-			return relations;
-		}
-
-		public List<string> GetTablesSortedByDependency()
-		{
-			return SortTablesByDependency(new List<string>(GetTables()));
-		}
-
-		private List<string> SortTablesByDependency(List<string> tables)
-		{
-			List<Relation> relations = GetTablesRelations();
-			return DependencySorter.Run(tables, relations);
-		}
-
-		public class DependencySorter
-		{
-			public static List<string> Run(List<string> tables, List<Relation> relations)
-			{
-				CheckCyclicDependencyAbsence(relations);
-				var sortedTables = new List<string>(tables);
-				sortedTables.Sort(delegate(string a, string b)
-				{
-					if (a == b) return 0;
-					return IsChildParent(a, b, relations) ? -1 : 1;
-				});
-				return sortedTables;
-			}
-
-			private static void CheckCyclicDependencyAbsence(List<Relation> relations)
-			{
-				//TODO: implement
-			}
-
-			private static bool IsChildParent(string table1, string table2, IEnumerable<Relation> relations)
-			{
-				foreach (Relation r in relations)
-				{
-					if (r.Child == table1 && r.Parent == table2)
-					{
-						return true;
-					}
-				}
-				return false;
-			}
-		}
+		//public List<string> SortTablesByDependency(List<string> tables, List<Relation> relations)
+		//{
+		//    return DependencySorter.Sort(tables, relations);
+		//}
 	}
 }

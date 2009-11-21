@@ -69,7 +69,8 @@ SELECT ForeignKeys.[name] AS [Name],
    {0} AS ForeignTable,
    {1} AS ForeignColumn,
    {2} AS PrimaryTable,
-   {3} AS PrimaryColumn
+   {3} AS PrimaryColumn,
+   COLUMNPROPERTY(OBJECT_ID({0}), {1},'AllowsNull') As ForeignNullable
 FROM sys.foreign_keys AS ForeignKeys
 INNER JOIN sys.foreign_key_columns AS ForeignColumns
    ON ForeignKeys.object_id = ForeignColumns.constraint_object_id

@@ -45,8 +45,8 @@ namespace DbRefactor.Runner
 		public override int GetVersion()
 		{
 			if (!provider.TableExists("SchemaInfo")) return 0;
-			int version = database
-				.Table("SchemaInfo").SelectScalar<int>("Version").Where(new { Category = category }).Execute();
+			var version = database
+				.Table("SchemaInfo").Where(new { Category = category }).SelectScalar<int>("Version");
 			return Convert.ToInt32(version);
 		}
 
@@ -54,8 +54,9 @@ namespace DbRefactor.Runner
 		{
 			CreateSchemaInfoTable();
 			bool recordExists = database.Table("SchemaInfo")
+				.Where(new { Category = DBNull.Value })
 				.Select("Version")
-				.Where(new {Category = DBNull.Value}).Execute().AsReadable()
+				.AsReadable()
 				.Any();
 			if (recordExists)
 			{

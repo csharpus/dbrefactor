@@ -56,16 +56,17 @@ namespace DbRefactor.Tools
 				writer.WriteLine("set identity_insert [{0}] off", table);
 			}
 		}
+
 		private void DropConstraints(string table)
 		{
 			//provider.GetColumnProviders()
-			var constraints = provider.GetConstraints(table);
+			var constraints = provider.GetConstraintNames(table);
 			foreach (var constraint in constraints)
 			{
 				writer.WriteLine("alter table [{0}] drop constraint [{1}]", table, constraint);
 			}
 		}
-		
+
 		private void DisableConstraints(string table)
 		{
 			writer.WriteLine("alter table [{0}] nocheck constraint all", table);
@@ -90,12 +91,10 @@ namespace DbRefactor.Tools
 		{
 			shouldDelete = true;
 			writer = new StringWriter();
-			List<string> tables = provider.GetTables().ToList();//GetTablesSortedByDependency();
-			foreach (string table in tables)
-			{
-				DropConstraints(table);
-				//DisableConstraints(table);
-			}
+			var relations = GetRelations();
+			List<string> tables = DependencySorter.Sort(provider.GetTables().ToList(), relations);
+			
+			DropConstraints(tables);
 			foreach (string table in tables)
 			{
 				DropStatement(table);
@@ -103,27 +102,51 @@ namespace DbRefactor.Tools
 			return writer.ToString();
 		}
 
+		private List<ForeignKey> GetRelations()
+		{
+			return provider.GetForeignKeys();
+		}
+
+		private void DropConstraints(IEnumerable<string> tables)
+		{
+			var constraints = tables
+				.Select(t => provider.GetConstraints(t))
+				.SelectMany(l => l)
+				.OrderBy(c => c.ConstraintType != "F ")
+				.Select(c => new {c.Name, c.TableName})
+				.Distinct()
+				.ToList();
+
+			foreach (var constraint in constraints)
+			{
+				writer.WriteLine("alter table [{0}] drop constraint [{1}]", constraint.TableName, constraint.Name);
+			}
+		}
+
 		private void DropStatement(string table)
 		{
-			writer.WriteLine("DROP TABLE [{0}]", table);
+			writer.WriteLine("drop table [{0}]", table);
 		}
 
 		public string GenerateDeleteStatement()
 		{
 			shouldDelete = true;
 			writer = new StringWriter();
-			List<string> tables = provider.GetTablesSortedByDependency().Except(new[] { "SchemaInfo" }).ToList();
-			foreach (string table in tables)
+			var relations = GetRelations();
+			List<string> tables = DependencySorter.Sort(provider.GetTables().ToList(), relations).Except(new[] { "SchemaInfo" }).ToList();
+			//foreach (string table in tables)
+			//{
+			//    DisableConstraints(table);
+			//}
+			var nullableRelations = relations.Where(r => r.ForeignNullable).ToList();
+			foreach (var relation in nullableRelations)
 			{
-				DisableConstraints(table);
+				writer.WriteLine("update [{0}] set [{1}] = null", relation.ForeignTable,
+								 relation.ForeignColumn);
 			}
 			foreach (string table in tables)
 			{
 				DeleteStatement(table);
-			}
-			foreach (string table in tables)
-			{
-				EnableConstraints(table);
 			}
 			return writer.ToString();
 		}
@@ -133,7 +156,8 @@ namespace DbRefactor.Tools
 		{
 			shouldDelete = delete;
 			writer = new StringWriter();
-			List<string> tables = provider.GetTablesSortedByDependency();
+			var relations = GetRelations();
+			List<string> tables = DependencySorter.Sort(provider.GetTables().ToList(), relations);
 			foreach (string table in tables)
 			{
 				DisableConstraints(table);

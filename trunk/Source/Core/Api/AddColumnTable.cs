@@ -23,16 +23,14 @@ namespace DbRefactor.Api
 	{
 		private readonly string tableName;
 		private readonly ConstraintNameService constraintNameService;
-		private readonly TransformationProvider provider;
 		private readonly ColumnProviderFactory factory;
 		private ColumnProvider currentColumn;
 
-		internal AddColumnTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, string tableName,
+		internal AddColumnTable(ColumnProviderFactory columnProviderFactory, string tableName,
 		                        ConstraintNameService constraintNameService)
 		{
 			this.tableName = tableName;
 			this.constraintNameService = constraintNameService;
-			this.provider = provider;
 			factory = columnProviderFactory;
 		}
 
@@ -172,9 +170,9 @@ namespace DbRefactor.Api
 
 		#endregion Column properties
 
-		public void Execute()
+		internal ColumnProvider CurrentColumn
 		{
-			provider.AddColumn(tableName, currentColumn);
+			get { return currentColumn; }
 		}
 	}
 }

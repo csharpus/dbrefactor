@@ -91,9 +91,14 @@ namespace DbRefactor.Api
 			return apiFactory.CreateOtherTypeColumn(tableName, columnNames[0]);
 		}
 
-		public void AddForeignKeyTo(string primaryKeyTable, params string[] primaryKeyColumns)
+		/// <param name="primaryKeyTable"></param>
+		/// <param name="primaryKeyColumn"></param>
+		/// <param name="primaryKeyColumns">Used for composite foreign keys</param>
+		public void AddForeignKeyTo(string primaryKeyTable, string primaryKeyColumn, params string[] primaryKeyColumns)
 		{
-			AddForeignKeyTo(primaryKeyTable, OnDelete.NoAction, primaryKeyColumns);
+			var primaryKeyList = new List<string> {primaryKeyColumn};
+			primaryKeyList.AddRange(primaryKeyColumns);
+			AddForeignKeyTo(primaryKeyTable, OnDelete.NoAction, primaryKeyList.ToArray());
 		}
 
 		//public void AddForeignKeyTo(string constraintName, string primaryKeyTable, params string[] primaryKeyColumns)

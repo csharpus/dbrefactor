@@ -26,7 +26,9 @@ namespace DbRefactor.Api
 		private readonly List<ColumnProvider> columns;
 		private ColumnProvider currentColumn;
 
-		internal NewTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory, string tableName, ConstraintNameService constraintNameService): base(provider, tableName)
+		internal NewTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory,
+		                  string tableName,
+		                  ConstraintNameService constraintNameService) : base(provider, tableName)
 		{
 			factory = columnProviderFactory;
 			this.constraintNameService = constraintNameService;
@@ -35,10 +37,7 @@ namespace DbRefactor.Api
 
 		internal ColumnProviderFactory ColumnFactory
 		{
-			get
-			{
-				return factory;
-			}
+			get { return factory; }
 		}
 
 		internal void AddColumn(ColumnProvider provider)
