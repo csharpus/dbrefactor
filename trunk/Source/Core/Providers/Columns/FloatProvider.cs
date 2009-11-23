@@ -35,7 +35,7 @@ namespace DbRefactor.Providers.Columns
 
 		public override string SqlType()
 		{
-			return SQLTypes.Float();
+			return SqlTypes.Float();
 		}
 	}
 }

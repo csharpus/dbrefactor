@@ -25,7 +25,7 @@ namespace DbRefactor.Tests.Integration
 		{
 			Database.CreateTable("A").Int("B").Identity().Execute();
 
-			Provider.IsIdentity("A", "B");
+			Assert.That(Provider.IsIdentity("A", "B"));
 		}
 
 		[Test]

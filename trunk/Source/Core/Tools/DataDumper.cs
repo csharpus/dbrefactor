@@ -11,6 +11,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -23,10 +24,12 @@ namespace DbRefactor.Tools
 	public class DataDumper
 	{
 		private readonly TransformationProvider provider;
+		private readonly bool insertGoStatement;
 
-		internal DataDumper(TransformationProvider provider)
+		internal DataDumper(TransformationProvider provider, bool insertGoStatement)
 		{
 			this.provider = provider;
+			this.insertGoStatement = insertGoStatement;
 		}
 
 		private bool hasIdentity;
@@ -37,7 +40,7 @@ namespace DbRefactor.Tools
 		{
 			if (shouldDelete)
 			{
-				writer.WriteLine("delete from [{0}]", table);
+				AddSql("delete from [{0}]", table);
 			}
 		}
 
@@ -45,7 +48,7 @@ namespace DbRefactor.Tools
 		{
 			if (hasIdentity)
 			{
-				writer.WriteLine("set identity_insert [{0}] on", table);
+				AddSql("set identity_insert [{0}] on", table);
 			}
 		}
 
@@ -53,7 +56,7 @@ namespace DbRefactor.Tools
 		{
 			if (hasIdentity)
 			{
-				writer.WriteLine("set identity_insert [{0}] off", table);
+				AddSql("set identity_insert [{0}] off", table);
 			}
 		}
 
@@ -63,23 +66,23 @@ namespace DbRefactor.Tools
 			var constraints = provider.GetConstraintNames(table);
 			foreach (var constraint in constraints)
 			{
-				writer.WriteLine("alter table [{0}] drop constraint [{1}]", table, constraint);
+				AddSql("alter table [{0}] drop constraint [{1}]", table, constraint);
 			}
 		}
 
 		private void DisableConstraints(string table)
 		{
-			writer.WriteLine("alter table [{0}] nocheck constraint all", table);
+			AddSql("alter table [{0}] nocheck constraint all", table);
 		}
 
 		private void EnableConstraints(string table)
 		{
-			writer.WriteLine("alter table [{0}] check constraint all", table);
+			AddSql("alter table [{0}] check constraint all", table);
 		}
 
 		private void CheckContraints(string table)
 		{
-			writer.WriteLine("dbcc checkconstraints ('{0}')", table);
+			AddSql("dbcc checkconstraints ('{0}')", table);
 		}
 
 		private void EmptyLine()
@@ -112,20 +115,29 @@ namespace DbRefactor.Tools
 			var constraints = tables
 				.Select(t => provider.GetConstraints(t))
 				.SelectMany(l => l)
-				.OrderBy(c => c.ConstraintType != "F ")
+				.OrderBy(c => c.ConstraintType != ConstraintType.ForeignKey)
 				.Select(c => new {c.Name, c.TableName})
 				.Distinct()
 				.ToList();
 
 			foreach (var constraint in constraints)
 			{
-				writer.WriteLine("alter table [{0}] drop constraint [{1}]", constraint.TableName, constraint.Name);
+				AddSql("alter table [{0}] drop constraint [{1}]", constraint.TableName, constraint.Name);
 			}
 		}
 
 		private void DropStatement(string table)
 		{
-			writer.WriteLine("drop table [{0}]", table);
+			AddSql("drop table [{0}]", table);
+		}
+
+		private void AddSql(string sql, params string[] arguments)
+		{
+			if (insertGoStatement)
+			{
+				sql += Environment.NewLine + "GO";
+			}
+			writer.WriteLine(sql, arguments);
 		}
 
 		public string GenerateDeleteStatement()
@@ -141,7 +153,7 @@ namespace DbRefactor.Tools
 			var nullableRelations = relations.Where(r => r.ForeignNullable).ToList();
 			foreach (var relation in nullableRelations)
 			{
-				writer.WriteLine("update [{0}] set [{1}] = null", relation.ForeignTable,
+				AddSql("update [{0}] set [{1}] = null", relation.ForeignTable,
 								 relation.ForeignColumn);
 			}
 			foreach (string table in tables)

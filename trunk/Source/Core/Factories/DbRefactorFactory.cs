@@ -11,6 +11,7 @@
 
 #endregion
 
+using System;
 using DbRefactor.Api;
 using DbRefactor.Engines;
 using DbRefactor.Engines.SqlServer;
@@ -25,35 +26,66 @@ namespace DbRefactor.Factories
 {
 	public class DbRefactorFactory
 	{
-		public Migrator CreateSqlServerMigrator(string provider, string connectionString, string category, bool trace)
+		public static DbRefactorFactory BuildSqlServerFactory(string connectionString)
 		{
 			var logger = new Logger();
 			logger.Attach(new ConsoleWriter());
-			var providerFactory = new SqlServerFactory(connectionString, logger, category);
+			var providerFactory = new SqlServerFactory(connectionString, logger, null);
 			providerFactory.Init();
+			return new DbRefactorFactory(providerFactory);
+		}
+
+		public static DbRefactorFactory BuildSqlServerFactory(string connectionString, string category,
+		                                                      bool trace)
+		{
+			var logger = new Logger();
+			logger.Attach(new ConsoleWriter());
+			var providerFactory = new SqlServerFactory(connectionString, logger, null);
+			providerFactory.Init();
+			return new DbRefactorFactory(providerFactory);
+		}
+
+		public static DbRefactorFactory BuildSqlServerCeFactory(string connectionString, string category,
+		                                                        bool trace)
+		{
+			var logger = new Logger();
+			logger.Attach(new ConsoleWriter());
+			var providerFactory = new SqlServerCeFactory(connectionString, logger, null);
+			providerFactory.Init();
+			return new DbRefactorFactory(providerFactory);
+		}
+
+		private readonly ProviderFactory providerFactory;
+
+		private DbRefactorFactory(ProviderFactory providerFactory)
+		{
+			this.providerFactory = providerFactory;
+		}
+
+		public Migrator CreateSqlServerMigrator()
+		{
 			var migrationService = providerFactory.GetMigrationService();
 			return new Migrator(migrationService);
 		}
 
-		public SchemaDumper CreateSchemaDumper(string connectionString, ConsoleLogger logger)
+		public SchemaDumper CreateSchemaDumper()
 		{
-			var providerFactory = new SqlServerFactory(connectionString, logger, null);
-			providerFactory.Init();
 			return new SchemaDumper(providerFactory.GetProvider());
 		}
 
-		public DataDumper CreateDataDumper(string connectionString)
+		public DataDumper CreateDataDumper()
 		{
-			var providerFactory = new SqlServerFactory(connectionString, Logger.NullLogger, null);
-			providerFactory.Init();
-			return new DataDumper(providerFactory.GetProvider());
+			return providerFactory.GetDataDumper();
 		}
 
-		public Database CreateDatabase(string connectionString)
+		public Database CreateDatabase()
 		{
-			var providerFactory = new SqlServerFactory(connectionString, Logger.NullLogger, null);
-			providerFactory.Init();
 			return providerFactory.GetDatabase();
+		}
+
+		internal TransformationProvider GetProvider()
+		{
+			return providerFactory.GetProvider();
 		}
 	}
 
@@ -82,6 +114,7 @@ namespace DbRefactor.Factories
 		private Database database;
 		private DatabaseMigrationTarget databaseMigrationTarget;
 		private MigrationService migrationService;
+		private DataDumper dataDumper;
 
 		protected ProviderFactory(string connectionString, ILogger logger, string category)
 		{
@@ -122,13 +155,17 @@ namespace DbRefactor.Factories
 			                                                  sqlGenerationService,
 			                                                  columnPropertyProviderFactory);
 			constraintNameService = new ConstraintNameService();
-			provider = new TransformationProvider(databaseEnvironment, sqlServerColumnMapper, constraintNameService);
+			var schemaProvider = CreateSchemaProvider(databaseEnvironment, constraintNameService,
+			                                          sqlServerColumnMapper);
+			provider = new TransformationProvider(databaseEnvironment, sqlServerColumnMapper,
+			                                      constraintNameService, schemaProvider);
 			apiFactory = new ApiFactory(provider, columnProviderFactory, constraintNameService);
 			database = new Database(provider, columnProviderFactory, constraintNameService, apiFactory);
 			databaseMigrationTarget = new DatabaseMigrationTarget(provider, database, category);
 			var migrationRunner = new MigrationRunner(databaseMigrationTarget, logger);
 			var migrationReader = new MigrationReader(databaseMigrationTarget);
 			migrationService = new MigrationService(databaseMigrationTarget, migrationRunner, migrationReader);
+			dataDumper = CreateDataDumper(provider);
 		}
 
 		internal abstract IColumnProperties CreateColumnProperties();
@@ -136,6 +173,12 @@ namespace DbRefactor.Factories
 		internal abstract IDatabaseEnvironment CreateEnvironment();
 
 		internal abstract ISqlTypes CreateSqlTypes();
+
+		internal abstract SchemaProvider CreateSchemaProvider(IDatabaseEnvironment databaseEnvironment,
+		                                                      ConstraintNameService constraintNameService,
+		                                                      SqlServerColumnMapper sqlServerColumnMapper);
+
+		internal abstract DataDumper CreateDataDumper(TransformationProvider transformationProvider);
 
 		internal TransformationProvider GetProvider()
 		{
@@ -150,6 +193,11 @@ namespace DbRefactor.Factories
 		internal MigrationService GetMigrationService()
 		{
 			return migrationService;
+		}
+
+		internal DataDumper GetDataDumper()
+		{
+			return dataDumper;
 		}
 	}
 
@@ -178,6 +226,18 @@ namespace DbRefactor.Factories
 		{
 			return new SqlServerTypes();
 		}
+
+		internal override SchemaProvider CreateSchemaProvider(IDatabaseEnvironment databaseEnvironment,
+		                                                      ConstraintNameService constraintNameService,
+		                                                      SqlServerColumnMapper sqlServerColumnMapper)
+		{
+			return new SqlServerSchemaProvider(databaseEnvironment, constraintNameService, sqlServerColumnMapper);
+		}
+
+		internal override DataDumper CreateDataDumper(TransformationProvider transformationProvider)
+		{
+			return new DataDumper(transformationProvider, false);
+		}
 	}
 
 	internal class SqlServerCeFactory : ProviderFactory
@@ -200,6 +260,18 @@ namespace DbRefactor.Factories
 		internal override ISqlTypes CreateSqlTypes()
 		{
 			return new SqlServerTypes();
+		}
+
+		internal override SchemaProvider CreateSchemaProvider(IDatabaseEnvironment databaseEnvironment,
+		                                                      ConstraintNameService constraintNameService,
+		                                                      SqlServerColumnMapper sqlServerColumnMapper)
+		{
+			return new SqlServerCeSchemaProvider(databaseEnvironment, constraintNameService, sqlServerColumnMapper);
+		}
+
+		internal override DataDumper CreateDataDumper(TransformationProvider transformationProvider)
+		{
+			return new DataDumper(transformationProvider, true);
 		}
 	}
 }

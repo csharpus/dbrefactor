@@ -55,7 +55,7 @@ namespace DbRefactor.Engines.SqlServer
 
 		public DecimalProvider CreateDecimal(ColumnData data)
 		{
-			return new DecimalProvider(data.Name, data.DefaultValue, data.Precision.Value, data.Radix.Value,
+			return new DecimalProvider(data.Name, data.DefaultValue, data.Precision.Value, data.Scale.Value,
 			                           codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory);
 		}
 

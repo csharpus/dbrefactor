@@ -33,12 +33,12 @@ namespace DbRefactor.Providers.Columns
 
 		public override string SqlType()
 		{
-			return SQLTypes.Boolean();
+			return SqlTypes.Boolean();
 		}
 
 		protected override string ValueSql(object value)
 		{
-			return SQLTypes.BooleanValue((bool) value);
+			return SqlTypes.BooleanValue((bool) value);
 		}
 	}
 }

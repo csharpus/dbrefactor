@@ -1,15 +1,15 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using DbRefactor.Providers;
 
-namespace DbRefactor.Engines.SqlServer
+namespace DbRefactor.Engines.SqlServer.Compact
 {
-	internal class ForeignKeyQueryBuilder
+	internal class CeForeignKeyQueryBuilder
 	{
 		private readonly ForeignKeyFilter filter;
 		private readonly List<string> restrictions = new List<string>();
 
-		public ForeignKeyQueryBuilder(ForeignKeyFilter filter)
+		public CeForeignKeyQueryBuilder(ForeignKeyFilter filter)
 		{
 			this.filter = filter;
 		}
@@ -40,7 +40,7 @@ namespace DbRefactor.Engines.SqlServer
 		private void AddNameRestriction()
 		{
 			if (filter.Name == null) return;
-			restrictions.Add(String.Format("Name = '{0}'", filter.Name));
+			restrictions.Add(String.Format("constraints.CONSTRAINT_NAME = '{0}'", filter.Name));
 		}
 
 		private void AddPrimaryTableRestriction()
@@ -55,23 +55,26 @@ namespace DbRefactor.Engines.SqlServer
 			restrictions.Add(String.Format("{0} IN ('{1}')", PrimaryColumnSql, String.Join("', '", filter.PrimaryKeyColumns)));
 		}
 
-		readonly string baseQuery =
-			String.Format(@"
-SELECT ForeignKeys.[name] AS [Name],
-   {0} AS ForeignTable,
-   {1} AS ForeignColumn,
-   {2} AS PrimaryTable,
-   {3} AS PrimaryColumn,
-   COLUMNPROPERTY(OBJECT_ID({0}), {1},'AllowsNull') As ForeignNullable
-FROM sys.foreign_keys AS ForeignKeys
-INNER JOIN sys.foreign_key_columns AS ForeignColumns
-   ON ForeignKeys.object_id = ForeignColumns.constraint_object_id
-				", ForeignTableSql, ForeignColumnSql, PrimaryTableSql, PrimaryColumnSql);
+		private readonly string baseQuery = @"
+select
+	constraints.CONSTRAINT_NAME as [Name], 
+	constraints.CONSTRAINT_TABLE_NAME as ForeignTable,
+	ForeignKeys.COLUMN_NAME as ForeignColumn,
+	constraints.UNIQUE_CONSTRAINT_TABLE_NAME as PrimaryTable,
+	PrimaryKeys.COLUMN_NAME as PrimaryColumn,
+	Columns.IS_NULLABLE as ForeignNullable
+from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS as constraints
+inner join INFORMATION_SCHEMA.KEY_COLUMN_USAGE as ForeignKeys
+	on constraints.CONSTRAINT_NAME = ForeignKeys.CONSTRAINT_NAME
+inner join INFORMATION_SCHEMA.KEY_COLUMN_USAGE as PrimaryKeys
+	on constraints.UNIQUE_CONSTRAINT_NAME = PrimaryKeys.CONSTRAINT_NAME
+inner join INFORMATION_SCHEMA.COLUMNS as Columns
+	on ForeignKeys.COLUMN_NAME = Columns.COLUMN_NAME
+";
 
-		private const string ForeignTableSql = "OBJECT_NAME(ForeignKeys.parent_object_id)";
-		private const string ForeignColumnSql = "COL_NAME(ForeignColumns.parent_object_id, ForeignColumns.parent_column_id)";
-		private const string PrimaryTableSql = "OBJECT_NAME (ForeignKeys.referenced_object_id)";
-		private const string PrimaryColumnSql =
-			"COL_NAME(ForeignColumns.referenced_object_id, ForeignColumns.referenced_column_id)";
+		private const string ForeignTableSql = "constraints.CONSTRAINT_TABLE_NAME";
+		private const string ForeignColumnSql = "ForeignKeys.COLUMN_NAME";
+		private const string PrimaryTableSql = "constraints.UNIQUE_CONSTRAINT_TABLE_NAME";
+		private const string PrimaryColumnSql = "PrimaryKeys.COLUMN_NAME";
 	}
 }

@@ -20,7 +20,7 @@ namespace DbRefactor.Tests.Integration
 					@"Data Source=.\SQLExpress;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
 
 			TransformationProvider provider = factory.GetProvider();
-			var d = new DataDumper(provider);
+			var d = new DataDumper(provider, false);
 			string result = d.Dump(true);
 		}
 
@@ -44,9 +44,8 @@ namespace DbRefactor.Tests.Integration
 			Database.Table("B").Column("CId").AddForeignKeyTo("C", "Id");
 			Database.Table("C").Column("AId").AddForeignKeyTo("A", "Id");
 
-			var factory = CreateProviderFactory();
-			factory.Init();
-			var d = new DataDumper(factory.GetProvider());
+			var factory = CreateFactory();
+			var d = new DataDumper(factory.GetProvider(), false);
 			string result = d.GenerateDeleteStatement();
 			Console.Write(result);
 		}

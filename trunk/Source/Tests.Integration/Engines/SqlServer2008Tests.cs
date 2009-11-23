@@ -12,9 +12,9 @@ namespace DbRefactor.Tests.Integration.Engines
 			return @"Data Source=.\SQLEXPRESS2008;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI";
 		}
 
-		protected override ProviderFactory CreateProviderFactory()
+		protected override DbRefactorFactory CreateFactory()
 		{
-			return new SqlServerFactory(GetConnectionString(), new ConsoleLogger(), null);
+			return DbRefactorFactory.BuildSqlServerFactory(GetConnectionString(), null, true);
 		}
 	}
 }

@@ -36,12 +36,12 @@ namespace DbRefactor.Providers.Columns
 
 		public override string SqlType()
 		{
-			return SQLTypes.Text();
+			return SqlTypes.Text();
 		}
 
 		protected override string ValueSql(object value)
 		{
-			return SQLTypes.TextValue((string) value);
+			return SqlTypes.TextValue((string) value);
 		}
 	}
 }

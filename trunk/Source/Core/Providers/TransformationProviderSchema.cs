@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Collections.Generic;
 using System.Linq;
-using DbRefactor.Engines.SqlServer;
-using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
 using DbRefactor.Providers.Columns;
 
@@ -13,27 +9,13 @@ namespace DbRefactor.Providers
 	{
 		private ColumnProvider GetColumnProvider(string tableName, string columnName)
 		{
-			ColumnProvider provider;
-			using (
-				IDataReader reader =
-					ExecuteQuery(
-						"SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}' and column_name = '{1}'",
-						tableName, columnName))
-			{
-				if (!reader.Read())
-				{
-					throw new DbRefactorException(String.Format("Couldn't find column '{0}' in table '{1}'", columnName, tableName));
-				}
-				provider = GetProvider(reader);
-			}
-			AddProviderProperties(tableName, provider);
-			return provider;
+			return schemaProvider.GetColumnProvider(tableName, columnName);
 		}
 
 		public string[] GetTables()
 		{
 			//const string query = "SELECT [name] FROM sysobjects WHERE xtype = 'U'";
-			const string query = "SELECT [TABLE_NAME] AS [name] FROM information_schema.tables";
+			const string query = "select [TABLE_NAME] as [name] from information_schema.tables";
 			return ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
 		}
 
@@ -45,28 +27,10 @@ namespace DbRefactor.Providers
 
 		internal List<ColumnProvider> GetColumnProviders(string table)
 		{
-			var providers = new List<ColumnProvider>();
-
-			using (
-				IDataReader reader =
-					ExecuteQuery(
-						"SELECT DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_PRECISION_RADIX, COLUMN_DEFAULT FROM information_schema.columns WHERE table_name = '{0}';",
-						table))
-			{
-				while (reader.Read())
-				{
-					ColumnProvider provider = GetProvider(reader);
-					providers.Add(provider);
-				}
-			}
-			foreach (var provider in providers)
-			{
-				AddProviderProperties(table, provider);
-			}
-			return providers;
+			return schemaProvider.GetColumnProviders(table);
 		}
 
-		private List<string> GetConstraintsByType(string table, string[] columns, string type)
+		private List<string> GetConstraintsByType(string table, string[] columns, ConstraintType type)
 		{
 			var filter = new ConstraintFilter { TableName = table, ColumnNames = columns, ConstraintType = type };
 			return GetConstraints(filter).Select(c => c.Name).ToList();
@@ -74,18 +38,8 @@ namespace DbRefactor.Providers
 
 		private List<DatabaseConstraint> GetConstraints(ConstraintFilter filter)
 		{
-			var query = new ConstraintQueryBuilder(filter).BuildQuery();
-			return ExecuteQuery(query).AsReadable()
-				.Select(r => new DatabaseConstraint
-				{
-					Name = r["ConstraintName"].ToString(),
-					TableSchema = r["TableSchema"].ToString(),
-					TableName = r["TableName"].ToString(),
-					ColumnName = r["ColumnName"].ToString(),
-					ConstraintType = r["ConstraintType"].ToString()
-				}).ToList();
+			return schemaProvider.GetConstraints(filter);
 		}
-
 
 		public List<string> GetConstraints(string table, string[] columns)
 		{
@@ -107,35 +61,18 @@ namespace DbRefactor.Providers
 
 		internal List<DatabaseConstraint> GetUniqueConstraints(string table, string[] columns)
 		{
-			var filter = new ConstraintFilter { TableName = table, ColumnNames = columns, ConstraintType = "UQ" };
+			var filter = new ConstraintFilter { TableName = table, ColumnNames = columns, ConstraintType = ConstraintType.Unique };
 			return GetConstraints(filter).ToList();
 		}
 
 		private List<ForeignKey> GetForeignKeys(ForeignKeyFilter filter)
 		{
-			var query = new ForeignKeyQueryBuilder(filter).BuildQuery();
-			return ExecuteQuery(query).AsReadable()
-				.Select(r => new ForeignKey
-				{
-					Name = r["Name"].ToString(),
-					ForeignTable = r["ForeignTable"].ToString(),
-					ForeignColumn = r["ForeignColumn"].ToString(),
-					PrimaryTable = r["PrimaryTable"].ToString(),
-					PrimaryColumn = r["PrimaryColumn"].ToString(),
-					ForeignNullable = Convert.ToBoolean(r["ForeignNullable"])
-				}).ToList();
+			return schemaProvider.GetForeignKeys(filter);
 		}
 
 		private List<Index> GetIndexes(IndexFilter filter)
 		{
-			var query = new IndexQueryBuilder(filter).BuildQuery();
-			return ExecuteQuery(query).AsReadable()
-				.Select(r => new Index
-				{
-					Name = r["Name"].ToString(),
-					TableName = r["TableName"].ToString(),
-					ColumnName = r["ColumnName"].ToString()
-				}).ToList();
+			return schemaProvider.GetIndexes(filter);
 		}
 
 		public List<ForeignKey> GetForeignKeys()

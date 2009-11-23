@@ -36,7 +36,7 @@ namespace DbRefactor.Providers.Columns
 
 		public override string SqlType()
 		{
-			return SQLTypes.Long();
+			return SqlTypes.Long();
 		}
 	}
 }

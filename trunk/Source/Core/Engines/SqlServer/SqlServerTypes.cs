@@ -35,9 +35,9 @@ namespace DbRefactor.Engines.SqlServer
 			                     dateTime.Minute, dateTime.Second);
 		}
 
-		public string Decimal(int precision, int radix)
+		public string Decimal(int precision, int scale)
 		{
-			return string.Format("decimal({0},{1})", precision, radix);
+			return string.Format("decimal({0},{1})", precision, scale);
 		}
 
 		public string DecimalValue(decimal value)

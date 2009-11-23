@@ -48,7 +48,7 @@ namespace DbRefactor.Providers.Columns
 			uniqueProvider = columnPropertyProviderFactory.CreateEmpty();
 		}
 
-		public ISqlTypes SQLTypes
+		public ISqlTypes SqlTypes
 		{
 			get { return sqlTypes; }
 		}
@@ -123,6 +123,7 @@ namespace DbRefactor.Providers.Columns
 
 		public void RemoveNotNull()
 		{
+			//TODO: should add NULL definition because default behaviour is different
 			RemoveProperty(notNullProvider);
 			notNullProvider = columnPropertyProviderFactory.CreateEmpty();
 		}
@@ -214,7 +215,7 @@ namespace DbRefactor.Providers.Columns
 		{
 			if (value == null || value == DBNull.Value)
 			{
-				return SQLTypes.NullValue();
+				return SqlTypes.NullValue();
 			}
 			return ValueSql(value);
 		}

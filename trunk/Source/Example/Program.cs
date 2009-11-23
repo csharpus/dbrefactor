@@ -8,11 +8,10 @@ namespace Example
 	{
 		static void Main()
 		{
-			var migrator = new DbRefactorFactory().CreateSqlServerMigrator(
-				"SqlServer",
-				ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
+			var migrator = DbRefactorFactory.BuildSqlServerFactory(ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
 				null,
-				false);
+				false).CreateSqlServerMigrator(
+				);
 			migrator.MigrateToLastVersion(Assembly.GetExecutingAssembly());
 		}
 	}

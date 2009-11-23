@@ -41,7 +41,7 @@ namespace DbRefactor.Cli
 			[Optional(null, Description = "To define another set of migrations")] string category)
 		{
 			Assembly asm = Assembly.LoadFrom(migrationAssembly);
-			var migrator = new DbRefactorFactory().CreateSqlServerMigrator(provider, connectionString, category, trace);
+			var migrator = DbRefactorFactory.BuildSqlServerFactory(connectionString, category, trace).CreateSqlServerMigrator();
 			if (version == -1)
 			{
 				migrator.MigrateToLastVersion(asm);
@@ -55,7 +55,7 @@ namespace DbRefactor.Cli
 		[Action]
 		public static void Dump(string provider, string connectionString, string outputFolder)
 		{
-			var dumper = new DbRefactorFactory().CreateSchemaDumper(connectionString, new ConsoleLogger());
+			var dumper = DbRefactorFactory.BuildSqlServerFactory(connectionString, null, true).CreateSchemaDumper();
 			dumper.DumpTo(outputFolder);
 		}
 	}

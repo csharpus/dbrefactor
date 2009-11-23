@@ -1,7 +1,7 @@
 using System;
+using System.Text.RegularExpressions;
 using DbRefactor.Api;
 using DbRefactor.Factories;
-using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
 using DbRefactor.Tools;
 using NUnit.Framework;
@@ -12,6 +12,7 @@ namespace DbRefactor.Tests.Integration
 	{
 		internal TransformationProvider Provider;
 		protected IDatabase Database;
+		private DataDumper dataDumper;
 
 		[SetUp]
 		public void Setup()
@@ -22,11 +23,19 @@ namespace DbRefactor.Tests.Integration
 
 		private void DropAllTables()
 		{
-			var sql = new DataDumper(Provider).GenerateDropStatement();
-			if (sql != String.Empty)
-			{
-				Provider.ExecuteNonQuery(sql);
-			}
+			var sql = dataDumper.GenerateDropStatement();
+			var lines = Regex.Split(sql, "GO");
+
+			
+				foreach (var line in lines)
+				{
+					if (line.Trim() != String.Empty)
+					{
+						Provider.ExecuteNonQuery(line);
+					}
+				}
+				
+			
 		}
 
 		public virtual string GetConnectionString()
@@ -34,9 +43,9 @@ namespace DbRefactor.Tests.Integration
 			return ConnectionString;
 		}
 
-		protected virtual ProviderFactory CreateProviderFactory()
+		protected virtual DbRefactorFactory CreateFactory()
 		{
-			return new SqlServerFactory(GetConnectionString(), new ConsoleLogger(), null);
+			return DbRefactorFactory.BuildSqlServerFactory(GetConnectionString(), null, true);
 		}
 
 		public const string ConnectionString =
@@ -44,11 +53,11 @@ namespace DbRefactor.Tests.Integration
 
 		private void CreateProvider()
 		{
-			var factory = CreateProviderFactory();
-			factory.Init();
+			var factory = CreateFactory();
 			//var info = new DbRefactorFactory().CreateAll(ConnectionString, new ConsoleLogger());
 			Provider = factory.GetProvider();
-			Database = factory.GetDatabase();
+			Database = factory.CreateDatabase();
+			dataDumper = factory.CreateDataDumper();
 		}
 	}
 }

@@ -46,10 +46,11 @@ namespace DbRefactor.Factories
 			                            columnPropertyProviderFactory);
 		}
 
-		public DecimalProvider CreateDecimal(string name, decimal? defaultValue, int precision, int radix)
+		public DecimalProvider CreateDecimal(string name, decimal? defaultValue, int precision, int scale)
 		{
-			return new DecimalProvider(name, defaultValue, precision, radix,
-			                           codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory);
+			return new DecimalProvider(name, defaultValue, precision, scale,
+			                           codeGenerationService, sqlTypes, sqlGenerationService,
+			                           columnPropertyProviderFactory);
 		}
 
 		public DoubleProvider CreateDouble(string name, double? defaultValue)
@@ -78,7 +79,8 @@ namespace DbRefactor.Factories
 
 		public StringProvider CreateString(string name, string defaultValue, int length)
 		{
-			return new StringProvider(name, defaultValue, length, codeGenerationService, sqlTypes, sqlGenerationService,
+			return new StringProvider(name, defaultValue, length, codeGenerationService, sqlTypes,
+			                          sqlGenerationService,
 			                          columnPropertyProviderFactory);
 		}
 

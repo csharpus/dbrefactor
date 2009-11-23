@@ -10,7 +10,7 @@ namespace DbRefactor.Providers
 
 		public int? Precision { get; set; }
 
-		public int? Radix { get; set; }
+		public int? Scale { get; set; }
 
 		public object DefaultValue { get; set; }
 	}

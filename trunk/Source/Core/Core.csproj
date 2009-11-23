@@ -64,8 +64,18 @@
     <Compile Include="Api\WhereTable.cs" />
     <Compile Include="BaseMigration.cs" />
     <Compile Include="Engines\IColumnProperties.cs" />
+    <Compile Include="Engines\SqlServer\Compact\CeConstraintQueryBuilder.cs" />
+    <Compile Include="Engines\SqlServer\Compact\CeForeignKeyQueryBuilder.cs" />
+    <Compile Include="Engines\SqlServer\Compact\CeIndexQueryBuilder.cs" />
     <Compile Include="Engines\SqlServer\Compact\SqlServerCeEnvironment.cs" />
+    <Compile Include="Engines\SqlServer\Compact\SqlServerCeSchemaProvider.cs" />
+    <Compile Include="Providers\Index.cs" />
+    <Compile Include="Providers\IndexFilter.cs" />
+    <Compile Include="Providers\ConstraintFilter.cs" />
+    <Compile Include="Providers\DatabaseConstraint.cs" />
+    <Compile Include="Providers\ForeignKeyFilter.cs" />
     <Compile Include="Engines\SqlServer\SqlServerColumnProperties.cs" />
+    <Compile Include="Engines\SqlServer\SqlServerSchemaProvider.cs" />
     <Compile Include="Engines\SqlServer\SqlServerTypes.cs" />
     <Compile Include="Exceptions\IncorrectQueryException.cs" />
     <Compile Include="Factories\ApiFactory.cs" />
@@ -82,6 +92,7 @@
     <Compile Include="Providers\ConstraintNameService.cs" />
     <Compile Include="Providers\DependencySorter.cs" />
     <Compile Include="Providers\Properties\EmptyProvider.cs" />
+    <Compile Include="Providers\SchemaProvider.cs" />
     <Compile Include="Providers\TransformationProviderExistence.cs" />
     <Compile Include="Providers\TransformationProviderSchema.cs" />
     <Compile Include="Runner\IMigrationTarget.cs" />

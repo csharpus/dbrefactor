@@ -1,25 +1,10 @@
 using System;
 using System.Collections.Generic;
+using DbRefactor.Exceptions;
+using DbRefactor.Providers;
 
 namespace DbRefactor.Engines.SqlServer
 {
-	internal class ConstraintFilter
-	{
-		public string Name { get; set; }
-		public string TableName { get; set; }
-		public string[] ColumnNames { get; set; }
-		public string ConstraintType { get; set; }
-	}
-
-	internal class DatabaseConstraint
-	{
-		public string Name { get; set; }
-		public string TableSchema { get; set; }
-		public string TableName { get; set; }
-		public string ColumnName { get; set; }
-		public string ConstraintType { get; set; }
-	}
-
 	internal class ConstraintQueryBuilder
 	{
 		private readonly ConstraintFilter filter;
@@ -35,7 +20,8 @@ namespace DbRefactor.Engines.SqlServer
 			// INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE - view that contains all constraints except defaults
 			// sys.default_constraints - view for default constraints
 			// http://blogs.msdn.com/sqltips/archive/2005/07/05/435882.aspx
-			const string baseQuery = @"
+			const string baseQuery =
+				@"
 WITH AllConstraints
 AS (
 	SELECT 
@@ -81,8 +67,26 @@ FROM AllConstraints
 
 		private void AddTypeRestriction()
 		{
-			if (filter.ConstraintType == null) return;
-			restrictions.Add(String.Format("ConstraintType = '{0}'", filter.ConstraintType));
+			if (filter.ConstraintType == ConstraintType.None) return;
+			restrictions.Add(String.Format("ConstraintType = '{0}'", GetConstraintTypeSql(filter.ConstraintType)));
+		}
+
+		public static readonly Dictionary<ConstraintType, string> ConstraintTypeMap
+			= new Dictionary<ConstraintType, string>
+			  	{
+			  		{ConstraintType.PrimaryKey, "PK"},
+			  		{ConstraintType.ForeignKey, "F "},
+			  		{ConstraintType.Unique, "UQ"},
+			  		{ConstraintType.Default, "DF"}
+			  	};
+
+		private static string GetConstraintTypeSql(ConstraintType type)
+		{
+			if (!ConstraintTypeMap.ContainsKey(type))
+			{
+				throw new DbRefactorException(String.Format("Unsupported constraint type: '{0}'", type));
+			}
+			return ConstraintTypeMap[type];
 		}
 
 		private void AddColumnRestriction()

@@ -115,9 +115,9 @@ namespace DbRefactor.Api
 			return this;
 		}
 
-		public NewTable Decimal(string columnName, int whole, int remainder)
+		public NewTable Decimal(string columnName, int precision, int scale)
 		{
-			AddColumn(factory.CreateDecimal(columnName, null, whole, remainder));
+			AddColumn(factory.CreateDecimal(columnName, null, precision, scale));
 			return this;
 		}
 

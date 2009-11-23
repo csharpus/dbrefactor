@@ -46,11 +46,10 @@ namespace DbRefactor.MsBuild
 				if (assembly == null)
 					return false;
 
-				var migrator = new DbRefactorFactory().CreateSqlServerMigrator(
-					Provider,
+				var migrator = DbRefactorFactory.BuildSqlServerFactory(
 					ConnectionString,
 					null,
-					Trace);
+					Trace).CreateSqlServerMigrator();
 
 				if (Version <= 0)
 				{

@@ -20,21 +20,29 @@ using DbRefactor.Infrastructure;
 
 namespace DbRefactor.Providers.Columns
 {
+	// 123.4567
+	// Precision = 7
+	// Scale = 4
 	internal class DecimalProvider : ColumnProvider
 	{
 		private readonly int precision;
-		private readonly int radix;
+		private readonly int scale;
 
-		public DecimalProvider(string name, object defaultValue, int precision, int radix, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
-			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)
+		public DecimalProvider(string name, object defaultValue, int precision, int scale,
+		                       ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes,
+		                       ISqlGenerationService sqlGenerationService,
+		                       ColumnPropertyProviderFactory columnPropertyProviderFactory)
+			: base(
+				name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService,
+				columnPropertyProviderFactory)
 		{
 			this.precision = precision;
-			this.radix = radix;
+			this.scale = scale;
 		}
 
-		public int Radix
+		public int Scale
 		{
-			get { return radix; }
+			get { return scale; }
 		}
 
 		public int Precision
@@ -44,12 +52,12 @@ namespace DbRefactor.Providers.Columns
 
 		public override Expression<Action<NewTable>> Method()
 		{
-			return t => t.Decimal(Name, Precision, Radix);
+			return t => t.Decimal(Name, Precision, Scale);
 		}
 
 		public override string SqlType()
 		{
-			return SQLTypes.Decimal(precision, radix);
+			return SqlTypes.Decimal(precision, scale);
 		}
 	}
 }

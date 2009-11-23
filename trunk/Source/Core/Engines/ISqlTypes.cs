@@ -24,7 +24,7 @@ namespace DbRefactor.Engines
 		string BooleanValue(bool value);
 		string DateTime();
 		string DateTimeValue(DateTime dateTime);
-		string Decimal(int precision, int radix);
+		string Decimal(int precision, int scale);
 		string DecimalValue(decimal value);
 		string Double();
 		string DoubleValue(double value);

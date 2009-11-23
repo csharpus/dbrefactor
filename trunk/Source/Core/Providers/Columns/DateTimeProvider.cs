@@ -39,12 +39,12 @@ namespace DbRefactor.Providers.Columns
 
 		public override string SqlType()
 		{
-			return SQLTypes.DateTime();
+			return SqlTypes.DateTime();
 		}
 
 		protected override string ValueSql(object value)
 		{
-			return SQLTypes.DateTimeValue((DateTime) value);
+			return SqlTypes.DateTimeValue((DateTime) value);
 		}
 	}
 }

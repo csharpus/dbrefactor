@@ -30,13 +30,17 @@ namespace DbRefactor.Providers
 		private readonly IDatabaseEnvironment environment;
 		private readonly SqlServerColumnMapper sqlServerColumnMapper;
 		private readonly ConstraintNameService constraintNameService;
+		private readonly SchemaProvider schemaProvider;
 
-		internal TransformationProvider(IDatabaseEnvironment environment, SqlServerColumnMapper sqlServerColumnMapper,
-		                                ConstraintNameService constraintNameService)
+		internal TransformationProvider(IDatabaseEnvironment environment,
+		                                SqlServerColumnMapper sqlServerColumnMapper,
+		                                ConstraintNameService constraintNameService,
+		                                SchemaProvider schemaProvider)
 		{
 			this.environment = environment;
 			this.sqlServerColumnMapper = sqlServerColumnMapper;
 			this.constraintNameService = constraintNameService;
+			this.schemaProvider = schemaProvider;
 		}
 
 		internal IDatabaseEnvironment Environment
@@ -95,10 +99,12 @@ namespace DbRefactor.Providers
 			if (constraintsSharedBetweenAllColumns.Count == 0)
 			{
 				string message = columnNames.Length == 1
-				                 	? String.Format("Could not find any unique constraints for column '{0}' in table '{1}'",
-				                 	                columnNames[0], table)
-				                 	: String.Format("Could not find any mutual unique constraints for columns '{0}' in table '{1}'",
-				                 	                String.Join("', '", columnNames), table);
+				                 	? String.Format(
+				                 	  	"Could not find any unique constraints for column '{0}' in table '{1}'",
+				                 	  	columnNames[0], table)
+				                 	: String.Format(
+				                 	  	"Could not find any mutual unique constraints for columns '{0}' in table '{1}'",
+				                 	  	String.Join("', '", columnNames), table);
 				throw new DbRefactorException(message);
 			}
 			foreach (var constraint in constraintsSharedBetweenAllColumns)
@@ -118,10 +124,11 @@ namespace DbRefactor.Providers
 
 		private string GetPrimaryKeyConstraintName(string table)
 		{
-			var filter = new ConstraintFilter {TableName = table, ConstraintType = "PK"};
+			var filter = new ConstraintFilter {TableName = table, ConstraintType = ConstraintType.PrimaryKey};
 			var constraints = GetConstraints(filter).Select(c => c.Name).Distinct().ToList();
 			if (constraints.Count == 0)
-				throw new DbRefactorException(String.Format("Could not find primary key constraint on table '{0}'", table));
+				throw new DbRefactorException(String.Format("Could not find primary key constraint on table '{0}'",
+				                                            table));
 			return constraints[0];
 		}
 
@@ -212,92 +219,13 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT [{1}]", table, name);
 		}
 
-		private Dictionary<string, Func<ColumnData, ColumnProvider>> GetTypesMap()
-		{
-			return new Dictionary<string, Func<ColumnData, ColumnProvider>>
-			       	{
-			       		{"bigint", sqlServerColumnMapper.CreateLong},
-			       		{"binary", sqlServerColumnMapper.CreateBinary},
-			       		{"bit", sqlServerColumnMapper.CreateBoolean},
-			       		{"char", sqlServerColumnMapper.CreateString},
-			       		{"datetime", sqlServerColumnMapper.CreateDateTime},
-			       		{"decimal", sqlServerColumnMapper.CreateDecimal},
-			       		{"float", sqlServerColumnMapper.CreateFloat},
-			       		{"image", sqlServerColumnMapper.CreateBinary},
-			       		{"int", sqlServerColumnMapper.CreateInt},
-			       		{"money", sqlServerColumnMapper.CreateDecimal},
-			       		{"nchar", sqlServerColumnMapper.CreateString},
-			       		{"ntext", sqlServerColumnMapper.CreateText},
-			       		{"numeric", sqlServerColumnMapper.CreateDecimal},
-			       		{"nvarchar", sqlServerColumnMapper.CreateString},
-			       		{"real", sqlServerColumnMapper.CreateFloat},
-			       		{"smalldatetime", sqlServerColumnMapper.CreateDateTime},
-			       		{"smallint", sqlServerColumnMapper.CreateInt},
-			       		{"smallmoney", sqlServerColumnMapper.CreateDecimal},
-			       		{"sql_variant", sqlServerColumnMapper.CreateBinary},
-			       		{"text", sqlServerColumnMapper.CreateText},
-			       		{"timestamp", sqlServerColumnMapper.CreateDateTime},
-			       		{"tinyint", sqlServerColumnMapper.CreateInt},
-			       		{"uniqueidentifier", sqlServerColumnMapper.CreateString},
-			       		{"varbinary", sqlServerColumnMapper.CreateBinary},
-			       		{"varchar", sqlServerColumnMapper.CreateString},
-			       		{"xml", sqlServerColumnMapper.CreateString}
-			       	};
-		}
+		
 
 		private const int GuidLength = 38; // 36 symbols in guid + 2 curly brackets
 
-		private ColumnProvider GetProvider(IDataRecord reader)
-		{
-			var data = new ColumnData
-			           	{
-			           		Name = reader["COLUMN_NAME"].ToString(),
-			           		DataType = reader["DATA_TYPE"].ToString(),
-			           		Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
-			           		Precision = NullSafeGet<byte>(reader, "NUMERIC_PRECISION"),
-			           		Radix = NullSafeGet<short>(reader, "NUMERIC_PRECISION_RADIX"),
-			           		DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
-			           	};
-			return GetTypesMap()[data.DataType](data);
-		}
+		
 
-		private void AddProviderProperties(string table, ColumnProvider provider)
-		{
-			if (IsPrimaryKey(table, provider.Name))
-			{
-				provider.AddPrimaryKey(constraintNameService.PrimaryKeyName(table, provider.Name));
-			}
-			else if (!IsNullable(table, provider.Name))
-			{
-				provider.AddNotNull();
-			}
-
-			if (IsIdentity(table, provider.Name))
-			{
-				provider.AddIdentity();
-			}
-
-			if (IsUnique(table, provider.Name))
-			{
-				provider.AddUnique(constraintNameService.UniqueName(table, provider.Name));
-			}
-		}
-
-		private static object GetDefaultValue(object databaseValue)
-		{
-			return databaseValue == DBNull.Value ? null : databaseValue;
-		}
-
-		private static T? NullSafeGet<T>(IDataRecord reader, string name)
-			where T : struct
-		{
-			object value = reader[name];
-			if (value == DBNull.Value)
-			{
-				return null;
-			}
-			return (T) value;
-		}
+		
 
 		public int ExecuteNonQuery(string sql, params string[] values)
 		{
@@ -433,14 +361,15 @@ namespace DbRefactor.Providers
 		{
 			var provider = GetColumnProvider(tableName, columnName);
 			provider.DefaultValue = value;
-			var query = String.Format("ALTER TABLE [{0}] ADD CONSTRAINT {1} DEFAULT {2} FOR [{3}]", tableName, constraintName,
+			var query = String.Format("ALTER TABLE [{0}] ADD CONSTRAINT {1} DEFAULT {2} FOR [{3}]", tableName,
+			                          constraintName,
 			                          provider.GetDefaultValueSql(), columnName);
 			ExecuteNonQuery(query);
 		}
 
 		public void DropDefault(string tableName, string columnName)
 		{
-			List<string> defaultConstraints = GetConstraintsByType(tableName, new[] {columnName}, "D");
+			List<string> defaultConstraints = GetConstraintsByType(tableName, new[] {columnName}, ConstraintType.Default);
 			foreach (var constraint in defaultConstraints)
 			{
 				DropConstraint(tableName, constraint);
@@ -485,7 +414,7 @@ namespace DbRefactor.Providers
 		{
 			return ParametersHelper.GetPropertyValues(insertObject).Select(v => v.Key).ToArray();
 		}
-		
+
 		private static string GetValues(IEnumerable<ColumnProvider> providers, object updateObject)
 		{
 			var updateValues = ParametersHelper.GetPropertyValues(updateObject);
@@ -504,7 +433,8 @@ namespace DbRefactor.Providers
 			return String.Join(", ", sqlUpdatePairs.ToArray());
 		}
 
-		private static string GetWhereClauseValues(IEnumerable<ColumnProvider> providers, object whereParameters)
+		private static string GetWhereClauseValues(IEnumerable<ColumnProvider> providers,
+		                                           object whereParameters)
 		{
 			var whereValues = ParametersHelper.GetPropertyValues(whereParameters);
 			var sqlWherePairs = from p in providers

@@ -41,12 +41,12 @@ namespace DbRefactor.Providers.Columns
 
 		protected override string ValueSql(object value)
 		{
-			return SQLTypes.BinaryValue((byte[])value);
+			return SqlTypes.BinaryValue((byte[])value);
 		}
 
 		public override string SqlType()
 		{
-			return SQLTypes.Binary();
+			return SqlTypes.Binary();
 		}
 	}
 }

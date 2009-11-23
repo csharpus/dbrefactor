@@ -44,12 +44,12 @@ namespace DbRefactor.Providers.Columns
 
 		public override string SqlType()
 		{
-			return SQLTypes.String(Size);
+			return SqlTypes.String(Size);
 		}
 
 		protected override string ValueSql(object value)
 		{
-			return SQLTypes.StringValue((string) value);
+			return SqlTypes.StringValue((string) value);
 		}
 	}
 }

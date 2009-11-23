@@ -1,22 +1,9 @@
 using System;
 using System.Collections.Generic;
+using DbRefactor.Providers;
 
 namespace DbRefactor.Engines.SqlServer
 {
-	internal class Index
-	{
-		public string Name { get; set; }
-		public string TableName { get; set; }
-		public string ColumnName { get; set; }
-	}
-
-	internal class IndexFilter
-	{
-		public string Name { get; set; }
-		public string TableName { get; set; }
-		public string ColumnName { get; set; }
-	}
-
 	internal class IndexQueryBuilder
 	{
 		private readonly IndexFilter filter;

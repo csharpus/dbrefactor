@@ -3,7 +3,6 @@ using NUnit.Framework;
 
 namespace DbRefactor.Tests.Integration
 {
-	[TestFixture]
 	public class AlterTableTests : ProviderTestBase
 	{
 		[Test]
