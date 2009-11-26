@@ -88,7 +88,10 @@ select columnproperty(object_id('{0}'),'{1}','IsIdentity')
 					DatabaseEnvironment.ExecuteScalar(
 						String.Format(
 							@"
-select exists(select top 1 * from dbo.sysobjects where id = object_id(N'{0}') and columnproperty(id, N'IsUserTable'))
+select count(*)
+from dbo.sysobjects 
+where id = object_id(N'{0}') 
+	and objectproperty(id, N'IsUserTable') = 1
 ",
 							table)));
 		}
@@ -100,7 +103,10 @@ select exists(select top 1 * from dbo.sysobjects where id = object_id(N'{0}') an
 					DatabaseEnvironment.ExecuteScalar(
 						String.Format(
 							@"
-select exists(select top 1 * from syscolumns where id = object_id(N'{0}') and name = '{1}')
+select count(*)
+from syscolumns
+where id = object_id(N'{0}')
+	and name = '{1}'
 ",
 							table, column)));
 		}
