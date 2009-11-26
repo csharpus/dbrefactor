@@ -44,4 +44,18 @@ namespace DbRefactor.Tests.Integration.Engines
 			return DbRefactorFactory.BuildSqlServerCeFactory(GetConnectionString(), null, true);
 		}
 	}
+
+	[TestFixture]
+	public class SqlServerCeAddColumnTests : AddColumnTests
+	{
+		public override string GetConnectionString()
+		{
+			return @"Data Source=..\..\Database\SqlServerCe.sdf";
+		}
+
+		protected override DbRefactorFactory CreateFactory()
+		{
+			return DbRefactorFactory.BuildSqlServerCeFactory(GetConnectionString(), null, true);
+		}
+	}
 }
