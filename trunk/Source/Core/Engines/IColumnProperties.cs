@@ -7,5 +7,6 @@ namespace DbRefactor.Engines
 		string Unique(string name);
 		string Identity();
 		string Default(string value);
+		string Null();
 	}
 }

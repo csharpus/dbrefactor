@@ -125,7 +125,8 @@ namespace DbRefactor.Providers.Columns
 		{
 			//TODO: should add NULL definition because default behaviour is different
 			RemoveProperty(notNullProvider);
-			notNullProvider = columnPropertyProviderFactory.CreateEmpty();
+			notNullProvider = columnPropertyProviderFactory.CreateNull();
+			AddProperty(notNullProvider);
 		}
 
 		private PropertyProvider primaryKeyProvider;
@@ -208,7 +209,7 @@ namespace DbRefactor.Providers.Columns
 
 		public string GetAlterColumnSql()
 		{
-			return sqlGenerationService.GenerateCreateColumnSql(this);
+			return sqlGenerationService.GenerateAlterColumnSql(this);
 		}
 
 		public string GetValueSql(object value)

@@ -5,6 +5,7 @@ using System.Linq;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Exceptions;
 using DbRefactor.Providers.Columns;
+using DbRefactor.Tools.DesignByContract;
 
 namespace DbRefactor.Providers
 {
@@ -163,7 +164,7 @@ where table_name = '{0}';
 			{
 				return null;
 			}
-			return (T)value;
+			return (T) Convert.ChangeType(value, typeof(T));
 		}
 
 		private bool IsPrimaryKey(string table, string column)
@@ -187,5 +188,11 @@ where table_name = '{0}';
 			};
 			return GetConstraints(filter).Any();
 		}
+
+		public abstract void RenameColumn(string table, string oldColumnName, string newColumnName);
+
+		public abstract void RenameTable(string oldName, string newName);
+
+		public abstract bool IsDefault(string table, string column);
 	}
 }

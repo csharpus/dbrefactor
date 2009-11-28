@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace DbRefactor.Tests.Integration
+namespace DbRefactor.Tests.Integration.Engines
 {
 	[TestFixture]
 	public class AddColumnTests : ProviderTestBase
@@ -26,7 +26,7 @@ namespace DbRefactor.Tests.Integration
 		public void Can_add_not_null_column_to_table()
 		{
 			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").AddColumn(c => c.Int("C").NotNull());
+			Database.Table("A").AddColumn(c => c.Int("C", 0).NotNull());
 
 			Assert.False(Provider.IsNullable("A", "C"));
 		}
@@ -62,7 +62,7 @@ namespace DbRefactor.Tests.Integration
 		public void Can_add_primary_key_column_to_table()
 		{
 			Database.CreateTable("A").Int("B").Execute();
-			Database.Table("A").AddColumn(c => c.Int("C").PrimaryKey());
+			Database.Table("A").AddColumn(c => c.Int("C").PrimaryKey().Identity());
 
 			Assert.That(Provider.PrimaryKeyExists("PK_A_C"));
 		}

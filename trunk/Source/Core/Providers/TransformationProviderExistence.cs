@@ -77,21 +77,12 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 			return
-				Convert.ToInt32(ExecuteScalar("SELECT OBJECTPROPERTY(object_id('{0}'), 'TableHasIdentity')", table)) ==
-				1;
+				Convert.ToInt32(ExecuteScalar("SELECT OBJECTPROPERTY(object_id('{0}'), 'TableHasIdentity')", table)) == 1;
 		}
-
-		
 
 		public bool IsDefault(string table, string column)
 		{
-			var filter = new ConstraintFilter
-			             	{
-			             		TableName = table,
-			             		ColumnNames = new[] {column},
-			             		ConstraintType = ConstraintType.Default
-			             	};
-			return GetConstraints(filter).Any();
+			return schemaProvider.IsDefault(table, column);
 		}
 	}
 }

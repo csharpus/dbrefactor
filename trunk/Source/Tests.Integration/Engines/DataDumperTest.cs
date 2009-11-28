@@ -6,7 +6,7 @@ using DbRefactor.Providers;
 using DbRefactor.Tools;
 using NUnit.Framework;
 
-namespace DbRefactor.Tests.Integration
+namespace DbRefactor.Tests.Integration.Engines
 {
 	[TestFixture]
 	public class DataDumperTest : ProviderTestBase

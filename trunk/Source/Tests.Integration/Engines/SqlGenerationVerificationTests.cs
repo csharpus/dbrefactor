@@ -2,7 +2,7 @@ using System;
 using DbRefactor.Extended;
 using NUnit.Framework;
 
-namespace DbRefactor.Tests.Integration
+namespace DbRefactor.Tests.Integration.Engines
 {
 	[TestFixture]
 	public class SqlGenerationVerificationTests : ProviderTestBase

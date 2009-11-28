@@ -69,6 +69,7 @@
     <Compile Include="Engines\SqlServer\Compact\CeIndexQueryBuilder.cs" />
     <Compile Include="Engines\SqlServer\Compact\SqlServerCeEnvironment.cs" />
     <Compile Include="Engines\SqlServer\Compact\SqlServerCeSchemaProvider.cs" />
+    <Compile Include="Providers\Properties\NullProvider.cs" />
     <Compile Include="Providers\Index.cs" />
     <Compile Include="Providers\IndexFilter.cs" />
     <Compile Include="Providers\ConstraintFilter.cs" />

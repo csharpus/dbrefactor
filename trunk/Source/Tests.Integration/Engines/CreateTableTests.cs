@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace DbRefactor.Tests.Integration
+namespace DbRefactor.Tests.Integration.Engines
 {
 	public abstract class CreateTableTests : ProviderTestBase
 	{

@@ -1,3 +1,4 @@
+using System;
 using DbRefactor.Engines;
 using DbRefactor.Providers.Properties;
 
@@ -15,6 +16,11 @@ namespace DbRefactor.Factories
 		public NotNullProvider CreateNotNull()
 		{
 			return new NotNullProvider(columnProperties);
+		}
+
+		public NullProvider CreateNull()
+		{
+			return new NullProvider(columnProperties);
 		}
 
 		public PrimaryKeyProvider CreatePrimaryKey(string name)

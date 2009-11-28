@@ -28,18 +28,11 @@ namespace DbRefactor.Providers
 	internal sealed partial class TransformationProvider
 	{
 		private readonly IDatabaseEnvironment environment;
-		private readonly SqlServerColumnMapper sqlServerColumnMapper;
-		private readonly ConstraintNameService constraintNameService;
 		private readonly SchemaProvider schemaProvider;
 
-		internal TransformationProvider(IDatabaseEnvironment environment,
-		                                SqlServerColumnMapper sqlServerColumnMapper,
-		                                ConstraintNameService constraintNameService,
-		                                SchemaProvider schemaProvider)
+		internal TransformationProvider(IDatabaseEnvironment environment, SchemaProvider schemaProvider)
 		{
 			this.environment = environment;
-			this.sqlServerColumnMapper = sqlServerColumnMapper;
-			this.constraintNameService = constraintNameService;
 			this.schemaProvider = schemaProvider;
 		}
 
@@ -54,7 +47,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(name, "name");
 			Check.Require(columns.Length > 0, "At least one column should be passed");
 			var columnsSql = GetCreateColumnsSql(columns);
-			ExecuteNonQuery("CREATE TABLE [{0}] ({1})", name, columnsSql);
+			ExecuteNonQuery("create table [{0}] ({1})", name, columnsSql);
 		}
 
 		/// <summary>
@@ -64,7 +57,7 @@ namespace DbRefactor.Providers
 		public void DropTable(string name)
 		{
 			Check.RequireNonEmpty(name, "name");
-			ExecuteNonQuery("DROP TABLE [{0}]", name);
+			ExecuteNonQuery("drop table [{0}]", name);
 		}
 
 		/// <summary>
@@ -77,7 +70,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(column, "column");
 			DropColumnConstraints(table, column);
-			ExecuteNonQuery("ALTER TABLE {0} DROP COLUMN {1} ", table, column);
+			ExecuteNonQuery("alter table {0} drop column {1} ", table, column);
 		}
 
 		private static string GetCreateColumnsSql(IEnumerable<ColumnProvider> columns)
@@ -140,10 +133,7 @@ namespace DbRefactor.Providers
 		/// <param name="newColumnName">New column name</param>
 		public void RenameColumn(string table, string oldColumnName, string newColumnName)
 		{
-			Check.RequireNonEmpty(table, "table");
-			Check.RequireNonEmpty(oldColumnName, "oldColumnName");
-			Check.RequireNonEmpty(newColumnName, "newColumnName");
-			ExecuteNonQuery("EXEC sp_rename '{0}.{1}', '{2}', 'COLUMN'", table, oldColumnName, newColumnName);
+			schemaProvider.RenameColumn(table, oldColumnName, newColumnName);
 		}
 
 		/// <summary>
@@ -153,16 +143,14 @@ namespace DbRefactor.Providers
 		/// <param name="newName">New table name</param>
 		public void RenameTable(string oldName, string newName)
 		{
-			Check.RequireNonEmpty(oldName, "oldName");
-			Check.RequireNonEmpty(newName, "newName");
-			ExecuteNonQuery("EXEC sp_rename '{0}', '{1}', 'OBJECT'", oldName, newName);
+			schemaProvider.RenameTable(oldName, newName);
 		}
 
 		private void AlterColumn(string table, string sqlColumn)
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(sqlColumn, "sqlColumn");
-			ExecuteNonQuery("ALTER TABLE [{0}] ALTER COLUMN {1}", table, sqlColumn);
+			ExecuteNonQuery("alter table [{0}] alter column {1}", table, sqlColumn);
 		}
 
 		public void DropColumnConstraints(string table, string column)
@@ -187,7 +175,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(name, "name");
 			Check.RequireNonEmpty(table, "table");
 			Check.Require(columns.Length > 0, "You have to pass at least one column");
-			ExecuteNonQuery("ALTER TABLE [{0}] ADD CONSTRAINT {1} PRIMARY KEY ({2}) ",
+			ExecuteNonQuery("alter table [{0}] add constraint {1} primary key ({2}) ",
 			                table, name, String.Join(",", columns));
 		}
 
@@ -200,7 +188,7 @@ namespace DbRefactor.Providers
 			Check.Require(primaryColumns.Length > 0, "You have to pass at least one primary column");
 			Check.Require(refColumns.Length > 0, "You have to pass at least one ref column");
 			ExecuteNonQuery(
-				"ALTER TABLE [{0}] ADD CONSTRAINT [{1}] FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5}",
+				"alter table [{0}] add constraint [{1}] foreign key ({2}) references {3} ({4}) on delete {5}",
 				primaryTable, name, String.Join(",", primaryColumns),
 				refTable, String.Join(",", refColumns),
 				new SqlServerForeignKeyConstraintMapper().Resolve(constraint));
@@ -216,16 +204,12 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(name, "name");
 
-			ExecuteNonQuery("ALTER TABLE [{0}] DROP CONSTRAINT [{1}]", table, name);
+			ExecuteNonQuery("alter table [{0}] drop constraint [{1}]", table, name);
 		}
 
-		
 
 		private const int GuidLength = 38; // 36 symbols in guid + 2 curly brackets
 
-		
-
-		
 
 		public int ExecuteNonQuery(string sql, params string[] values)
 		{
@@ -258,7 +242,7 @@ namespace DbRefactor.Providers
 			var columns = String.Join("], [", GetColumnNames(insertObject));
 
 			return ExecuteNonQuery(
-				"INSERT INTO [{0}] ([{1}]) VALUES ({2})",
+				"insert into [{0}] ([{1}]) values ({2})",
 				table,
 				columns,
 				operation);
@@ -293,7 +277,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(name, "name");
 			Check.RequireNonEmpty(table, "table");
 			Check.Require(columns.Length > 0, "You have to pass at least one column");
-			ExecuteNonQuery("ALTER TABLE [{0}] ADD CONSTRAINT {1} UNIQUE ({2}) ",
+			ExecuteNonQuery("alter table [{0}] add constraint {1} unique ({2}) ",
 			                table, name, String.Join(",", columns));
 		}
 
@@ -302,7 +286,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(name, "name");
 			Check.RequireNonEmpty(table, "table");
 			Check.Require(columns.Length > 0, "You have to pass at least one column");
-			ExecuteNonQuery("CREATE NONCLUSTERED INDEX {0} ON [{1}] ({2}) ",
+			ExecuteNonQuery("create nonclustered index {0} on [{1}] ({2}) ",
 			                name, table, String.Join(",", columns));
 		}
 
@@ -323,7 +307,7 @@ namespace DbRefactor.Providers
 			}
 			foreach (var index in indexesPresentInAllColumns)
 			{
-				ExecuteNonQuery("DROP INDEX {0}.{1}", table, index);
+				ExecuteNonQuery("drop index {0}.{1}", table, index);
 			}
 		}
 
@@ -340,7 +324,7 @@ namespace DbRefactor.Providers
 
 		public void AddColumn(string table, ColumnProvider columnProvider)
 		{
-			ExecuteNonQuery("ALTER TABLE [{0}] ADD {1}", table, columnProvider.GetAddColumnSql());
+			ExecuteNonQuery("alter table [{0}] add {1}", table, columnProvider.GetAddColumnSql());
 		}
 
 		public void SetNull(string tableName, string columnName)
@@ -361,7 +345,7 @@ namespace DbRefactor.Providers
 		{
 			var provider = GetColumnProvider(tableName, columnName);
 			provider.DefaultValue = value;
-			var query = String.Format("ALTER TABLE [{0}] ADD CONSTRAINT {1} DEFAULT {2} FOR [{3}]", tableName,
+			var query = String.Format("alter table [{0}] add constraint {1} default {2} for [{3}]", tableName,
 			                          constraintName,
 			                          provider.GetDefaultValueSql(), columnName);
 			ExecuteNonQuery(query);
@@ -369,7 +353,8 @@ namespace DbRefactor.Providers
 
 		public void DropDefault(string tableName, string columnName)
 		{
-			List<string> defaultConstraints = GetConstraintsByType(tableName, new[] {columnName}, ConstraintType.Default);
+			List<string> defaultConstraints = GetConstraintsByType(tableName, new[] {columnName},
+			                                                       ConstraintType.Default);
 			foreach (var constraint in defaultConstraints)
 			{
 				DropConstraint(tableName, constraint);
@@ -386,12 +371,12 @@ namespace DbRefactor.Providers
 
 		public IDataReader Select(string tableName, string[] columns, object whereParameters)
 		{
-			string query = String.Format("SELECT {0} FROM [{1}]", columns.ComaSeparated(), tableName);
+			string query = String.Format("select {0} from [{1}]", columns.ComaSeparated(), tableName);
 			var providers = GetColumnProviders(tableName);
 			string whereClause = GetWhereClauseValues(providers, whereParameters);
 			if (whereClause != String.Empty)
 			{
-				query += String.Format(" WHERE {0}", whereClause);
+				query += String.Format(" where {0}", whereClause);
 			}
 			return ExecuteQuery(query);
 		}
@@ -400,12 +385,12 @@ namespace DbRefactor.Providers
 		{
 			var providers = GetColumnProviders(tableName);
 			string operation = GetOperationValues(providers, updateObject);
-			var query = String.Format("UPDATE [{0}] SET {1}", tableName, operation);
+			var query = String.Format("update [{0}] set {1}", tableName, operation);
 
 			string whereClause = GetWhereClauseValues(providers, whereParameters);
 			if (whereClause != String.Empty)
 			{
-				query += String.Format(" WHERE {0}", whereClause);
+				query += String.Format(" where {0}", whereClause);
 			}
 			return ExecuteNonQuery(query);
 		}
@@ -440,7 +425,7 @@ namespace DbRefactor.Providers
 			var sqlWherePairs = from p in providers
 			                    join v in whereValues on p.Name equals v.Key
 			                    select EqualitySql(p.Name, p.GetValueSql(v.Value));
-			return String.Join(" AND ", sqlWherePairs.ToArray());
+			return String.Join(" and ", sqlWherePairs.ToArray());
 		}
 
 		private static string EqualitySql(string name, string valueSql)
@@ -457,7 +442,7 @@ namespace DbRefactor.Providers
 			{
 				throw new DbRefactorException("Couldn't execute delete without where clause");
 			}
-			var query = String.Format("DELETE FROM [{0}] WHERE {1}", tableName, whereClause);
+			var query = String.Format("delete from [{0}] where {1}", tableName, whereClause);
 			return ExecuteNonQuery(query);
 		}
 
@@ -465,7 +450,7 @@ namespace DbRefactor.Providers
 		{
 			var providers = GetColumnProviders(tableName);
 			string whereClause = GetWhereClauseValues(providers, whereParameters);
-			return ExecuteScalar("SELECT {0} FROM [{1}] WHERE {2}", column, tableName, whereClause);
+			return ExecuteScalar("select {0} from [{1}] where {2}", column, tableName, whereClause);
 		}
 
 		public void DropForeignKey(string foreignKeyTable, string[] foreignKeyColumns, string primaryKeyTable,

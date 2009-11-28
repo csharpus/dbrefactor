@@ -1,15 +1,14 @@
 ﻿using DbRefactor.Factories;
-using DbRefactor.Infrastructure.Loggers;
 using NUnit.Framework;
 
-namespace DbRefactor.Tests.Integration.Engines
+namespace DbRefactor.Tests.Integration.Engines.SqlServer2005
 {
 	[TestFixture]
-	public class SqlServer2008CreateTableTests : CreateTableTests
+	public class SqlServer2005CreateTableTests : CreateTableTests
 	{
 		public override string GetConnectionString()
 		{
-			return @"Data Source=.\SQLEXPRESS2008;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI";
+			return ConnectionString;
 		}
 
 		protected override DbRefactorFactory CreateFactory()

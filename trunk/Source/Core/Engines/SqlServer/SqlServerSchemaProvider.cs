@@ -6,6 +6,7 @@ using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
+using DbRefactor.Tools.DesignByContract;
 
 namespace DbRefactor.Engines.SqlServer
 {
@@ -61,13 +62,13 @@ namespace DbRefactor.Engines.SqlServer
 
 		public override bool IsNullable(string table, string column)
 		{
-			return Convert.ToBoolean(
-				DatabaseEnvironment.ExecuteScalar(
-					String.Format(
-						@"
+			object value = DatabaseEnvironment.ExecuteScalar(
+				String.Format(
+					@"
 select columnproperty(object_id('{0}'),'{1}','AllowsNull')
 ", table,
-						column)));
+					column));
+			return Convert.ToBoolean(value);
 		}
 
 		public override bool IsIdentity(string table, string column)
@@ -114,15 +115,42 @@ where id = object_id(N'{0}')
 		protected override ColumnProvider GetProvider(IDataRecord reader)
 		{
 			var data = new ColumnData
-			{
-				Name = reader["COLUMN_NAME"].ToString(),
-				DataType = reader["DATA_TYPE"].ToString(),
-				Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
-				Precision = NullSafeGet<byte>(reader, "NUMERIC_PRECISION"),
-				Scale = NullSafeGet<byte>(reader, "NUMERIC_SCALE"),
-				DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
-			};
+			           	{
+			           		Name = reader["COLUMN_NAME"].ToString(),
+			           		DataType = reader["DATA_TYPE"].ToString(),
+			           		Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
+			           		Precision = NullSafeGet<int>(reader, "NUMERIC_PRECISION"),
+			           		Scale = NullSafeGet<int>(reader, "NUMERIC_SCALE"),
+			           		DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
+			           	};
 			return GetTypesMap()[data.DataType](data);
+		}
+
+		public override void RenameColumn(string table, string oldColumnName, string newColumnName)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.RequireNonEmpty(oldColumnName, "oldColumnName");
+			Check.RequireNonEmpty(newColumnName, "newColumnName");
+			DatabaseEnvironment.ExecuteNonQuery(String.Format("EXEC sp_rename '{0}.{1}', '{2}', 'COLUMN'", table,
+			                                                  oldColumnName, newColumnName));
+		}
+
+		public override void RenameTable(string oldName, string newName)
+		{
+			Check.RequireNonEmpty(oldName, "oldName");
+			Check.RequireNonEmpty(newName, "newName");
+			DatabaseEnvironment.ExecuteNonQuery(String.Format("EXEC sp_rename '{0}', '{1}', 'OBJECT'", oldName, newName));
+		}
+
+		public override bool IsDefault(string table, string column)
+		{
+			var filter = new ConstraintFilter
+			{
+				TableName = table,
+				ColumnNames = new[] { column },
+				ConstraintType = ConstraintType.Default
+			};
+			return GetConstraints(filter).Any();
 		}
 
 		private static ConstraintType GetConstraintType(string typeSql)

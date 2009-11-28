@@ -161,6 +161,12 @@ namespace DbRefactor.Api
 			return this;
 		}
 
+		public NewTable Null()
+		{
+			currentColumn.RemoveNotNull();
+			return this;
+		}
+
 		public NewTable PrimaryKey()
 		{
 			currentColumn.AddPrimaryKey(constraintNameService.PrimaryKeyName(TableName, currentColumn.Name));

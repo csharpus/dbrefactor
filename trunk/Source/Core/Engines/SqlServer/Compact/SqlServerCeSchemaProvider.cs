@@ -6,6 +6,7 @@ using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
+using DbRefactor.Tools.DesignByContract;
 
 namespace DbRefactor.Engines.SqlServer.Compact
 {
@@ -83,30 +84,30 @@ namespace DbRefactor.Engines.SqlServer.Compact
 
 		public override bool TableExists(string table)
 		{
-			return DatabaseEnvironment.ExecuteQuery(
+			return Convert.ToInt32(DatabaseEnvironment.ExecuteScalar(
 				String.Format(
 					@"
-select top (1) *
-				from INFORMATION_SCHEMA.TABLES 
-				where TABLE_NAME = '{0}' 
-					and TABLE_TYPE = 'TABLE'
+select count(*)
+from INFORMATION_SCHEMA.TABLES 
+where TABLE_NAME = '{0}' 
+	and TABLE_TYPE = 'TABLE'
 ",
 					table)
-				).NextResult();
+				)) > 0;
 		}
 
 		public override bool ColumnExists(string table, string column)
 		{
-			return DatabaseEnvironment.ExecuteQuery(
+			return Convert.ToInt32(DatabaseEnvironment.ExecuteScalar(
 				String.Format(
 					@"
-select top (1) COLUMN_NAME
-				from INFORMATION_SCHEMA.COLUMNS 
-				where TABLE_NAME = '{0}' 
-					and COLUMN_NAME = '{1}'
+select count(*)
+from INFORMATION_SCHEMA.COLUMNS 
+where TABLE_NAME = '{0}' 
+	and COLUMN_NAME = '{1}'
 ",
 					table, column)
-				).NextResult();
+				)) > 0;
 		}
 
 		protected override ColumnProvider GetProvider(IDataRecord reader)
@@ -121,6 +122,34 @@ select top (1) COLUMN_NAME
 				DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
 			};
 			return GetTypesMap()[data.DataType](data);
+		}
+
+		public override void RenameColumn(string table, string oldColumnName, string newColumnName)
+		{
+			// Currently, sp_rename support in SQL Server Compact 3.5 is limited to tables.
+			// http://technet.microsoft.com/en-us/library/bb726044.aspx
+			throw new NotSupportedException();
+		}
+
+		public override void RenameTable(string oldName, string newName)
+		{
+			Check.RequireNonEmpty(oldName, "oldName");
+			Check.RequireNonEmpty(newName, "newName");
+			DatabaseEnvironment.ExecuteNonQuery(String.Format("EXEC sp_rename '{0}', '{1}', 'OBJECT'", oldName, newName));
+		}
+
+		public override bool IsDefault(string table, string column)
+		{
+			return Convert.ToBoolean(DatabaseEnvironment.ExecuteScalar(
+				String.Format(
+					@"
+select COLUMN_HASDEFAULT
+from INFORMATION_SCHEMA.COLUMNS 
+where TABLE_NAME = '{0}' 
+	and COLUMN_NAME = '{1}'
+",
+					table, column)
+				));
 		}
 
 		private static ConstraintType GetConstraintType(string typeSql)

@@ -2,7 +2,7 @@
 using DbRefactor.Tools;
 using NUnit.Framework;
 
-namespace DbRefactor.Tests.Integration
+namespace DbRefactor.Tests.Integration.Engines
 {
 	[TestFixture]
 	public class ObjectManipulationTests : ProviderTestBase
@@ -46,7 +46,7 @@ namespace DbRefactor.Tests.Integration
 			#region CreateTable
 
 			Provider.ExecuteNonQuery(
-				@"CREATE TABLE [dbo].[Table1](
+				@"CREATE TABLE Table1 (
 	[BI] [bigint] NULL,
 	[BN] [binary](50) NULL,
 	[BT] [bit] NULL,

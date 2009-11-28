@@ -55,23 +55,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddColumnTests.cs" />
-    <Compile Include="CreateTableTests.cs" />
-    <Compile Include="CrudTests.cs" />
-    <Compile Include="DataDumperTest.cs" />
-    <Compile Include="MigrationTests.cs" />
+    <Compile Include="Engines\AddColumnTests.cs" />
+    <Compile Include="Engines\CreateTableTests.cs" />
+    <Compile Include="Engines\CrudTests.cs" />
+    <Compile Include="Engines\DataDumperTest.cs" />
+    <Compile Include="Engines\SqlServer2008\SqlServer2008Tests.cs" />
+    <Compile Include="Engines\SqlServerCe\SqlServerCeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProviderTestBase.cs" />
-    <Compile Include="ObjectManipulationTests.cs" />
+    <Compile Include="Engines\ObjectManipulationTests.cs" />
     <Compile Include="Runner\AcceptanceTests.cs" />
     <Compile Include="Runner\MigrationReaderTests.cs" />
     <Compile Include="Runner\MigrationRunnerTests.cs" />
     <Compile Include="Runner\MigrationServiceTests.cs" />
-    <Compile Include="SqlGenerationVerificationTests.cs" />
-    <Compile Include="AlterTableTests.cs" />
-    <Compile Include="Engines\SqlServer2008Tests.cs" />
-    <Compile Include="Engines\SqlServerCeTests.cs" />
-    <Compile Include="Engines\SqlServer2005Tests.cs" />
+    <Compile Include="Engines\SqlGenerationVerificationTests.cs" />
+    <Compile Include="Engines\AlterTableTests.cs" />
+    <Compile Include="Engines\SqlServer2005\SqlServer2005CreateTableTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Console\Console.csproj">

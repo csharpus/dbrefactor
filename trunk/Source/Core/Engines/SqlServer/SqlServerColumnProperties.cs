@@ -28,5 +28,10 @@ namespace DbRefactor.Engines.SqlServer
 		{
 			return string.Format("DEFAULT {0}", value);
 		}
+
+		public string Null()
+		{
+			return "NULL";
+		}
 	}
 }

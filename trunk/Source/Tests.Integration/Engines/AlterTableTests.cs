@@ -1,7 +1,7 @@
 using DbRefactor.Exceptions;
 using NUnit.Framework;
 
-namespace DbRefactor.Tests.Integration
+namespace DbRefactor.Tests.Integration.Engines
 {
 	public class AlterTableTests : ProviderTestBase
 	{
@@ -144,6 +144,15 @@ namespace DbRefactor.Tests.Integration
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").SetDefault(1);
+		}
+
+		[Test]
+		public void Can_set_null_for_column_with_default_value()
+		{
+			Database.CreateTable("A").Int("B", 0).Execute();
+			Database.Table("A").Column("B").SetNull();
+
+			Assert.True(Provider.IsNullable("A", "B"));
 		}
 
 		[Test]

@@ -11,7 +11,6 @@
 
 #endregion
 
-using System;
 using DbRefactor.Api;
 using DbRefactor.Engines;
 using DbRefactor.Engines.SqlServer;
@@ -157,8 +156,7 @@ namespace DbRefactor.Factories
 			constraintNameService = new ConstraintNameService();
 			var schemaProvider = CreateSchemaProvider(databaseEnvironment, constraintNameService,
 			                                          sqlServerColumnMapper);
-			provider = new TransformationProvider(databaseEnvironment, sqlServerColumnMapper,
-			                                      constraintNameService, schemaProvider);
+			provider = new TransformationProvider(databaseEnvironment, schemaProvider);
 			apiFactory = new ApiFactory(provider, columnProviderFactory, constraintNameService);
 			database = new Database(provider, columnProviderFactory, constraintNameService, apiFactory);
 			databaseMigrationTarget = new DatabaseMigrationTarget(provider, database, category);
