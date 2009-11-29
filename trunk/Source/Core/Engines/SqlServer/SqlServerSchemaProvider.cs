@@ -34,7 +34,7 @@ namespace DbRefactor.Engines.SqlServer
 				             	}).ToList();
 		}
 
-		public override List<DatabaseConstraint> GetConstraints(ConstraintFilter filter)
+		private List<DatabaseConstraint> GetConstraints(ConstraintFilter filter)
 		{
 			var query = new ConstraintQueryBuilder(filter).BuildQuery();
 			return DatabaseEnvironment.ExecuteQuery(query).AsReadable()
@@ -46,6 +46,41 @@ namespace DbRefactor.Engines.SqlServer
 				             		ColumnName = r["ColumnName"].ToString(),
 				             		ConstraintType = GetConstraintType(r["ConstraintType"].ToString())
 				             	}).ToList();
+		}
+
+		public override List<PrimaryKey> GetPrimaryKeys(PrimaryKeyFilter filter)
+		{
+			return
+				GetConstraints(new ConstraintFilter
+				{
+					TableName = filter.TableName,
+					Name = filter.Name,
+					ConstraintType = ConstraintType.PrimaryKey
+				})
+					.GroupBy(c => c.TableName)
+					.Select(c => new PrimaryKey
+					{
+						ColumnNames = c.Select(g => g.ColumnName).ToArray(),
+						Name = c.First().Name,
+						TableName = c.Key
+					}).ToList();
+		}
+
+		public override List<Unique> GetUniques(UniqueFilter filter)
+		{
+			return
+				GetConstraints(new ConstraintFilter
+				               	{
+				               		TableName = filter.TableName,
+				               		Name = filter.Name,
+				               		ConstraintType = ConstraintType.Unique
+				               	})
+					.Select(c => new Unique
+					             	{
+					             		ColumnName = c.ColumnName,
+					             		Name = c.Name,
+					             		TableName = c.TableName
+					             	}).ToList();
 		}
 
 		public override List<Index> GetIndexes(IndexFilter filter)
@@ -64,7 +99,7 @@ namespace DbRefactor.Engines.SqlServer
 		{
 			object value = DatabaseEnvironment.ExecuteScalar(
 				String.Format(
-					@"
+@"
 select columnproperty(object_id('{0}'),'{1}','AllowsNull')
 ", table,
 					column));
@@ -76,40 +111,11 @@ select columnproperty(object_id('{0}'),'{1}','AllowsNull')
 			return
 				Convert.ToBoolean(
 					DatabaseEnvironment.ExecuteScalar(
-						String.Format(@"
+						String.Format(
+@"
 select columnproperty(object_id('{0}'),'{1}','IsIdentity')
 ", table,
 						              column)));
-		}
-
-		public override bool TableExists(string table)
-		{
-			return
-				Convert.ToBoolean(
-					DatabaseEnvironment.ExecuteScalar(
-						String.Format(
-							@"
-select count(*)
-from dbo.sysobjects 
-where id = object_id(N'{0}') 
-	and objectproperty(id, N'IsUserTable') = 1
-",
-							table)));
-		}
-
-		public override bool ColumnExists(string table, string column)
-		{
-			return
-				Convert.ToBoolean(
-					DatabaseEnvironment.ExecuteScalar(
-						String.Format(
-							@"
-select count(*)
-from syscolumns
-where id = object_id(N'{0}')
-	and name = '{1}'
-",
-							table, column)));
 		}
 
 		protected override ColumnProvider GetProvider(IDataRecord reader)
@@ -139,25 +145,26 @@ where id = object_id(N'{0}')
 		{
 			Check.RequireNonEmpty(oldName, "oldName");
 			Check.RequireNonEmpty(newName, "newName");
-			DatabaseEnvironment.ExecuteNonQuery(String.Format("EXEC sp_rename '{0}', '{1}', 'OBJECT'", oldName, newName));
+			DatabaseEnvironment.ExecuteNonQuery(String.Format("EXEC sp_rename '{0}', '{1}', 'OBJECT'", oldName,
+			                                                  newName));
 		}
 
 		public override bool IsDefault(string table, string column)
 		{
 			var filter = new ConstraintFilter
-			{
-				TableName = table,
-				ColumnNames = new[] { column },
-				ConstraintType = ConstraintType.Default
-			};
+			             	{
+			             		TableName = table,
+			             		ColumnNames = new[] {column},
+			             		ConstraintType = ConstraintType.Default
+			             	};
 			return GetConstraints(filter).Any();
 		}
 
-		public override string[] GetTables()
-		{
-			const string query = "select [TABLE_NAME] as [name] from information_schema.tables";
-			return DatabaseEnvironment.ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
-		}
+		//public override string[] GetTables()
+		//{
+		//    const string query = "select [TABLE_NAME] as [name] from information_schema.tables";
+		//    return DatabaseEnvironment.ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
+		//}
 
 		private static ConstraintType GetConstraintType(string typeSql)
 		{

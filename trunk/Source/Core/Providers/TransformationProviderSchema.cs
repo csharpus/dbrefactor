@@ -1,19 +1,27 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using DbRefactor.Exceptions;
 using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Providers
 {
 	internal sealed partial class TransformationProvider
 	{
-		private ColumnProvider GetColumnProvider(string tableName, string columnName)
+		private ColumnProvider GetColumnProvider(string table, string column)
 		{
-			return schemaProvider.GetColumnProvider(tableName, columnName);
+			var filter = new ColumnFilter { TableName = table, ColumnName = column};
+			var columns = schemaProvider.GetColumns(filter);
+			if (columns.Count == 0)
+			{
+				throw new DbRefactorException(String.Format("Column '{0}' in table '{1}' was not found", column, table));
+			}
+			return columns[0];
 		}
 
 		public string[] GetTables()
 		{
-			return schemaProvider.GetTables();
+			return schemaProvider.GetTables(new TableFilter());
 			//const string query = "SELECT [name] FROM sysobjects WHERE xtype = 'U'";
 			//const string query = "select [TABLE_NAME] as [name] from information_schema.tables";
 		}
@@ -26,42 +34,13 @@ namespace DbRefactor.Providers
 
 		internal List<ColumnProvider> GetColumnProviders(string table)
 		{
-			return schemaProvider.GetColumnProviders(table);
+			var filter = new ColumnFilter {TableName = table};
+			return schemaProvider.GetColumns(filter);
 		}
 
-		private List<DatabaseConstraint> GetConstraints(ConstraintFilter filter)
+		private List<Unique> GetUniqueConstraints(string table, string[] columns)
 		{
-			return schemaProvider.GetConstraints(filter);
-		}
-
-		public List<string> GetConstraints(string table, string[] columns)
-		{
-			var filter = new ConstraintFilter {TableName = table, ColumnNames = columns};
-			return GetConstraints(filter).Select(c => c.Name).Distinct().ToList();
-		}
-
-		public List<string> GetConstraintNames(string table)
-		{
-			var filter = new ConstraintFilter {TableName = table};
-			return GetConstraints(filter).Select(c => c.Name).Distinct().ToList();
-		}
-
-		public List<DatabaseConstraint> GetConstraints(string table)
-		{
-			var filter = new ConstraintFilter {TableName = table};
-			return GetConstraints(filter);
-		}
-
-		internal List<DatabaseConstraint> GetUniqueConstraints(string table, string[] columns)
-		{
-			var filter = new ConstraintFilter
-			             	{TableName = table, ColumnNames = columns, ConstraintType = ConstraintType.Unique};
-			return GetConstraints(filter).ToList();
-		}
-
-		private List<ForeignKey> GetForeignKeys(ForeignKeyFilter filter)
-		{
-			return schemaProvider.GetForeignKeys(filter);
+			return schemaProvider.GetUniques(new UniqueFilter {TableName = table, ColumnNames = columns});
 		}
 
 		private List<Index> GetIndexes(IndexFilter filter)
@@ -71,7 +50,7 @@ namespace DbRefactor.Providers
 
 		public List<ForeignKey> GetForeignKeys()
 		{
-			return GetForeignKeys(new ForeignKeyFilter());
+			return schemaProvider.GetForeignKeys(new ForeignKeyFilter());
 		}
 	}
 }

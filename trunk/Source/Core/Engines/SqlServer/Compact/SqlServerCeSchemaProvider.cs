@@ -36,7 +36,7 @@ namespace DbRefactor.Engines.SqlServer.Compact
 				             	}).ToList();
 		}
 
-		public override List<DatabaseConstraint> GetConstraints(ConstraintFilter filter)
+		private List<DatabaseConstraint> GetConstraints(ConstraintFilter filter)
 		{
 			var query = new CeConstraintQueryBuilder(filter).BuildQuery();
 			return DatabaseEnvironment.ExecuteQuery(query).AsReadable()
@@ -48,6 +48,23 @@ namespace DbRefactor.Engines.SqlServer.Compact
 				             		ColumnName = r["ColumnName"].ToString(),
 				             		ConstraintType = GetConstraintType(r["ConstraintType"].ToString())
 				             	}).ToList();
+		}
+
+		public override List<Unique> GetUniques(UniqueFilter filter)
+		{
+			return
+				GetConstraints(new ConstraintFilter
+				{
+					TableName = filter.TableName,
+					Name = filter.Name,
+					ConstraintType = ConstraintType.Unique
+				})
+					.Select(c => new Unique
+					{
+						ColumnName = c.ColumnName,
+						Name = c.Name,
+						TableName = c.TableName
+					}).ToList();
 		}
 
 		public override List<Index> GetIndexes(IndexFilter filter)
@@ -92,34 +109,6 @@ where TABLE_NAME = '{0}'
 			return Int32.TryParse(increment.ToString(), out result);
 		}
 
-		public override bool TableExists(string table)
-		{
-			return Convert.ToInt32(DatabaseEnvironment.ExecuteScalar(
-			                       	String.Format(
-@"
-select count(*)
-from INFORMATION_SCHEMA.TABLES 
-where TABLE_NAME = '{0}' 
-	and TABLE_TYPE = 'TABLE'
-",
-			                       		table)
-			                       	)) > 0;
-		}
-
-		public override bool ColumnExists(string table, string column)
-		{
-			return Convert.ToInt32(DatabaseEnvironment.ExecuteScalar(
-			                       	String.Format(
-@"
-select count(*)
-from INFORMATION_SCHEMA.COLUMNS 
-where TABLE_NAME = '{0}' 
-	and COLUMN_NAME = '{1}'
-",
-			                       		table, column)
-			                       	)) > 0;
-		}
-
 		protected override ColumnProvider GetProvider(IDataRecord reader)
 		{
 			var data = new ColumnData
@@ -137,6 +126,24 @@ where TABLE_NAME = '{0}'
 				throw new DbRefactorException(String.Format("Could not find data type in map: '{0}'", data.DataType));
 			}
 			return typesMap[data.DataType](data);
+		}
+
+		public override List<PrimaryKey> GetPrimaryKeys(PrimaryKeyFilter filter)
+		{
+			return
+				GetConstraints(new ConstraintFilter
+				{
+					TableName = filter.TableName,
+					Name = filter.Name,
+					ConstraintType = ConstraintType.PrimaryKey
+				})
+					.GroupBy(c => c.TableName)
+					.Select(c => new PrimaryKey
+					{
+						ColumnNames = c.Select(g => g.ColumnName).ToArray(),
+						Name = c.First().Name,
+						TableName = c.Key
+					}).ToList();
 		}
 
 		public override void RenameColumn(string table, string oldColumnName, string newColumnName)
@@ -171,15 +178,15 @@ where TABLE_NAME = '{0}'
 			                         	));
 		}
 
-		public override string[] GetTables()
-		{
-			const string query = 
-@"
-select [TABLE_NAME] as [name] 
-from information_schema.tables
-";
-			return DatabaseEnvironment.ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
-		}
+//        public override string[] GetTables()
+//        {
+//            const string query = 
+//@"
+//select [TABLE_NAME] as [name] 
+//from information_schema.tables
+//";
+//            return DatabaseEnvironment.ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
+//        }
 
 		private static ConstraintType GetConstraintType(string typeSql)
 		{

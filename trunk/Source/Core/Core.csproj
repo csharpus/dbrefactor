@@ -82,6 +82,8 @@
     <Compile Include="Max.cs" />
     <Compile Include="MySql\Columns\EnumProvider.cs" />
     <Compile Include="MySql\DataTypeExtensions.cs" />
+    <Compile Include="Providers\ColumnFilter.cs" />
+    <Compile Include="Providers\ColumnQueryBuilder.cs" />
     <Compile Include="Providers\Properties\NullProvider.cs" />
     <Compile Include="Providers\Index.cs" />
     <Compile Include="Providers\IndexFilter.cs" />
@@ -107,8 +109,12 @@
     <Compile Include="Providers\DependencySorter.cs" />
     <Compile Include="Providers\Properties\EmptyProvider.cs" />
     <Compile Include="Providers\SchemaProvider.cs" />
+    <Compile Include="Providers\TableFilter.cs" />
+    <Compile Include="Providers\TableQueryBuilder.cs" />
     <Compile Include="Providers\TransformationProviderExistence.cs" />
     <Compile Include="Providers\TransformationProviderSchema.cs" />
+    <Compile Include="Providers\Unique.cs" />
+    <Compile Include="Providers\UniqueFilter.cs" />
     <Compile Include="Runner\IMigrationTarget.cs" />
     <Compile Include="Runner\IVersionedMigration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -60,16 +60,6 @@ namespace DbRefactor.Tools
 			}
 		}
 
-		private void DropConstraints(string table)
-		{
-			//provider.GetColumnProviders()
-			var constraints = provider.GetConstraintNames(table);
-			foreach (var constraint in constraints)
-			{
-				AddSql("alter table {0} drop constraint {1}", table, constraint);
-			}
-		}
-
 		private void DisableConstraints(string table)
 		{
 			AddSql("alter table [{0}] nocheck constraint all", table);
@@ -113,17 +103,17 @@ namespace DbRefactor.Tools
 		private void DropConstraints(IEnumerable<string> tables)
 		{
 			var constraints = tables
-				.Select(t => provider.GetConstraints(t))
+				.Select(t => provider.GetForeignKeys())
 				.SelectMany(l => l)
-				.OrderBy(c => c.ConstraintType != ConstraintType.ForeignKey)
-				.Select(c => new {c.Name, c.TableName})
+				//.OrderBy(c => c.ConstraintType != ConstraintType.ForeignKey)
+				.Select(c => new {c.Name, c.ForeignTable})
 				.Distinct()
 				.ToList();
 
 			foreach (var constraint in constraints)
 			{
-				// AddSql("alter table {0} drop constraint {1}", constraint.TableName, constraint.Name);
-				AddSql("alter table {0} drop foreign key {1}", constraint.TableName, constraint.Name);
+				AddSql("alter table {0} drop constraint {1}", constraint.ForeignTable, constraint.Name);
+				//AddSql("alter table {0} drop foreign key {1}", constraint.TableName, constraint.Name);
 			}
 		}
 

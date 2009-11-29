@@ -33,12 +33,15 @@ namespace DbRefactor.Runner
 	{
 		private readonly TransformationProvider provider;
 		private readonly IDatabase database;
+		private readonly IDatabaseEnvironment databaseEnvironment;
 		private readonly string category;
 
-		public DatabaseMigrationTarget(TransformationProvider provider, IDatabase database, string category)
+		public DatabaseMigrationTarget(TransformationProvider provider, IDatabase database,
+		                               IDatabaseEnvironment databaseEnvironment, string category)
 		{
 			this.provider = provider;
 			this.database = database;
+			this.databaseEnvironment = databaseEnvironment;
 			this.category = category;
 		}
 
@@ -46,7 +49,7 @@ namespace DbRefactor.Runner
 		{
 			if (!provider.TableExists("SchemaInfo")) return 0;
 			var version = database
-				.Table("SchemaInfo").Where(new { Category = category }).SelectScalar<int>("Version");
+				.Table("SchemaInfo").Where(new {Category = category}).SelectScalar<int>("Version");
 			return Convert.ToInt32(version);
 		}
 
@@ -54,17 +57,17 @@ namespace DbRefactor.Runner
 		{
 			CreateSchemaInfoTable();
 			bool recordExists = database.Table("SchemaInfo")
-				.Where(new { Category = DBNull.Value })
+				.Where(new {Category = DBNull.Value})
 				.Select("Version")
 				.AsReadable()
 				.Any();
 			if (recordExists)
 			{
-				provider.Update("SchemaInfo", new { Version = version }, new { Category = category });
+				provider.Update("SchemaInfo", new {Version = version}, new {Category = category});
 			}
 			else
 			{
-				provider.Insert("SchemaInfo", new { Version = version, Category = category });
+				provider.Insert("SchemaInfo", new {Version = version, Category = category});
 			}
 		}
 
@@ -79,29 +82,29 @@ namespace DbRefactor.Runner
 
 		public override BaseMigration CreateMigration(Type type)
 		{
-			var migration = (Migration)Activator.CreateInstance(type);
+			var migration = (Migration) Activator.CreateInstance(type);
 			migration.Database = database;
 			return migration;
 		}
 
 		public override void BeginTransaction()
 		{
-			provider.BeginTransaction();
+			databaseEnvironment.BeginTransaction();
 		}
 
 		public override void CommitTransaction()
 		{
-			provider.CommitTransaction();
+			databaseEnvironment.CommitTransaction();
 		}
 
 		public override void RollbackTransaction()
 		{
-			provider.RollbackTransaction();
+			databaseEnvironment.RollbackTransaction();
 		}
 
 		public override void CloseConnection()
 		{
-			provider.CloseConnection();
+			databaseEnvironment.CloseConnection();
 		}
 	}
 }

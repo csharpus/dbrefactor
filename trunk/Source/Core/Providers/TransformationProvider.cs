@@ -31,18 +31,15 @@ namespace DbRefactor.Providers
 		private readonly SchemaProvider schemaProvider;
 		private readonly ObjectNameService objectNameService;
 
-		internal TransformationProvider(IDatabaseEnvironment environment, SchemaProvider schemaProvider, ObjectNameService objectNameService)
+		internal TransformationProvider(IDatabaseEnvironment environment, SchemaProvider schemaProvider,
+		                                ObjectNameService objectNameService)
 		{
 			this.environment = environment;
 			this.schemaProvider = schemaProvider;
 			this.objectNameService = objectNameService;
 		}
 
-		internal IDatabaseEnvironment Environment
-		{
-			get { return environment; }
-		}
-
+		#region Table and column transformations
 
 		public void CreateTable(string name, params ColumnProvider[] columns)
 		{
@@ -52,21 +49,25 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("create table {0} ({1})", objectNameService.EncodeTable(name), columnsSql);
 		}
 
-		/// <summary>
-		/// Removes an existing table from the database
-		/// </summary>
-		/// <param name="name">Table name</param>
+		private static string GetCreateColumnsSql(IEnumerable<ColumnProvider> columns)
+		{
+			return columns.Select(col => col.GetCreateColumnSql())
+				.WithTabsOnStart(2)
+				.WithNewLinesOnStart()
+				.ComaSeparated();
+		}
+
 		public void DropTable(string name)
 		{
 			Check.RequireNonEmpty(name, "name");
 			ExecuteNonQuery("drop table [{0}]", name);
 		}
 
-		/// <summary>
-		/// Remove a column from an existing table
-		/// </summary>
-		/// <param name="table">Table name</param>
-		/// <param name="column">Column name</param>
+		public void AddColumn(string table, ColumnProvider columnProvider)
+		{
+			ExecuteNonQuery("alter table [{0}] add {1}", table, columnProvider.GetAddColumnSql());
+		}
+
 		public void DropColumn(string table, string column)
 		{
 			Check.RequireNonEmpty(table, "table");
@@ -75,12 +76,171 @@ namespace DbRefactor.Providers
 			ExecuteNonQuery("alter table {0} drop column {1} ", table, column);
 		}
 
-		private static string GetCreateColumnsSql(IEnumerable<ColumnProvider> columns)
+		private void AlterColumn(string table, string sqlColumn)
 		{
-			return columns.Select(col => col.GetCreateColumnSql())
-				.WithTabsOnStart(2)
-				.WithNewLinesOnStart()
-				.ComaSeparated();
+			Check.RequireNonEmpty(table, "table");
+			Check.RequireNonEmpty(sqlColumn, "sqlColumn");
+			ExecuteNonQuery("alter table [{0}] alter column {1}", table, sqlColumn);
+		}
+
+		public void AlterColumn(string tableName, ColumnProvider columnProvider)
+		{
+			var provider = GetColumnProvider(tableName, columnProvider.Name);
+			// TODO: IS it correct just copy properties?
+			columnProvider.CopyPropertiesFrom(provider);
+			AlterColumn(tableName, columnProvider.GetAlterColumnSql());
+		}
+
+		public void RenameColumn(string table, string oldColumnName, string newColumnName)
+		{
+			schemaProvider.RenameColumn(table, oldColumnName, newColumnName);
+		}
+
+		public void RenameTable(string oldName, string newName)
+		{
+			schemaProvider.RenameTable(oldName, newName);
+		}
+
+		#endregion
+
+		#region Column properties transformation
+		public void SetNull(string tableName, string columnName)
+		{
+			var provider = GetColumnProvider(tableName, columnName);
+			provider.RemoveNotNull();
+			AlterColumn(tableName, provider.GetAlterColumnSql());
+		}
+
+		public void SetNotNull(string tableName, string columnName)
+		{
+			var provider = GetColumnProvider(tableName, columnName);
+			provider.AddNotNull();
+			AlterColumn(tableName, provider.GetAlterColumnSql());
+		}
+
+		public void SetDefault(string constraintName, string tableName, string columnName, object value)
+		{
+			var provider = GetColumnProvider(tableName, columnName);
+			provider.DefaultValue = value;
+			var query = String.Format("alter table [{0}] add constraint {1} default {2} for [{3}]", tableName,
+									  constraintName,
+									  provider.GetDefaultValueSql(), columnName);
+			ExecuteNonQuery(query);
+		}
+
+		public void DropDefault(string tableName, string columnName)
+		{
+			var query = String.Format("alter table [{0}] alter column {1} drop default", tableName, columnName);
+			ExecuteQuery(query);
+			//List<string> defaultConstraints = GetConstraintsByType(tableName, new[] {columnName},
+			//                                                       ConstraintType.Default);
+			//foreach (var constraint in defaultConstraints)
+			//{
+			//    DropConstraint(tableName, constraint);
+			//}
+		}		
+
+		public void DropForeignKey(string foreignKeyTable, string[] foreignKeyColumns, string primaryKeyTable,
+								   string[] primaryKeyColumns)
+		{
+			if (foreignKeyColumns.Length != primaryKeyColumns.Length)
+				throw new DbRefactorException(
+					"The number of foreign key columns should be the same as the number of primary key columns");
+			var filter = new ForeignKeyFilter
+			{
+				ForeignKeyTable = foreignKeyTable,
+				ForeignKeyColumns = foreignKeyColumns,
+				PrimaryKeyTable = primaryKeyTable,
+				PrimaryKeyColumns = primaryKeyColumns
+			};
+			var foreignKeys = schemaProvider.GetForeignKeys(filter);
+			var keysSharedBetweenAllColumns = foreignKeys.GroupBy(key => key.Name)
+				.Where(group => !foreignKeyColumns.Except(group.Select(k => k.ForeignColumn)).Any())
+				.Select(g => g.Key).ToList();
+			foreach (var key in keysSharedBetweenAllColumns)
+			{
+				DropConstraint(foreignKeyTable, key);
+			}
+		}
+
+		public void AddUnique(string name, string table, params string[] columns)
+		{
+			Check.RequireNonEmpty(name, "name");
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columns.Length > 0, "You have to pass at least one column");
+			ExecuteNonQuery("alter table [{0}] add constraint {1} unique ({2}) ",
+							table, name, String.Join(",", columns));
+		}
+
+		public void AddIndex(string name, string table, params string[] columns)
+		{
+			Check.RequireNonEmpty(name, "name");
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columns.Length > 0, "You have to pass at least one column");
+			ExecuteNonQuery("create nonclustered index {0} on [{1}] ({2}) ",
+							name, table, String.Join(",", columns));
+		}
+
+		public void DropIndex(string table, params string[] columns)
+		{
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columns.Length > 0, "You have to pass at least one column");
+			var indexesList = new List<List<string>>();
+			foreach (var column in columns)
+			{
+				var indexes = GetIndexes(table, column);
+				indexesList.Add(indexes);
+			}
+			var indexesPresentInAllColumns = GetIndexesPresentInAllColumns(indexesList);
+			if (indexesPresentInAllColumns.Count == 0)
+			{
+				throw new DbRefactorException("Couldn't find any indexes mutual for all passed columns");
+			}
+			foreach (var index in indexesPresentInAllColumns)
+			{
+				ExecuteNonQuery("drop index {0}.{1}", table, index);
+			}
+		}
+
+		private static List<string> GetIndexesPresentInAllColumns(IList<List<string>> indexesList)
+		{
+			var startIndexes = indexesList[0];
+			foreach (var indexList in indexesList)
+			{
+				var indexesThatExists = indexList.Intersect(startIndexes).ToList();
+				startIndexes = indexesThatExists;
+			}
+			return startIndexes;
+		}
+
+		public void AddPrimaryKey(string name, string table, params string[] columns)
+		{
+			Check.RequireNonEmpty(name, "name");
+			Check.RequireNonEmpty(table, "table");
+			Check.Require(columns.Length > 0, "You have to pass at least one column");
+			ExecuteNonQuery("alter table [{0}] add constraint {1} primary key ({2}) ",
+							table, name, String.Join(",", columns));
+		}
+
+		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns,
+								  string refTable, string[] refColumns, OnDelete constraint)
+		{
+			Check.RequireNonEmpty(name, "name");
+			Check.RequireNonEmpty(primaryTable, "primaryTable");
+			Check.RequireNonEmpty(refTable, "refTable");
+			Check.Require(primaryColumns.Length > 0, "You have to pass at least one primary column");
+			Check.Require(refColumns.Length > 0, "You have to pass at least one ref column");
+			ExecuteNonQuery(
+@"
+alter table [{0}] 
+add constraint [{1}] 
+foreign key ({2}) 
+references {3} ({4}) 
+	on delete {5}
+",
+				primaryTable, name, String.Join(",", primaryColumns),
+				refTable, String.Join(",", refColumns),
+				new SqlServerForeignKeyConstraintMapper().Resolve(constraint));
 		}
 
 		public void DropUnique(string table, params string[] columnNames)
@@ -119,89 +279,40 @@ namespace DbRefactor.Providers
 
 		private string GetPrimaryKeyConstraintName(string table)
 		{
-			var filter = new ConstraintFilter {TableName = table, ConstraintType = ConstraintType.PrimaryKey};
-			var constraints = GetConstraints(filter).Select(c => c.Name).Distinct().ToList();
-			if (constraints.Count == 0)
+			var keys = schemaProvider.GetPrimaryKeys(new PrimaryKeyFilter {TableName = table});
+			if (keys.Count == 0)
 				throw new DbRefactorException(String.Format("Could not find primary key constraint on table '{0}'",
 				                                            table));
-			return constraints[0];
+			return keys[0].Name;
 		}
 
-		/// <summary>
-		/// Renames an existing column
-		/// </summary>
-		/// <param name="table">Table name</param>
-		/// <param name="oldColumnName">Old column name</param>
-		/// <param name="newColumnName">New column name</param>
-		public void RenameColumn(string table, string oldColumnName, string newColumnName)
-		{
-			schemaProvider.RenameColumn(table, oldColumnName, newColumnName);
-		}
+		#endregion
 
-		/// <summary>
-		/// Renames an existing table
-		/// </summary>
-		/// <param name="oldName">Old table name</param>
-		/// <param name="newName">New table name</param>
-		public void RenameTable(string oldName, string newName)
-		{
-			schemaProvider.RenameTable(oldName, newName);
-		}
-
-		private void AlterColumn(string table, string sqlColumn)
-		{
-			Check.RequireNonEmpty(table, "table");
-			Check.RequireNonEmpty(sqlColumn, "sqlColumn");
-			ExecuteNonQuery("alter table [{0}] alter column {1}", table, sqlColumn);
-		}
-
-		public void DropColumnConstraints(string table, string column)
+		private void DropColumnConstraints(string table, string column)
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(column, "column");
-			var constraints = GetConstraints(table, new[] {column});
-			foreach (string constraint in constraints)
+			//var constraints = GetConstraints(table, new[] {column});
+			//foreach (string constraint in constraints)
+			//{
+			//	DropConstraint(table, constraint);
+			//}
+
+			foreach (var key in schemaProvider.GetForeignKeys(new ForeignKeyFilter{ForeignKeyTable = table, ForeignKeyColumns = new [] {column}}))
 			{
-				DropConstraint(table, constraint);
+				DropForeignKey(key.ForeignTable, key.Name);
 			}
 		}
 
-		/// <summary>
-		/// Append a primary key to a table.
-		/// </summary>
-		/// <param name="name">Constraint name</param>
-		/// <param name="table">Table name</param>
-		/// <param name="columns">Primary column names</param>
-		public void AddPrimaryKey(string name, string table, params string[] columns)
+		private void DropConstraint(string table, string name)
 		{
-			Check.RequireNonEmpty(name, "name");
 			Check.RequireNonEmpty(table, "table");
-			Check.Require(columns.Length > 0, "You have to pass at least one column");
-			ExecuteNonQuery("alter table [{0}] add constraint {1} primary key ({2}) ",
-			                table, name, String.Join(",", columns));
-		}
-
-		public void AddForeignKey(string name, string primaryTable, string[] primaryColumns,
-		                          string refTable, string[] refColumns, OnDelete constraint)
-		{
 			Check.RequireNonEmpty(name, "name");
-			Check.RequireNonEmpty(primaryTable, "primaryTable");
-			Check.RequireNonEmpty(refTable, "refTable");
-			Check.Require(primaryColumns.Length > 0, "You have to pass at least one primary column");
-			Check.Require(refColumns.Length > 0, "You have to pass at least one ref column");
-			ExecuteNonQuery(
-				"alter table [{0}] add constraint [{1}] foreign key ({2}) references {3} ({4}) on delete {5}",
-				primaryTable, name, String.Join(",", primaryColumns),
-				refTable, String.Join(",", refColumns),
-				new SqlServerForeignKeyConstraintMapper().Resolve(constraint));
+
+			ExecuteNonQuery("alter table [{0}] drop constraint [{1}]", table, name);
 		}
 
-		/// <summary>
-		/// Removes a constraint.
-		/// </summary>
-		/// <param name="table">Table owning the constraint</param>
-		/// <param name="name">Constraint name</param>
-		public void DropConstraint(string table, string name)
+		private void DropForeignKey(string table, string name)
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(name, "name");
@@ -218,6 +329,8 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(sql, "sql");
 			return environment.ExecuteNonQuery(String.Format(sql, values));
 		}
+
+		#region CRUD
 
 		/// <summary>
 		/// Execute an SQL query returning results.
@@ -248,129 +361,6 @@ namespace DbRefactor.Providers
 				table,
 				columns,
 				operation);
-		}
-
-		/// <summary>
-		/// Starts a transaction. Called by the migration mediator.
-		/// </summary>
-		public void BeginTransaction()
-		{
-			environment.BeginTransaction();
-		}
-
-		/// <summary>
-		/// Rollback the current migration. Called by the migration mediator.
-		/// </summary>
-		public void RollbackTransaction()
-		{
-			environment.RollbackTransaction();
-		}
-
-		/// <summary>
-		/// Commit the current transaction. Called by the migrations mediator.
-		/// </summary>
-		public void CommitTransaction()
-		{
-			environment.CommitTransaction();
-		}
-
-		public void AddUnique(string name, string table, params string[] columns)
-		{
-			Check.RequireNonEmpty(name, "name");
-			Check.RequireNonEmpty(table, "table");
-			Check.Require(columns.Length > 0, "You have to pass at least one column");
-			ExecuteNonQuery("alter table [{0}] add constraint {1} unique ({2}) ",
-			                table, name, String.Join(",", columns));
-		}
-
-		public void AddIndex(string name, string table, params string[] columns)
-		{
-			Check.RequireNonEmpty(name, "name");
-			Check.RequireNonEmpty(table, "table");
-			Check.Require(columns.Length > 0, "You have to pass at least one column");
-			ExecuteNonQuery("create nonclustered index {0} on [{1}] ({2}) ",
-			                name, table, String.Join(",", columns));
-		}
-
-		public void DropIndex(string table, params string[] columns)
-		{
-			Check.RequireNonEmpty(table, "table");
-			Check.Require(columns.Length > 0, "You have to pass at least one column");
-			var indexesList = new List<List<string>>();
-			foreach (var column in columns)
-			{
-				var indexes = GetIndexes(table, column);
-				indexesList.Add(indexes);
-			}
-			var indexesPresentInAllColumns = GetIndexesPresentInAllColumns(indexesList);
-			if (indexesPresentInAllColumns.Count == 0)
-			{
-				throw new DbRefactorException("Couldn't find any indexes mutual for all passed columns");
-			}
-			foreach (var index in indexesPresentInAllColumns)
-			{
-				ExecuteNonQuery("drop index {0}.{1}", table, index);
-			}
-		}
-
-		private static List<string> GetIndexesPresentInAllColumns(IList<List<string>> indexesList)
-		{
-			var startIndexes = indexesList[0];
-			foreach (var indexList in indexesList)
-			{
-				var indexesThatExists = indexList.Intersect(startIndexes).ToList();
-				startIndexes = indexesThatExists;
-			}
-			return startIndexes;
-		}
-
-		public void AddColumn(string table, ColumnProvider columnProvider)
-		{
-			ExecuteNonQuery("alter table [{0}] add {1}", table, columnProvider.GetAddColumnSql());
-		}
-
-		public void SetNull(string tableName, string columnName)
-		{
-			var provider = GetColumnProvider(tableName, columnName);
-			provider.RemoveNotNull();
-			AlterColumn(tableName, provider.GetAlterColumnSql());
-		}
-
-		public void SetNotNull(string tableName, string columnName)
-		{
-			var provider = GetColumnProvider(tableName, columnName);
-			provider.AddNotNull();
-			AlterColumn(tableName, provider.GetAlterColumnSql());
-		}
-
-		public void SetDefault(string constraintName, string tableName, string columnName, object value)
-		{
-			var provider = GetColumnProvider(tableName, columnName);
-			provider.DefaultValue = value;
-			var query = String.Format("alter table [{0}] add constraint {1} default {2} for [{3}]", tableName,
-			                          constraintName,
-			                          provider.GetDefaultValueSql(), columnName);
-			ExecuteNonQuery(query);
-		}
-
-		public void DropDefault(string tableName, string columnName)
-		{
-			var query = String.Format("alter table [{0}] alter column {1} drop default", tableName, columnName);
-			ExecuteQuery(query);
-			//List<string> defaultConstraints = GetConstraintsByType(tableName, new[] {columnName},
-			//                                                       ConstraintType.Default);
-			//foreach (var constraint in defaultConstraints)
-			//{
-			//    DropConstraint(tableName, constraint);
-			//}
-		}
-
-		public void AlterColumn(string tableName, ColumnProvider columnProvider)
-		{
-			var provider = GetColumnProvider(tableName, columnProvider.Name);
-			// TODO: IS it correct just copy properties?
-			columnProvider.CopyPropertiesFrom(provider);
-			AlterColumn(tableName, columnProvider.GetAlterColumnSql());
 		}
 
 		public IDataReader Select(string tableName, string[] columns, object whereParameters)
@@ -408,8 +398,8 @@ namespace DbRefactor.Providers
 		{
 			var updateValues = ParametersHelper.GetPropertyValues(updateObject);
 			var sqlUpdatePairs = from p in providers
-			                     join v in updateValues on p.Name equals v.Key
-			                     select String.Format("{0}", p.GetValueSql(v.Value));
+								 join v in updateValues on p.Name equals v.Key
+								 select String.Format("{0}", p.GetValueSql(v.Value));
 			return String.Join(", ", sqlUpdatePairs.ToArray());
 		}
 
@@ -417,18 +407,18 @@ namespace DbRefactor.Providers
 		{
 			var updateValues = ParametersHelper.GetPropertyValues(updateObject);
 			var sqlUpdatePairs = from p in providers
-			                     join v in updateValues on p.Name equals v.Key
-			                     select String.Format("[{0}] = {1}", p.Name, p.GetValueSql(v.Value));
+								 join v in updateValues on p.Name equals v.Key
+								 select String.Format("[{0}] = {1}", p.Name, p.GetValueSql(v.Value));
 			return String.Join(", ", sqlUpdatePairs.ToArray());
 		}
 
 		private static string GetWhereClauseValues(IEnumerable<ColumnProvider> providers,
-		                                           object whereParameters)
+												   object whereParameters)
 		{
 			var whereValues = ParametersHelper.GetPropertyValues(whereParameters);
 			var sqlWherePairs = from p in providers
-			                    join v in whereValues on p.Name equals v.Key
-			                    select EqualitySql(p.Name, p.GetValueSql(v.Value));
+								join v in whereValues on p.Name equals v.Key
+								select EqualitySql(p.Name, p.GetValueSql(v.Value));
 			return String.Join(" and ", sqlWherePairs.ToArray());
 		}
 
@@ -457,32 +447,6 @@ namespace DbRefactor.Providers
 			return ExecuteScalar("select {0} from [{1}] where {2}", column, tableName, whereClause);
 		}
 
-		public void DropForeignKey(string foreignKeyTable, string[] foreignKeyColumns, string primaryKeyTable,
-		                           string[] primaryKeyColumns)
-		{
-			if (foreignKeyColumns.Length != primaryKeyColumns.Length)
-				throw new DbRefactorException(
-					"The number of foreign key columns should be the same as the number of primary key columns");
-			var filter = new ForeignKeyFilter
-			             	{
-			             		ForeignKeyTable = foreignKeyTable,
-			             		ForeignKeyColumns = foreignKeyColumns,
-			             		PrimaryKeyTable = primaryKeyTable,
-			             		PrimaryKeyColumns = primaryKeyColumns
-			             	};
-			var foreignKeys = GetForeignKeys(filter);
-			var keysSharedBetweenAllColumns = foreignKeys.GroupBy(key => key.Name)
-				.Where(group => !foreignKeyColumns.Except(group.Select(k => k.ForeignColumn)).Any())
-				.Select(g => g.Key).ToList();
-			foreach (var key in keysSharedBetweenAllColumns)
-			{
-				DropConstraint(foreignKeyTable, key);
-			}
-		}
-
-		public void CloseConnection()
-		{
-			environment.CloseConnection();
-		}
+		#endregion
 	}
 }

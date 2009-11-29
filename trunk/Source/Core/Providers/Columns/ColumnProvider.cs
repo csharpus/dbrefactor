@@ -33,7 +33,8 @@ namespace DbRefactor.Providers.Columns
 		private readonly List<PropertyProvider> properties = new List<PropertyProvider>();
 
 		protected ColumnProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService,
-		                         ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
+		                         ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService,
+		                         ColumnPropertyProviderFactory columnPropertyProviderFactory)
 		{
 			DefaultValue = defaultValue;
 			this.codeGenerationService = codeGenerationService;

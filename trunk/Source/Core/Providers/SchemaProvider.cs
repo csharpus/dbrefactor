@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using DbRefactor.Engines.SqlServer;
-using DbRefactor.Exceptions;
+using DbRefactor.Extensions;
 using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Providers
@@ -29,7 +29,7 @@ namespace DbRefactor.Providers
 
 		public abstract List<ForeignKey> GetForeignKeys(ForeignKeyFilter filter);
 
-		public abstract List<DatabaseConstraint> GetConstraints(ConstraintFilter filter);
+		public abstract List<Unique> GetUniques(UniqueFilter filter);
 
 		public abstract List<Index> GetIndexes(IndexFilter filter);
 
@@ -37,50 +37,13 @@ namespace DbRefactor.Providers
 
 		public abstract bool IsIdentity(string table, string column);
 
-		public abstract bool TableExists(string table);
-
-		public abstract bool ColumnExists(string table, string column);
-
-		public ColumnProvider GetColumnProvider(string tableName, string columnName)
-		{
-			ColumnProvider provider;
-			using (
-				IDataReader reader =
-					DatabaseEnvironment.ExecuteQuery(String.Format(
-@"
-select DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE,
-	COLUMN_DEFAULT 
-from INFORMATION_SCHEMA.COLUMNS 
-where TABLE_NAME = '{0}' 
-	and COLUMN_NAME = '{1}'
-",
-					                                 	tableName, columnName)))
-			{
-				if (!reader.Read())
-				{
-					throw new DbRefactorException(String.Format("Couldn't find column '{0}' in table '{1}'", columnName,
-					                                            tableName));
-				}
-				provider = GetProvider(reader);
-			}
-			AddProviderProperties(tableName, provider);
-			return provider;
-		}
-
-		public List<ColumnProvider> GetColumnProviders(string table)
+		public List<ColumnProvider> GetColumns(ColumnFilter filter)
 		{
 			var providers = new List<ColumnProvider>();
-
+			var query = new ColumnQueryBuilder(filter).BuildQuery();
 			using (
 				IDataReader reader =
-					DatabaseEnvironment.ExecuteQuery(String.Format(
-@"
-select DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, 
-	COLUMN_DEFAULT 
-from INFORMATION_SCHEMA.COLUMNS 
-where TABLE_NAME = '{0}'
-",
-					                                 	table)))
+					DatabaseEnvironment.ExecuteQuery(query))
 			{
 				while (reader.Read())
 				{
@@ -90,7 +53,7 @@ where TABLE_NAME = '{0}'
 			}
 			foreach (var provider in providers)
 			{
-				AddProviderProperties(table, provider);
+				AddProviderProperties(filter.TableName, provider);
 			}
 			return providers;
 		}
@@ -170,24 +133,21 @@ where TABLE_NAME = '{0}'
 
 		private bool IsPrimaryKey(string table, string column)
 		{
-			var filter = new ConstraintFilter
-			             	{
-			             		TableName = table,
-			             		ColumnNames = new[] {column},
-			             		ConstraintType = ConstraintType.PrimaryKey
-			             	};
-			return GetConstraints(filter).Any();
+			return
+				GetPrimaryKeys(
+				new PrimaryKeyFilter
+					{
+						Name = table, 
+						TableName = table, 
+						ColumnNames = new[] {column}
+					}).Any();
 		}
+
+		public abstract List<PrimaryKey> GetPrimaryKeys(PrimaryKeyFilter filter);
 
 		private bool IsUnique(string table, string column)
 		{
-			var filter = new ConstraintFilter
-			             	{
-			             		TableName = table,
-			             		ColumnNames = new[] {column},
-			             		ConstraintType = ConstraintType.Unique
-			             	};
-			return GetConstraints(filter).Any();
+			return GetUniques(new UniqueFilter {TableName = table, ColumnNames = new[] {column}}).Any();
 		}
 
 		public abstract void RenameColumn(string table, string oldColumnName, string newColumnName);
@@ -196,6 +156,27 @@ where TABLE_NAME = '{0}'
 
 		public abstract bool IsDefault(string table, string column);
 
-		public abstract string[] GetTables();
+		public string[] GetTables(TableFilter filter)
+		{
+			var query = new TableQueryBuilder(filter).BuildQuery();
+			return DatabaseEnvironment
+				.ExecuteQuery(query)
+				.AsReadable()
+				.Select(r => r.GetString(0)).ToArray();
+		}
+	}
+
+	public class PrimaryKeyFilter
+	{
+		public string[] ColumnNames { get; set; }
+		public string Name { get; set; }
+		public string TableName { get; set; }
+	}
+
+	internal class PrimaryKey
+	{
+		public string[] ColumnNames { get; set; }
+		public string Name { get; set; }
+		public string TableName { get; set; }
 	}
 }

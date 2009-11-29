@@ -171,7 +171,7 @@ namespace DbRefactor.Factories
 			provider = new TransformationProvider(databaseEnvironment, schemaProvider, objectNameService);
 			apiFactory = new ApiFactory(provider, columnProviderFactory, objectNameService);
 			database = new Database(provider, columnProviderFactory, objectNameService, apiFactory);
-			databaseMigrationTarget = new DatabaseMigrationTarget(provider, database, category);
+			databaseMigrationTarget = new DatabaseMigrationTarget(provider, database, databaseEnvironment, category);
 			var migrationRunner = new MigrationRunner(databaseMigrationTarget, logger);
 			var migrationReader = new MigrationReader(databaseMigrationTarget);
 			migrationService = new MigrationService(databaseMigrationTarget, migrationRunner, migrationReader);
