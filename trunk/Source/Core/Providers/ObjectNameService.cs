@@ -3,7 +3,12 @@ using System.Linq;
 
 namespace DbRefactor.Providers
 {
-	internal class ConstraintNameService
+	internal interface IObjectNameService
+	{
+		string EncodeTable(string table);
+	}
+
+	internal class ObjectNameService : IObjectNameService
 	{
 		public string UniqueName(string table, string column)
 		{
@@ -50,6 +55,16 @@ namespace DbRefactor.Providers
 		public string ForeignKeyName(string foreignKeyTable, string primaryKeyTable)
 		{
 			return String.Format("FK_{0}_{1}", foreignKeyTable, primaryKeyTable);
+		}
+
+		public virtual string EncodeTable(string table)
+		{
+			return table;
+		}
+
+		public virtual string EncodeColumn(string name)
+		{
+			return name;
 		}
 	}
 }

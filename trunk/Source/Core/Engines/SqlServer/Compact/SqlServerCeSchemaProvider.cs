@@ -15,9 +15,9 @@ namespace DbRefactor.Engines.SqlServer.Compact
 		private object increment;
 
 		public SqlServerCeSchemaProvider(IDatabaseEnvironment databaseEnvironment,
-		                                 ConstraintNameService constraintNameService,
+		                                 ObjectNameService objectNameService,
 		                                 SqlServerColumnMapper sqlServerColumnMapper)
-			: base(databaseEnvironment, constraintNameService, sqlServerColumnMapper)
+			: base(databaseEnvironment, objectNameService, sqlServerColumnMapper)
 		{
 		}
 
@@ -117,11 +117,16 @@ where TABLE_NAME = '{0}'
 				Name = reader["COLUMN_NAME"].ToString(),
 				DataType = reader["DATA_TYPE"].ToString(),
 				Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
-				Precision = NullSafeGet<short>(reader, "NUMERIC_PRECISION"),
-				Scale = NullSafeGet<short>(reader, "NUMERIC_SCALE"),
+				Precision = NullSafeGet<int>(reader, "NUMERIC_PRECISION"),
+				Scale = NullSafeGet<int>(reader, "NUMERIC_SCALE"),
 				DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
 			};
-			return GetTypesMap()[data.DataType](data);
+			var typesMap = GetTypesMap();
+			if (!typesMap.ContainsKey(data.DataType))
+			{
+				throw new DbRefactorException(String.Format("Could not find data type in map: '{0}'", data.DataType));
+			}
+			return typesMap[data.DataType](data);
 		}
 
 		public override void RenameColumn(string table, string oldColumnName, string newColumnName)
@@ -150,6 +155,12 @@ where TABLE_NAME = '{0}'
 ",
 					table, column)
 				));
+		}
+
+		public override string[] GetTables()
+		{
+			const string query = "select [TABLE_NAME] as [name] from information_schema.tables";
+			return DatabaseEnvironment.ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
 		}
 
 		private static ConstraintType GetConstraintType(string typeSql)

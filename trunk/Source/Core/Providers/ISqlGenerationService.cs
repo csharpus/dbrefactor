@@ -14,12 +14,21 @@ namespace DbRefactor.Providers
 
 	internal class SqlGenerationService : ISqlGenerationService
 	{
+		private readonly ObjectNameService objectNameService;
+
+		public SqlGenerationService(ObjectNameService objectNameService)
+		{
+			this.objectNameService = objectNameService;
+		}
+
 		public string GenerateCreateColumnSql(ColumnProvider columnProvider)
 		{
 			string propertiesSql = columnProvider.Properties
 				.Select(p => p.CreateTableSql()).SpaceSeparated();
-			
-			string returnValue = String.Format("[{0}] {1} {2}", columnProvider.Name, columnProvider.SqlType(), propertiesSql).TrimEnd();
+
+			string returnValue =
+				String.Format("{0} {1} {2}", objectNameService.EncodeColumn(columnProvider.Name),
+				              columnProvider.SqlType(), propertiesSql).TrimEnd();
 			if (columnProvider.HasDefaultValue)
 			{
 				returnValue += String.Format(" default {0}", columnProvider.GetDefaultValueSql());
@@ -32,7 +41,8 @@ namespace DbRefactor.Providers
 			string propertiesSql = columnProvider.Properties
 				.Select(p => p.AlterTableSql()).SpaceSeparated();
 
-			return String.Format("[{0}] {1} {2}", columnProvider.Name, columnProvider.SqlType(), propertiesSql).TrimEnd();
+			return
+				String.Format("[{0}] {1} {2}", columnProvider.Name, columnProvider.SqlType(), propertiesSql).TrimEnd();
 		}
 
 		public string GenerateAddColumnSql(ColumnProvider provider)

@@ -37,46 +37,17 @@ namespace DbRefactor.Tests.Integration.Engines
 			Assert.That(Provider.TableExists("Test"), Is.False);
 		}
 
+		protected virtual string GetCreateTableSql()
+		{
+			return "override GetCreateTableSql method";
+		}
+
 		[Test]
 		public void Should_create_schema_dump()
 		{
-			//var dumper = new SchemaDumper(@"Data Source=.\SQLEXPRESS;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
-			//dumper.Dump();
-
 			#region CreateTable
 
-			Provider.ExecuteNonQuery(
-				@"CREATE TABLE Table1 (
-	[BI] [bigint] NULL,
-	[BN] [binary](50) NULL,
-	[BT] [bit] NULL,
-	[CH] [char](10) COLLATE Cyrillic_General_CI_AS NULL,
-	[DT] [datetime] NULL,
-	[DC] [decimal](18, 0) NULL,
-	[FT] [float] NULL,
-	[IM] [image] NULL,
-	[IT] [int] NULL,
-	[MN] [money] NULL,
-	[NC] [nchar](10) COLLATE Cyrillic_General_CI_AS NULL,
-	[NT] [ntext] COLLATE Cyrillic_General_CI_AS NULL,
-	[NM] [numeric](18, 0) NULL,
-	[NV] [nvarchar](50) COLLATE Cyrillic_General_CI_AS NULL,
-	[NB] [nvarchar](max) COLLATE Cyrillic_General_CI_AS NULL,
-	[RL] [real] NULL,
-	[SD] [smalldatetime] NULL,
-	[SI] [smallint] NULL,
-	[SM] [smallmoney] NULL,
-	[SV] [sql_variant] NULL,
-	[TX] [text] COLLATE Cyrillic_General_CI_AS NULL,
-	[TS] [timestamp] NULL,
-	[TI] [tinyint] NULL,
-	[UI] [uniqueidentifier] NOT NULL,
-	[VB] [varbinary](50) NULL,
-	[VM] [varbinary](max) NULL,
-	[VC] [varchar](50) COLLATE Cyrillic_General_CI_AS NULL,
-	[VR] [varchar](max) COLLATE Cyrillic_General_CI_AS NULL,
-	[XL] [xml] NULL
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]");
+			Provider.ExecuteNonQuery(GetCreateTableSql());
 
 			#endregion
 
@@ -99,6 +70,15 @@ namespace DbRefactor.Tests.Integration.Engines
 
 		[Test]
 		public void Can_rename_table()
+		{
+			Database.CreateTable("A").Int("B").Execute();
+			Database.Table("A").RenameTo("C");
+
+			Assert.True(Provider.TableExists("C"));
+		}
+
+		[Test]
+		public void Can_rename_column()
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").RenameTo("C");

@@ -5,20 +5,19 @@ using System.Linq;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Exceptions;
 using DbRefactor.Providers.Columns;
-using DbRefactor.Tools.DesignByContract;
 
 namespace DbRefactor.Providers
 {
 	internal abstract class SchemaProvider
 	{
 		private readonly IDatabaseEnvironment databaseEnvironment;
-		private readonly ConstraintNameService constraintNameService;
+		private readonly ObjectNameService objectNameService;
 		private readonly SqlServerColumnMapper sqlServerColumnMapper;
 
-		protected SchemaProvider(IDatabaseEnvironment databaseEnvironment, ConstraintNameService constraintNameService, SqlServerColumnMapper sqlServerColumnMapper)
+		protected SchemaProvider(IDatabaseEnvironment databaseEnvironment, ObjectNameService objectNameService, SqlServerColumnMapper sqlServerColumnMapper)
 		{
 			this.databaseEnvironment = databaseEnvironment;
-			this.constraintNameService = constraintNameService;
+			this.objectNameService = objectNameService;
 			this.sqlServerColumnMapper = sqlServerColumnMapper;
 		}
 
@@ -138,7 +137,7 @@ where table_name = '{0}';
 		{
 			if (IsPrimaryKey(table, provider.Name))
 			{
-				provider.AddPrimaryKey(constraintNameService.PrimaryKeyName(table, provider.Name));
+				provider.AddPrimaryKey(objectNameService.PrimaryKeyName(table, provider.Name));
 			}
 			else if (!IsNullable(table, provider.Name))
 			{
@@ -152,7 +151,7 @@ where table_name = '{0}';
 
 			if (IsUnique(table, provider.Name))
 			{
-				provider.AddUnique(constraintNameService.UniqueName(table, provider.Name));
+				provider.AddUnique(objectNameService.UniqueName(table, provider.Name));
 			}
 		}
 
@@ -194,5 +193,7 @@ where table_name = '{0}';
 		public abstract void RenameTable(string oldName, string newName);
 
 		public abstract bool IsDefault(string table, string column);
+
+		public abstract string[] GetTables();
 	}
 }

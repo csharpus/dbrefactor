@@ -66,7 +66,7 @@ namespace DbRefactor.Tools
 			var constraints = provider.GetConstraintNames(table);
 			foreach (var constraint in constraints)
 			{
-				AddSql("alter table [{0}] drop constraint [{1}]", table, constraint);
+				AddSql("alter table {0} drop constraint {1}", table, constraint);
 			}
 		}
 
@@ -122,13 +122,14 @@ namespace DbRefactor.Tools
 
 			foreach (var constraint in constraints)
 			{
-				AddSql("alter table [{0}] drop constraint [{1}]", constraint.TableName, constraint.Name);
+				// AddSql("alter table {0} drop constraint {1}", constraint.TableName, constraint.Name);
+				AddSql("alter table {0} drop foreign key {1}", constraint.TableName, constraint.Name);
 			}
 		}
 
 		private void DropStatement(string table)
 		{
-			AddSql("drop table [{0}]", table);
+			AddSql("drop table {0}", table);
 		}
 
 		private void AddSql(string sql, params string[] arguments)

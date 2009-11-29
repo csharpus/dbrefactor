@@ -63,11 +63,16 @@ namespace DbRefactor.Tests.Integration.Engines
 		{
 			Database.CreateTable("A").String("B", 5, "hello").Execute();
 		}
+		
+		public void Can_generate_max_string_sql()
+		{
+			Database.CreateTable("A").String("B", Max.Value).Execute();
+		}
 
 		[Test]
 		public void Can_generate_string_sql_for_empty_string()
 		{
-			Database.CreateTable("A").String("B", 1, string.Empty).Execute();
+			Database.CreateTable("A").String("B", 1, String.Empty).Execute();
 		}
 
 		[Test]

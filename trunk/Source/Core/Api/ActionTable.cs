@@ -22,15 +22,15 @@ namespace DbRefactor.Api
 	{
 		private readonly TransformationProvider provider;
 		private readonly ColumnProviderFactory columnProviderFactory;
-		private readonly ConstraintNameService constraintNameService;
+		private readonly ObjectNameService objectNameService;
 		private readonly ApiFactory apiFactory;
 
 		internal ActionTable(TransformationProvider provider, string tableName, ColumnProviderFactory columnProviderFactory,
-		                     ConstraintNameService constraintNameService, ApiFactory apiFactory) : base(provider, tableName)
+		                     ObjectNameService objectNameService, ApiFactory apiFactory) : base(provider, tableName)
 		{
 			this.provider = provider;
 			this.columnProviderFactory = columnProviderFactory;
-			this.constraintNameService = constraintNameService;
+			this.objectNameService = objectNameService;
 			this.apiFactory = apiFactory;
 		}
 
@@ -106,7 +106,7 @@ namespace DbRefactor.Api
 		/// </param>
 		public void AddColumn(Func<AddColumnTable, AddColumnTable> column)
 		{
-			var columnTable = new AddColumnTable(columnProviderFactory, TableName, constraintNameService);
+			var columnTable = new AddColumnTable(columnProviderFactory, TableName, objectNameService);
 			provider.AddColumn(TableName, column(columnTable).CurrentColumn);
 		}
 

@@ -7,14 +7,14 @@ namespace DbRefactor.Factories
 	{
 		private readonly TransformationProvider transformationProvider;
 		private readonly ColumnProviderFactory columnProviderFactory;
-		private readonly ConstraintNameService constraintNameService;
+		private readonly ObjectNameService objectNameService;
 
 		public ApiFactory(TransformationProvider transformationProvider, ColumnProviderFactory columnProviderFactory,
-		                  ConstraintNameService constraintNameService)
+		                  ObjectNameService objectNameService)
 		{
 			this.transformationProvider = transformationProvider;
 			this.columnProviderFactory = columnProviderFactory;
-			this.constraintNameService = constraintNameService;
+			this.objectNameService = objectNameService;
 		}
 
 		public OtherTypeColumn CreateOtherTypeColumn(string table, string column)
@@ -24,12 +24,12 @@ namespace DbRefactor.Factories
 
 		public ActionColumn CreateActionColumn(string table, string column)
 		{
-			return new ActionColumn(transformationProvider, table, column, this, constraintNameService);
+			return new ActionColumn(transformationProvider, table, column, this, objectNameService);
 		}
 
 		public ActionTable CreateActionTable(string table)
 		{
-			return new ActionTable(transformationProvider, table, columnProviderFactory, constraintNameService, this);
+			return new ActionTable(transformationProvider, table, columnProviderFactory, objectNameService, this);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using DbRefactor.Api;
 using DbRefactor.Factories;
@@ -24,18 +25,13 @@ namespace DbRefactor.Tests.Integration
 		private void DropAllTables()
 		{
 			var sql = dataDumper.GenerateDropStatement();
-			var lines = Regex.Split(sql, "GO");
+			var lines = Regex.Split(sql, "GO")
+				.Where(l => l.Trim() != String.Empty).ToList();
 
-			
-				foreach (var line in lines)
-				{
-					if (line.Trim() != String.Empty)
-					{
-						Provider.ExecuteNonQuery(line);
-					}
-				}
-				
-			
+			foreach (var line in lines)
+			{
+				Provider.ExecuteNonQuery(line);
+			}
 		}
 
 		public virtual string GetConnectionString()

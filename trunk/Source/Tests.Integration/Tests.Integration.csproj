@@ -59,6 +59,7 @@
     <Compile Include="Engines\CreateTableTests.cs" />
     <Compile Include="Engines\CrudTests.cs" />
     <Compile Include="Engines\DataDumperTest.cs" />
+    <Compile Include="Engines\MySql\MySqlTests.cs" />
     <Compile Include="Engines\SqlServer2008\SqlServer2008Tests.cs" />
     <Compile Include="Engines\SqlServerCe\SqlServerCeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

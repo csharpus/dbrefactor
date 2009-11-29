@@ -9,16 +9,16 @@ namespace DbRefactor.Api
 		private readonly TransformationProvider provider;
 		private readonly string tableName;
 		private readonly ApiFactory apiFactory;
-		private readonly ConstraintNameService constraintNameService;
+		private readonly ObjectNameService objectNameService;
 		private readonly List<string> columnNames = new List<string>();
 
 		internal ActionColumn(TransformationProvider provider, string tableName, string columnName, ApiFactory apiFactory,
-		                    ConstraintNameService constraintNameService)
+		                    ObjectNameService objectNameService)
 		{
 			this.provider = provider;
 			this.tableName = tableName;
 			this.apiFactory = apiFactory;
-			this.constraintNameService = constraintNameService;
+			this.objectNameService = objectNameService;
 			columnNames.Add(columnName);
 		}
 
@@ -31,7 +31,7 @@ namespace DbRefactor.Api
 		public void AddPrimaryKey()
 		{
 			provider.AddPrimaryKey(
-				constraintNameService.PrimaryKeyName(tableName, columnNames.ToArray()), tableName, columnNames.ToArray());
+				objectNameService.PrimaryKeyName(tableName, columnNames.ToArray()), tableName, columnNames.ToArray());
 		}
 
 		public void DropPrimaryKey()
@@ -41,7 +41,7 @@ namespace DbRefactor.Api
 
 		public void AddUnique()
 		{
-			provider.AddUnique(constraintNameService.UniqueName(tableName, columnNames.ToArray()), tableName,
+			provider.AddUnique(objectNameService.UniqueName(tableName, columnNames.ToArray()), tableName,
 			                   columnNames.ToArray());
 		}
 
@@ -54,7 +54,7 @@ namespace DbRefactor.Api
 
 		public void AddIndex()
 		{
-			provider.AddIndex(constraintNameService.IndexName(tableName, columnNames.ToArray()), tableName, columnNames.ToArray());
+			provider.AddIndex(objectNameService.IndexName(tableName, columnNames.ToArray()), tableName, columnNames.ToArray());
 		}
 
 		public void DropIndex()
@@ -76,7 +76,7 @@ namespace DbRefactor.Api
 
 		public void SetDefault(object value)
 		{
-			provider.SetDefault(constraintNameService.DefaultName(tableName, columnNames.ToArray()), tableName, columnNames[0],
+			provider.SetDefault(objectNameService.DefaultName(tableName, columnNames.ToArray()), tableName, columnNames[0],
 			                    value);
 		}
 
@@ -108,7 +108,7 @@ namespace DbRefactor.Api
 
 		public void AddForeignKeyTo(string primaryKeyTable, OnDelete onDeleteAction, params string[] primaryKeyColumns)
 		{
-			AddForeignKeyTo(constraintNameService.ForeignKeyName(tableName, primaryKeyTable), primaryKeyTable, onDeleteAction,
+			AddForeignKeyTo(objectNameService.ForeignKeyName(tableName, primaryKeyTable), primaryKeyTable, onDeleteAction,
 			                primaryKeyColumns);
 		}
 

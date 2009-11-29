@@ -2,7 +2,7 @@ using System;
 
 namespace DbRefactor.Engines.SqlServer
 {
-	internal sealed class SqlServerTypes : ISqlTypes
+	internal class SqlServerTypes : ISqlTypes
 	{
 		public string Binary()
 		{
@@ -31,7 +31,8 @@ namespace DbRefactor.Engines.SqlServer
 
 		public string DateTimeValue(DateTime dateTime)
 		{
-			return string.Format("'{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}'", dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour,
+			return string.Format("'{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}'", dateTime.Year, dateTime.Month,
+			                     dateTime.Day, dateTime.Hour,
 			                     dateTime.Minute, dateTime.Second);
 		}
 
@@ -85,9 +86,15 @@ namespace DbRefactor.Engines.SqlServer
 			return value.ToString();
 		}
 
-		public string String(int size)
+		public virtual string String(int size)
 		{
-			return string.Format("nvarchar({0})", size);
+			string sizeString = size != Max.Value ? size.ToString() : GetMaxValueString();
+			return string.Format("nvarchar({0})", sizeString);
+		}
+
+		protected virtual string GetMaxValueString()
+		{
+			return "max";
 		}
 
 		public string StringValue(string value)
@@ -95,7 +102,7 @@ namespace DbRefactor.Engines.SqlServer
 			return string.Format("'{0}'", value.Replace("'", "''"));
 		}
 
-		public string Text()
+		public virtual string Text()
 		{
 			return "text";
 		}

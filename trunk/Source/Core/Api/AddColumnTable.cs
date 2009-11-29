@@ -22,15 +22,15 @@ namespace DbRefactor.Api
 	public class AddColumnTable
 	{
 		private readonly string tableName;
-		private readonly ConstraintNameService constraintNameService;
+		private readonly ObjectNameService objectNameService;
 		private readonly ColumnProviderFactory factory;
 		private ColumnProvider currentColumn;
 
 		internal AddColumnTable(ColumnProviderFactory columnProviderFactory, string tableName,
-		                        ConstraintNameService constraintNameService)
+		                        ObjectNameService objectNameService)
 		{
 			this.tableName = tableName;
-			this.constraintNameService = constraintNameService;
+			this.objectNameService = objectNameService;
 			factory = columnProviderFactory;
 		}
 
@@ -158,13 +158,13 @@ namespace DbRefactor.Api
 
 		public AddColumnTable PrimaryKey()
 		{
-			currentColumn.AddPrimaryKey(constraintNameService.PrimaryKeyName(tableName, currentColumn.Name));
+			currentColumn.AddPrimaryKey(objectNameService.PrimaryKeyName(tableName, currentColumn.Name));
 			return this;
 		}
 
 		public AddColumnTable Unique()
 		{
-			currentColumn.AddUnique(constraintNameService.UniqueName(tableName, currentColumn.Name));
+			currentColumn.AddUnique(objectNameService.UniqueName(tableName, currentColumn.Name));
 			return this;
 		}
 

@@ -2,26 +2,30 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using DbRefactor.Engines.SqlServer;
+using DbRefactor.Engines.SqlServer.Compact;
 using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Tools.DesignByContract;
 
-namespace DbRefactor.Engines.SqlServer
+namespace DbRefactor.Engines.MySql
 {
-	internal class SqlServerSchemaProvider : SchemaProvider
+	internal class MySqlSchemaProvider : SchemaProvider
 	{
-		public SqlServerSchemaProvider(IDatabaseEnvironment databaseEnvironment,
-		                               ObjectNameService objectNameService,
-		                               SqlServerColumnMapper sqlServerColumnMapper)
+		private object increment;
+
+		public MySqlSchemaProvider(IDatabaseEnvironment databaseEnvironment,
+		                           ObjectNameService objectNameService,
+		                           SqlServerColumnMapper sqlServerColumnMapper)
 			: base(databaseEnvironment, objectNameService, sqlServerColumnMapper)
 		{
 		}
 
 		public override List<ForeignKey> GetForeignKeys(ForeignKeyFilter filter)
 		{
-			var query = new ForeignKeyQueryBuilder(filter).BuildQuery();
+			var query = new MySqlForeignKeyQueryBuilder(filter).BuildQuery();
 			return DatabaseEnvironment.ExecuteQuery(query).AsReadable()
 				.Select(r => new ForeignKey
 				             	{
@@ -30,13 +34,13 @@ namespace DbRefactor.Engines.SqlServer
 				             		ForeignColumn = r["ForeignColumn"].ToString(),
 				             		PrimaryTable = r["PrimaryTable"].ToString(),
 				             		PrimaryColumn = r["PrimaryColumn"].ToString(),
-				             		ForeignNullable = Convert.ToBoolean(r["ForeignNullable"])
+				             		ForeignNullable = r["ForeignNullable"].ToString() == "YES"
 				             	}).ToList();
 		}
 
 		public override List<DatabaseConstraint> GetConstraints(ConstraintFilter filter)
 		{
-			var query = new ConstraintQueryBuilder(filter).BuildQuery();
+			var query = new MySqlConstraintQueryBuilder(filter).BuildQuery();
 			return DatabaseEnvironment.ExecuteQuery(query).AsReadable()
 				.Select(r => new DatabaseConstraint
 				             	{
@@ -50,7 +54,7 @@ namespace DbRefactor.Engines.SqlServer
 
 		public override List<Index> GetIndexes(IndexFilter filter)
 		{
-			var query = new IndexQueryBuilder(filter).BuildQuery();
+			var query = new CeIndexQueryBuilder(filter).BuildQuery();
 			return DatabaseEnvironment.ExecuteQuery(query).AsReadable()
 				.Select(r => new Index
 				             	{
@@ -62,54 +66,51 @@ namespace DbRefactor.Engines.SqlServer
 
 		public override bool IsNullable(string table, string column)
 		{
-			object value = DatabaseEnvironment.ExecuteScalar(
+			string value = DatabaseEnvironment.ExecuteScalar(
 				String.Format(
-					@"
-select columnproperty(object_id('{0}'),'{1}','AllowsNull')
-", table,
-					column));
-			return Convert.ToBoolean(value);
+					@"select IS_NULLABLE from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
+					table, column)).ToString();
+			return value == "YES";
 		}
 
 		public override bool IsIdentity(string table, string column)
 		{
-			return
-				Convert.ToBoolean(
-					DatabaseEnvironment.ExecuteScalar(
-						String.Format(@"
-select columnproperty(object_id('{0}'),'{1}','IsIdentity')
-", table,
-						              column)));
+			increment = DatabaseEnvironment.ExecuteScalar(
+				String.Format(
+					@"select AUTOINC_INCREMENT from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
+					table,
+					column));
+			int result;
+			return Int32.TryParse(increment.ToString(), out result);
 		}
 
 		public override bool TableExists(string table)
 		{
-			return
-				Convert.ToBoolean(
-					DatabaseEnvironment.ExecuteScalar(
-						String.Format(
-							@"
+			return Convert.ToInt32(DatabaseEnvironment.ExecuteScalar(
+			                       	String.Format(
+			                       		@"
 select count(*)
-from dbo.sysobjects 
-where id = object_id(N'{0}') 
-	and objectproperty(id, N'IsUserTable') = 1
+from INFORMATION_SCHEMA.TABLES 
+where TABLE_NAME = '{0}' 
+	and TABLE_TYPE = 'TABLE'
+	and TABLE_SCHEMA = Database()
 ",
-							table)));
+			                       		table)
+			                       	)) > 0;
 		}
 
 		public override bool ColumnExists(string table, string column)
 		{
-			return
-				Convert.ToBoolean(
-					DatabaseEnvironment.ExecuteScalar(
-						String.Format(
-							@"
+			return Convert.ToInt32(DatabaseEnvironment.ExecuteScalar(
+			                       	String.Format(
+			                       		@"
 select count(*)
-from syscolumns
-where id = object_id(N'{0}')
-	and name = '{1}'
+from INFORMATION_SCHEMA.COLUMNS 
+where TABLE_NAME = '{0}' 
+	and COLUMN_NAME = '{1}'
 ",
-							table, column)));
+			                       		table, column)
+			                       	)) > 0;
 		}
 
 		protected override ColumnProvider GetProvider(IDataRecord reader)
@@ -123,16 +124,19 @@ where id = object_id(N'{0}')
 			           		Scale = NullSafeGet<int>(reader, "NUMERIC_SCALE"),
 			           		DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
 			           	};
-			return GetTypesMap()[data.DataType](data);
+			var typesMap = GetTypesMap();
+			if (!typesMap.ContainsKey(data.DataType))
+			{
+				throw new DbRefactorException(String.Format("Could not find data type in map: '{0}'", data.DataType));
+			}
+			return typesMap[data.DataType](data);
 		}
 
 		public override void RenameColumn(string table, string oldColumnName, string newColumnName)
 		{
-			Check.RequireNonEmpty(table, "table");
-			Check.RequireNonEmpty(oldColumnName, "oldColumnName");
-			Check.RequireNonEmpty(newColumnName, "newColumnName");
-			DatabaseEnvironment.ExecuteNonQuery(String.Format("EXEC sp_rename '{0}.{1}', '{2}', 'COLUMN'", table,
-			                                                  oldColumnName, newColumnName));
+			// Currently, sp_rename support in SQL Server Compact 3.5 is limited to tables.
+			// http://technet.microsoft.com/en-us/library/bb726044.aspx
+			throw new NotSupportedException();
 		}
 
 		public override void RenameTable(string oldName, string newName)
@@ -144,28 +148,31 @@ where id = object_id(N'{0}')
 
 		public override bool IsDefault(string table, string column)
 		{
-			var filter = new ConstraintFilter
-			{
-				TableName = table,
-				ColumnNames = new[] { column },
-				ConstraintType = ConstraintType.Default
-			};
-			return GetConstraints(filter).Any();
+			return Convert.ToBoolean(DatabaseEnvironment.ExecuteScalar(
+			                         	String.Format(
+			                         		@"
+select COLUMN_HASDEFAULT
+from INFORMATION_SCHEMA.COLUMNS 
+where TABLE_NAME = '{0}' 
+	and COLUMN_NAME = '{1}'
+",
+			                         		table, column)
+			                         	));
 		}
 
 		public override string[] GetTables()
 		{
-			const string query = "select [TABLE_NAME] as [name] from information_schema.tables";
+			const string query = "select TABLE_NAME as name from information_schema.tables where TABLE_SCHEMA = Database()";
 			return DatabaseEnvironment.ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
 		}
 
 		private static ConstraintType GetConstraintType(string typeSql)
 		{
-			if (!ConstraintQueryBuilder.ConstraintTypeMap.ContainsValue(typeSql))
+			if (!CeConstraintQueryBuilder.ConstraintTypeMap.ContainsValue(typeSql))
 			{
 				throw new DbRefactorException(String.Format("Unsupported constraint type: '{0}'", typeSql));
 			}
-			return ConstraintQueryBuilder.ConstraintTypeMap.Single(p => p.Value == typeSql).Key;
+			return CeConstraintQueryBuilder.ConstraintTypeMap.Single(p => p.Value == typeSql).Key;
 		}
 	}
 }

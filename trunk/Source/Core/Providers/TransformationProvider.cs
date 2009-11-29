@@ -29,11 +29,13 @@ namespace DbRefactor.Providers
 	{
 		private readonly IDatabaseEnvironment environment;
 		private readonly SchemaProvider schemaProvider;
+		private readonly ObjectNameService objectNameService;
 
-		internal TransformationProvider(IDatabaseEnvironment environment, SchemaProvider schemaProvider)
+		internal TransformationProvider(IDatabaseEnvironment environment, SchemaProvider schemaProvider, ObjectNameService objectNameService)
 		{
 			this.environment = environment;
 			this.schemaProvider = schemaProvider;
+			this.objectNameService = objectNameService;
 		}
 
 		internal IDatabaseEnvironment Environment
@@ -47,7 +49,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(name, "name");
 			Check.Require(columns.Length > 0, "At least one column should be passed");
 			var columnsSql = GetCreateColumnsSql(columns);
-			ExecuteNonQuery("create table [{0}] ({1})", name, columnsSql);
+			ExecuteNonQuery("create table {0} ({1})", objectNameService.EncodeTable(name), columnsSql);
 		}
 
 		/// <summary>
@@ -353,12 +355,14 @@ namespace DbRefactor.Providers
 
 		public void DropDefault(string tableName, string columnName)
 		{
-			List<string> defaultConstraints = GetConstraintsByType(tableName, new[] {columnName},
-			                                                       ConstraintType.Default);
-			foreach (var constraint in defaultConstraints)
-			{
-				DropConstraint(tableName, constraint);
-			}
+			var query = String.Format("alter table [{0}] alter column {1} drop default", tableName, columnName);
+			ExecuteQuery(query);
+			//List<string> defaultConstraints = GetConstraintsByType(tableName, new[] {columnName},
+			//                                                       ConstraintType.Default);
+			//foreach (var constraint in defaultConstraints)
+			//{
+			//    DropConstraint(tableName, constraint);
+			//}
 		}
 
 		public void AlterColumn(string tableName, ColumnProvider columnProvider)

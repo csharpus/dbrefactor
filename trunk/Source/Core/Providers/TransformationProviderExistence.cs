@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using DbRefactor.Extensions;
 using DbRefactor.Tools.DesignByContract;
 
 namespace DbRefactor.Providers
@@ -41,26 +40,9 @@ namespace DbRefactor.Providers
 			return schemaProvider.TableExists(table);
 		}
 
-		/// <summary>
-		/// Determines if a constraint exists.
-		/// </summary>
-		/// <param name="name">Constraint name</param>
-		/// <returns><c>true</c> if the constraint exists.</returns>
-		public bool ConstraintExists(string name)
-		{
-			return ObjectExists(name);
-		}
-
 		public bool ColumnExists(string table, string column)
 		{
 			return schemaProvider.ColumnExists(table, column);
-		}
-
-		private bool ObjectExists(string name)
-		{
-			Check.RequireNonEmpty(name, "name");
-			var query = String.Format("SELECT TOP 1 * FROM sysobjects WHERE id = object_id('{0}')", name);
-			return ExecuteQuery(query).AsReadable().Any();
 		}
 
 		public bool IsIdentity(string table, string column)

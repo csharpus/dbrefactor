@@ -22,16 +22,16 @@ namespace DbRefactor.Api
 	public class NewTable : Table
 	{
 		private readonly ColumnProviderFactory factory;
-		private readonly ConstraintNameService constraintNameService;
+		private readonly ObjectNameService objectNameService;
 		private readonly List<ColumnProvider> columns;
 		private ColumnProvider currentColumn;
 
 		internal NewTable(TransformationProvider provider, ColumnProviderFactory columnProviderFactory,
 		                  string tableName,
-		                  ConstraintNameService constraintNameService) : base(provider, tableName)
+		                  ObjectNameService objectNameService) : base(provider, tableName)
 		{
 			factory = columnProviderFactory;
-			this.constraintNameService = constraintNameService;
+			this.objectNameService = objectNameService;
 			columns = new List<ColumnProvider>();
 		}
 
@@ -48,12 +48,17 @@ namespace DbRefactor.Api
 
 		#region Column types
 
+		/// <param name="columnName"></param>
+		/// <param name="size">You can specify Max.Value constant for maximum string length supported by database</param>
 		public NewTable String(string columnName, int size)
 		{
 			AddColumn(factory.CreateString(columnName, null, size));
 			return this;
 		}
 
+		/// <param name="columnName"></param>
+		/// <param name="size">You can specify Max.Value constant for maximum string length supported by database</param>
+		/// <param name="defaultValue"></param>
 		public NewTable String(string columnName, int size, string defaultValue)
 		{
 			AddColumn(factory.CreateString(columnName, defaultValue, size));
@@ -169,13 +174,13 @@ namespace DbRefactor.Api
 
 		public NewTable PrimaryKey()
 		{
-			currentColumn.AddPrimaryKey(constraintNameService.PrimaryKeyName(TableName, currentColumn.Name));
+			currentColumn.AddPrimaryKey(objectNameService.PrimaryKeyName(TableName, currentColumn.Name));
 			return this;
 		}
 
 		public NewTable Unique()
 		{
-			currentColumn.AddUnique(constraintNameService.UniqueName(TableName, currentColumn.Name));
+			currentColumn.AddUnique(objectNameService.UniqueName(TableName, currentColumn.Name));
 			return this;
 		}
 

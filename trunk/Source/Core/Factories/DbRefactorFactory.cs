@@ -11,8 +11,10 @@
 
 #endregion
 
+using System;
 using DbRefactor.Api;
 using DbRefactor.Engines;
+using DbRefactor.Engines.MySql;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Engines.SqlServer.Compact;
 using DbRefactor.Infrastructure;
@@ -50,6 +52,16 @@ namespace DbRefactor.Factories
 			var logger = new Logger();
 			logger.Attach(new ConsoleWriter());
 			var providerFactory = new SqlServerCeFactory(connectionString, logger, null);
+			providerFactory.Init();
+			return new DbRefactorFactory(providerFactory);
+		}
+
+		public static DbRefactorFactory BuildMySqlFactory(string connectionString, string category,
+																bool trace)
+		{
+			var logger = new Logger();
+			logger.Attach(new ConsoleWriter());
+			var providerFactory = new MySqlFactory(connectionString, logger, null);
 			providerFactory.Init();
 			return new DbRefactorFactory(providerFactory);
 		}
@@ -107,7 +119,7 @@ namespace DbRefactor.Factories
 		private IColumnProperties columnProperties;
 		private SqlServerColumnMapper sqlServerColumnMapper;
 		private ColumnProviderFactory columnProviderFactory;
-		private ConstraintNameService constraintNameService;
+		private ObjectNameService objectNameService;
 		private TransformationProvider provider;
 		private ApiFactory apiFactory;
 		private Database database;
@@ -143,7 +155,8 @@ namespace DbRefactor.Factories
 			sqlTypes = CreateSqlTypes();
 			databaseEnvironment = CreateEnvironment();
 			codeGenerationService = new CodeGenerationService();
-			sqlGenerationService = new SqlGenerationService();
+			objectNameService = CreateObjectNameService();
+			sqlGenerationService = new SqlGenerationService(objectNameService);
 
 			columnProperties = CreateColumnProperties();
 			columnPropertyProviderFactory = new ColumnPropertyProviderFactory(columnProperties);
@@ -153,17 +166,21 @@ namespace DbRefactor.Factories
 			columnProviderFactory = new ColumnProviderFactory(codeGenerationService, sqlTypes,
 			                                                  sqlGenerationService,
 			                                                  columnPropertyProviderFactory);
-			constraintNameService = new ConstraintNameService();
-			var schemaProvider = CreateSchemaProvider(databaseEnvironment, constraintNameService,
+			var schemaProvider = CreateSchemaProvider(databaseEnvironment, objectNameService,
 			                                          sqlServerColumnMapper);
-			provider = new TransformationProvider(databaseEnvironment, schemaProvider);
-			apiFactory = new ApiFactory(provider, columnProviderFactory, constraintNameService);
-			database = new Database(provider, columnProviderFactory, constraintNameService, apiFactory);
+			provider = new TransformationProvider(databaseEnvironment, schemaProvider, objectNameService);
+			apiFactory = new ApiFactory(provider, columnProviderFactory, objectNameService);
+			database = new Database(provider, columnProviderFactory, objectNameService, apiFactory);
 			databaseMigrationTarget = new DatabaseMigrationTarget(provider, database, category);
 			var migrationRunner = new MigrationRunner(databaseMigrationTarget, logger);
 			var migrationReader = new MigrationReader(databaseMigrationTarget);
 			migrationService = new MigrationService(databaseMigrationTarget, migrationRunner, migrationReader);
 			dataDumper = CreateDataDumper(provider);
+		}
+
+		internal virtual ObjectNameService CreateObjectNameService()
+		{
+			return new ObjectNameService();
 		}
 
 		internal abstract IColumnProperties CreateColumnProperties();
@@ -173,7 +190,7 @@ namespace DbRefactor.Factories
 		internal abstract ISqlTypes CreateSqlTypes();
 
 		internal abstract SchemaProvider CreateSchemaProvider(IDatabaseEnvironment databaseEnvironment,
-		                                                      ConstraintNameService constraintNameService,
+		                                                      ObjectNameService objectNameService,
 		                                                      SqlServerColumnMapper sqlServerColumnMapper);
 
 		internal abstract DataDumper CreateDataDumper(TransformationProvider transformationProvider);
@@ -226,10 +243,10 @@ namespace DbRefactor.Factories
 		}
 
 		internal override SchemaProvider CreateSchemaProvider(IDatabaseEnvironment databaseEnvironment,
-		                                                      ConstraintNameService constraintNameService,
+		                                                      ObjectNameService objectNameService,
 		                                                      SqlServerColumnMapper sqlServerColumnMapper)
 		{
-			return new SqlServerSchemaProvider(databaseEnvironment, constraintNameService, sqlServerColumnMapper);
+			return new SqlServerSchemaProvider(databaseEnvironment, objectNameService, sqlServerColumnMapper);
 		}
 
 		internal override DataDumper CreateDataDumper(TransformationProvider transformationProvider)
@@ -257,14 +274,54 @@ namespace DbRefactor.Factories
 
 		internal override ISqlTypes CreateSqlTypes()
 		{
-			return new SqlServerTypes();
+			return new SqlServerCeTypes();
 		}
 
 		internal override SchemaProvider CreateSchemaProvider(IDatabaseEnvironment databaseEnvironment,
-		                                                      ConstraintNameService constraintNameService,
+		                                                      ObjectNameService objectNameService,
 		                                                      SqlServerColumnMapper sqlServerColumnMapper)
 		{
-			return new SqlServerCeSchemaProvider(databaseEnvironment, constraintNameService, sqlServerColumnMapper);
+			return new SqlServerCeSchemaProvider(databaseEnvironment, objectNameService, sqlServerColumnMapper);
+		}
+
+		internal override DataDumper CreateDataDumper(TransformationProvider transformationProvider)
+		{
+			return new DataDumper(transformationProvider, true);
+		}
+	}
+
+	internal class MySqlFactory : ProviderFactory
+	{
+		public MySqlFactory(string connectionString, ILogger logger, string category)
+			: base(connectionString, logger, category)
+		{
+		}
+
+		internal override ObjectNameService CreateObjectNameService()
+		{
+			return new MySqlObjectNameService();
+		}
+
+		internal override IColumnProperties CreateColumnProperties()
+		{
+			return new SqlServerColumnProperties();
+		}
+
+		internal override IDatabaseEnvironment CreateEnvironment()
+		{
+			return new MySqlEnvironment(ConnectionString, Logger);
+		}
+
+		internal override ISqlTypes CreateSqlTypes()
+		{
+			return new SqlServerCeTypes();
+		}
+
+		internal override SchemaProvider CreateSchemaProvider(IDatabaseEnvironment databaseEnvironment,
+															  ObjectNameService objectNameService,
+															  SqlServerColumnMapper sqlServerColumnMapper)
+		{
+			return new MySqlSchemaProvider(databaseEnvironment, objectNameService, sqlServerColumnMapper);
 		}
 
 		internal override DataDumper CreateDataDumper(TransformationProvider transformationProvider)

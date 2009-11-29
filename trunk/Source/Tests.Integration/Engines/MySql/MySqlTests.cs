@@ -1,69 +1,69 @@
 ﻿using DbRefactor.Factories;
 using NUnit.Framework;
 
-namespace DbRefactor.Tests.Integration.Engines.SqlServerCe
+namespace DbRefactor.Tests.Integration.Engines.MySql
 {
-	class SqlServerCeHelper
+	class MySqlHelper
 	{
 		public static DbRefactorFactory CreateFactory()
 		{
-			return DbRefactorFactory.BuildSqlServerCeFactory(
-				@"Data Source=..\..\Database\SqlServerCe.sdf",
+			return DbRefactorFactory.BuildMySqlFactory(
+				@"Server=localhost;Uid=root;Pwd=1;Database=dbrefactor_tests;",
 				null, true);
 		}
 	}
 
 	[TestFixture]
-	public class SqlServerCeAddColumnTests : AddColumnTests
+	public class MySqlAddColumnTests : AddColumnTests
 	{
 		protected override DbRefactorFactory CreateFactory()
 		{
-			return SqlServerCeHelper.CreateFactory();
+			return MySqlHelper.CreateFactory();
 		}
 	}
 
 	[TestFixture]
-	public class SqlServerCeAlterTableTests : AlterTableTests
+	public class MySqlAlterTableTests : AlterTableTests
 	{
 		protected override DbRefactorFactory CreateFactory()
 		{
-			return SqlServerCeHelper.CreateFactory();
+			return MySqlHelper.CreateFactory();
 		}
 	}
 
 	[TestFixture]
-	public class SqlServerCeCreateTableTests : CreateTableTests
+	public class MySqlCreateTableTests : CreateTableTests
 	{
 		protected override DbRefactorFactory CreateFactory()
 		{
-			return SqlServerCeHelper.CreateFactory();
+			return MySqlHelper.CreateFactory();
 		}
 	}
 
 	[TestFixture]
-	public class SqlServerCeCrudTests : CrudTests
+	public class MySqlCrudTests : CrudTests
 	{
 		protected override DbRefactorFactory CreateFactory()
 		{
-			return SqlServerCeHelper.CreateFactory();
+			return MySqlHelper.CreateFactory();
 		}
 	}
 
 	[TestFixture]
-	public class SqlServerCeDataDumperTests : DataDumperTest
+	public class MySqlDataDumperTests : DataDumperTest
 	{
 		protected override DbRefactorFactory CreateFactory()
 		{
-			return SqlServerCeHelper.CreateFactory();
+			return MySqlHelper.CreateFactory();
 		}
 	}
 
 	[TestFixture]
-	public class SqlServerCeObjectManipulationTests : ObjectManipulationTests
+	public class MySqlObjectManipulationTests : ObjectManipulationTests
 	{
 		protected override DbRefactorFactory CreateFactory()
 		{
-			return SqlServerCeHelper.CreateFactory();
+			return MySqlHelper.CreateFactory();
 		}
 
 		protected override string GetCreateTableSql()
@@ -97,11 +97,11 @@ CREATE TABLE Table1 (
 	}
 
 	[TestFixture]
-	public class SqlServerCeSqlGenerationVerificationTests : SqlGenerationVerificationTests
+	public class MySqlSqlGenerationVerificationTests : SqlGenerationVerificationTests
 	{
 		protected override DbRefactorFactory CreateFactory()
 		{
-			return SqlServerCeHelper.CreateFactory();
+			return MySqlHelper.CreateFactory();
 		}
 	}
 }

@@ -15,21 +15,21 @@ namespace DbRefactor.Api
 	{
 		private readonly TransformationProvider transformationProvider;
 		private readonly ColumnProviderFactory columnProviderFactory;
-		private readonly ConstraintNameService constraintNameService;
+		private readonly ObjectNameService objectNameService;
 		private readonly ApiFactory apiFactory;
 
 		internal Database(TransformationProvider transformationProvider, ColumnProviderFactory columnProviderFactory,
-		                ConstraintNameService constraintNameService, ApiFactory apiFactory)
+		                ObjectNameService objectNameService, ApiFactory apiFactory)
 		{
 			this.transformationProvider = transformationProvider;
 			this.columnProviderFactory = columnProviderFactory;
-			this.constraintNameService = constraintNameService;
+			this.objectNameService = objectNameService;
 			this.apiFactory = apiFactory;
 		}
 
 		public NewTable CreateTable(string name)
 		{
-			return new NewTable(transformationProvider, columnProviderFactory, name, constraintNameService);
+			return new NewTable(transformationProvider, columnProviderFactory, name, objectNameService);
 		}
 
 		public ActionTable Table(string name)
