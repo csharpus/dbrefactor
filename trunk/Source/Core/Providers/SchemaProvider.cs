@@ -14,7 +14,8 @@ namespace DbRefactor.Providers
 		private readonly ObjectNameService objectNameService;
 		private readonly SqlServerColumnMapper sqlServerColumnMapper;
 
-		protected SchemaProvider(IDatabaseEnvironment databaseEnvironment, ObjectNameService objectNameService, SqlServerColumnMapper sqlServerColumnMapper)
+		protected SchemaProvider(IDatabaseEnvironment databaseEnvironment, ObjectNameService objectNameService,
+		                         SqlServerColumnMapper sqlServerColumnMapper)
 		{
 			this.databaseEnvironment = databaseEnvironment;
 			this.objectNameService = objectNameService;
@@ -46,18 +47,19 @@ namespace DbRefactor.Providers
 			using (
 				IDataReader reader =
 					DatabaseEnvironment.ExecuteQuery(String.Format(
-						@"
+@"
 select DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE,
 	COLUMN_DEFAULT 
 from INFORMATION_SCHEMA.COLUMNS 
-where table_name = '{0}' 
-	and column_name = '{1}'
+where TABLE_NAME = '{0}' 
+	and COLUMN_NAME = '{1}'
 ",
-						tableName, columnName)))
+					                                 	tableName, columnName)))
 			{
 				if (!reader.Read())
 				{
-					throw new DbRefactorException(String.Format("Couldn't find column '{0}' in table '{1}'", columnName, tableName));
+					throw new DbRefactorException(String.Format("Couldn't find column '{0}' in table '{1}'", columnName,
+					                                            tableName));
 				}
 				provider = GetProvider(reader);
 			}
@@ -72,13 +74,13 @@ where table_name = '{0}'
 			using (
 				IDataReader reader =
 					DatabaseEnvironment.ExecuteQuery(String.Format(
-						@"
+@"
 select DATA_TYPE, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, 
 	COLUMN_DEFAULT 
 from INFORMATION_SCHEMA.COLUMNS 
-where table_name = '{0}';
+where TABLE_NAME = '{0}'
 ",
-						table)))
+					                                 	table)))
 			{
 				while (reader.Read())
 				{
@@ -163,28 +165,28 @@ where table_name = '{0}';
 			{
 				return null;
 			}
-			return (T) Convert.ChangeType(value, typeof(T));
+			return (T) Convert.ChangeType(value, typeof (T));
 		}
 
 		private bool IsPrimaryKey(string table, string column)
 		{
 			var filter = new ConstraintFilter
-			{
-				TableName = table,
-				ColumnNames = new[] { column },
-				ConstraintType = ConstraintType.PrimaryKey
-			};
+			             	{
+			             		TableName = table,
+			             		ColumnNames = new[] {column},
+			             		ConstraintType = ConstraintType.PrimaryKey
+			             	};
 			return GetConstraints(filter).Any();
 		}
 
 		private bool IsUnique(string table, string column)
 		{
 			var filter = new ConstraintFilter
-			{
-				TableName = table,
-				ColumnNames = new[] { column },
-				ConstraintType = ConstraintType.Unique
-			};
+			             	{
+			             		TableName = table,
+			             		ColumnNames = new[] {column},
+			             		ConstraintType = ConstraintType.Unique
+			             	};
 			return GetConstraints(filter).Any();
 		}
 

@@ -22,10 +22,13 @@ namespace DbRefactor.Providers.Columns
 {
 	internal class LongProvider : ColumnProvider
 	{
-		public LongProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes,
+		public LongProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService,
+		                    ISqlTypes sqlTypes,
 		                    ISqlGenerationService sqlGenerationService,
 		                    ColumnPropertyProviderFactory columnPropertyProviderFactory)
-			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)
+			: base(
+				name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService,
+				columnPropertyProviderFactory)
 		{
 		}
 

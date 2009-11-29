@@ -43,7 +43,7 @@ namespace DbRefactor.Engines.SqlServer.Compact
 		}
 
 		private const string BaseQuery =
-			@"
+@"
 select INDEX_NAME as [Name], TABLE_NAME as TableName, COLUMN_NAME as ColumnName from INFORMATION_SCHEMA.INDEXES
 ";
 	}

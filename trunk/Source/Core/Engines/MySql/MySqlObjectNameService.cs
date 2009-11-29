@@ -7,12 +7,17 @@ namespace DbRefactor.Engines.MySql
 	{
 		public override string EncodeTable(string table)
 		{
+			return FormatObjectName(table);
+		}
+
+		private static string FormatObjectName(string table)
+		{
 			return String.Format("`{0}`", table);
 		}
 
 		public override string EncodeColumn(string name)
 		{
-			return String.Format("`{0}`", name);
+			return FormatObjectName(name);
 		}
 	}
 }

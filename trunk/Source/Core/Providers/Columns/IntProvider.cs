@@ -22,10 +22,13 @@ namespace DbRefactor.Providers.Columns
 {
 	internal class IntProvider : ColumnProvider
 	{
-		public IntProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes,
+		public IntProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService,
+		                   ISqlTypes sqlTypes,
 		                   ISqlGenerationService sqlGenerationService,
 		                   ColumnPropertyProviderFactory columnPropertyProviderFactory)
-			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)
+			: base(
+				name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService,
+				columnPropertyProviderFactory)
 		{
 		}
 

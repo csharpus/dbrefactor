@@ -33,8 +33,8 @@ where NOT `Keys`.CONSTRAINT_NAME = 'PRIMARY' AND NOT `Keys`.CONSTRAINT_NAME = 'n
 			AddColumnRestriction();
 			AddTypeRestriction();
 			AddNameRestriction();
-			var whereClause = String.Join(" AND ", restrictions.ToArray());
-			return whereClause != String.Empty ? baseQuery + " AND "
+			var whereClause = String.Join(" and ", restrictions.ToArray());
+			return whereClause != String.Empty ? baseQuery + " and "
 				+ whereClause : baseQuery;
 		}
 
@@ -70,7 +70,7 @@ where NOT `Keys`.CONSTRAINT_NAME = 'PRIMARY' AND NOT `Keys`.CONSTRAINT_NAME = 'n
 		private void AddColumnRestriction()
 		{
 			if (filter.ColumnNames == null) return;
-			restrictions.Add(String.Format("`Keys`.COLUMN_NAME IN ('{0}')", String.Join("', '", filter.ColumnNames)));
+			restrictions.Add(String.Format("`Keys`.COLUMN_NAME in ('{0}')", String.Join("', '", filter.ColumnNames)));
 		}
 
 		private void AddTableRestriction()

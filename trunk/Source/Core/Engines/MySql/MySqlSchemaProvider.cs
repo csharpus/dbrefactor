@@ -68,7 +68,12 @@ namespace DbRefactor.Engines.MySql
 		{
 			string value = DatabaseEnvironment.ExecuteScalar(
 				String.Format(
-					@"select IS_NULLABLE from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
+@"
+select IS_NULLABLE 
+from INFORMATION_SCHEMA.COLUMNS 
+where TABLE_NAME = '{0}' 
+	and COLUMN_NAME = '{1}'
+",
 					table, column)).ToString();
 			return value == "YES";
 		}
@@ -77,7 +82,12 @@ namespace DbRefactor.Engines.MySql
 		{
 			increment = DatabaseEnvironment.ExecuteScalar(
 				String.Format(
-					@"select AUTOINC_INCREMENT from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
+@"
+select AUTOINC_INCREMENT 
+from INFORMATION_SCHEMA.COLUMNS 
+where TABLE_NAME = '{0}' 
+	and COLUMN_NAME = '{1}'
+",
 					table,
 					column));
 			int result;
@@ -88,7 +98,7 @@ namespace DbRefactor.Engines.MySql
 		{
 			return Convert.ToInt32(DatabaseEnvironment.ExecuteScalar(
 			                       	String.Format(
-			                       		@"
+@"
 select count(*)
 from INFORMATION_SCHEMA.TABLES 
 where TABLE_NAME = '{0}' 
@@ -103,7 +113,7 @@ where TABLE_NAME = '{0}'
 		{
 			return Convert.ToInt32(DatabaseEnvironment.ExecuteScalar(
 			                       	String.Format(
-			                       		@"
+@"
 select count(*)
 from INFORMATION_SCHEMA.COLUMNS 
 where TABLE_NAME = '{0}' 
@@ -143,14 +153,18 @@ where TABLE_NAME = '{0}'
 		{
 			Check.RequireNonEmpty(oldName, "oldName");
 			Check.RequireNonEmpty(newName, "newName");
-			DatabaseEnvironment.ExecuteNonQuery(String.Format("EXEC sp_rename '{0}', '{1}', 'OBJECT'", oldName, newName));
+			DatabaseEnvironment.ExecuteNonQuery(String.Format(
+@"
+exec sp_rename '{0}', '{1}', 'OBJECT'
+",
+			                                    	oldName, newName));
 		}
 
 		public override bool IsDefault(string table, string column)
 		{
 			return Convert.ToBoolean(DatabaseEnvironment.ExecuteScalar(
 			                         	String.Format(
-			                         		@"
+@"
 select COLUMN_HASDEFAULT
 from INFORMATION_SCHEMA.COLUMNS 
 where TABLE_NAME = '{0}' 
@@ -162,8 +176,15 @@ where TABLE_NAME = '{0}'
 
 		public override string[] GetTables()
 		{
-			const string query = "select TABLE_NAME as name from information_schema.tables where TABLE_SCHEMA = Database()";
-			return DatabaseEnvironment.ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
+			const string query =
+@"
+select TABLE_NAME as name
+from information_schema.tables 
+where TABLE_SCHEMA = Database()
+";
+			return DatabaseEnvironment
+				.ExecuteQuery(query).AsReadable()
+				.Select(r => r.GetString(0)).ToArray();
 		}
 
 		private static ConstraintType GetConstraintType(string typeSql)

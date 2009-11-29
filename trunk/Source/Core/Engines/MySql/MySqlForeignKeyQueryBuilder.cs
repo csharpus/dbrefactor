@@ -21,8 +21,8 @@ namespace DbRefactor.Engines.MySql
 			AddNameRestriction();
 			AddPrimaryTableRestriction();
 			AddPrimaryColumnRestriction();
-			var whereClause = String.Join(" AND ", restrictions.ToArray());
-			return whereClause != String.Empty ? baseQuery + " WHERE " + whereClause : baseQuery;
+			var whereClause = String.Join(" and ", restrictions.ToArray());
+			return whereClause != String.Empty ? BaseQuery + " where " + whereClause : BaseQuery;
 		}
 
 		private void AddForeignTableRestriction()
@@ -34,7 +34,7 @@ namespace DbRefactor.Engines.MySql
 		private void AddForeignColumnRestriction()
 		{
 			if (filter.ForeignKeyColumns == null) return;
-			restrictions.Add(String.Format("{0} IN ('{1}')", ForeignColumnSql, String.Join("', '", filter.ForeignKeyColumns)));
+			restrictions.Add(String.Format("{0} in ('{1}')", ForeignColumnSql, String.Join("', '", filter.ForeignKeyColumns)));
 		}
 
 		private void AddNameRestriction()
@@ -52,10 +52,11 @@ namespace DbRefactor.Engines.MySql
 		private void AddPrimaryColumnRestriction()
 		{
 			if (filter.PrimaryKeyColumns == null) return;
-			restrictions.Add(String.Format("{0} IN ('{1}')", PrimaryColumnSql, String.Join("', '", filter.PrimaryKeyColumns)));
+			restrictions.Add(String.Format("{0} in ('{1}')", PrimaryColumnSql, String.Join("', '", filter.PrimaryKeyColumns)));
 		}
 
-		private readonly string baseQuery = @"
+		private const string BaseQuery =
+@"
 select
 	constraints.CONSTRAINT_NAME as Name, 
 	constraints.TABLE_NAME as ForeignTable,

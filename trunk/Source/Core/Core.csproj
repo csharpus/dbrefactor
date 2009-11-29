@@ -80,6 +80,8 @@
     <Compile Include="Engines\SqlServer\Compact\SqlServerCeSchemaProvider.cs" />
     <Compile Include="Engines\SqlServer\Compact\SqlServerCeTypes.cs" />
     <Compile Include="Max.cs" />
+    <Compile Include="MySql\Columns\EnumProvider.cs" />
+    <Compile Include="MySql\DataTypeExtensions.cs" />
     <Compile Include="Providers\Properties\NullProvider.cs" />
     <Compile Include="Providers\Index.cs" />
     <Compile Include="Providers\IndexFilter.cs" />

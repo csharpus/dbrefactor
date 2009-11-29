@@ -20,8 +20,8 @@ namespace DbRefactor.Engines.SqlServer
 			AddNameRestrictions();
 			AddTableRestriction();
 			AddColumnRestriction();
-			var whereClause = String.Join(" AND ", restrictions.ToArray());
-			return whereClause != String.Empty ? BaseQuery + " AND " + whereClause : BaseQuery;
+			var whereClause = String.Join(" and ", restrictions.ToArray());
+			return whereClause != String.Empty ? BaseQuery + " and " + whereClause : BaseQuery;
 		}
 
 		private void AddColumnRestriction()
@@ -43,20 +43,20 @@ namespace DbRefactor.Engines.SqlServer
 		}
 
 		private const string BaseQuery =
-			@"
-SELECT Indexes.[name] as [Name], Objects.[name] as TableName, Columns.[name] as ColumnName
-FROM sys.objects AS Objects
-JOIN sys.indexes AS Indexes 
-	ON Indexes.object_id = Objects.object_id
-JOIN sysindexkeys AS IndexKeys 
-	ON IndexKeys.id = Indexes.object_id
-		AND IndexKeys.indid = Indexes.index_id
-JOIN sys.columns AS Columns 
-	ON Columns.object_id = IndexKeys.id
-		AND Columns.column_id = IndexKeys.colid
-WHERE Indexes.index_id BETWEEN 2 AND 254
-	AND INDEXPROPERTY(Objects.object_id, Indexes.[name], 'IsStatistics') = 0
-	AND INDEXPROPERTY(Objects.object_id, Indexes.[name], 'IsHypothetical') = 0
+@"
+select Indexes.[name] as [Name], Objects.[name] as TableName, Columns.[name] as ColumnName
+from sys.objects as Objects
+join sys.indexes as Indexes 
+	on Indexes.object_id = Objects.object_id
+join sysindexkeys as IndexKeys 
+	on IndexKeys.id = Indexes.object_id
+		and IndexKeys.indid = Indexes.index_id
+join sys.columns as Columns 
+	on Columns.object_id = IndexKeys.id
+		and Columns.column_id = IndexKeys.colid
+where Indexes.index_id between 2 and 254
+	and INDEXPROPERTY(Objects.object_id, Indexes.[name], 'IsStatistics') = 0
+	and INDEXPROPERTY(Objects.object_id, Indexes.[name], 'IsHypothetical') = 0
 ";
 	}
 }

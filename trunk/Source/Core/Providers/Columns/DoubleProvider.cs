@@ -23,8 +23,12 @@ namespace DbRefactor.Providers.Columns
 {
 	internal class DoubleProvider : ColumnProvider
 	{
-		public DoubleProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
-			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)
+		public DoubleProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService,
+		                      ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService,
+		                      ColumnPropertyProviderFactory columnPropertyProviderFactory)
+			: base(
+				name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService,
+				columnPropertyProviderFactory)
 		{
 		}
 

@@ -21,8 +21,12 @@ namespace DbRefactor.Providers.Columns
 {
 	internal class BooleanProvider : ColumnProvider
 	{
-		public BooleanProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
-			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)
+		public BooleanProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService,
+		                       ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService,
+		                       ColumnPropertyProviderFactory columnPropertyProviderFactory)
+			: base(
+				name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService,
+				columnPropertyProviderFactory)
 		{
 		}
 

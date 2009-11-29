@@ -13,7 +13,6 @@
 
 using System;
 
-
 namespace DbRefactor.Engines
 {
 	internal interface ISqlTypes

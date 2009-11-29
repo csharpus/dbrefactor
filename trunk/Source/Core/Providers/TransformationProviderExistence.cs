@@ -30,11 +30,6 @@ namespace DbRefactor.Providers
 			return GetIndexes(filter).Any();
 		}
 
-		/// <summary>
-		/// Determines if a table exists.
-		/// </summary>
-		/// <param name="table">Table name</param>
-		/// <returns><c>true</c> if the constraint exists.</returns>
 		public bool TableExists(string table)
 		{
 			return schemaProvider.TableExists(table);

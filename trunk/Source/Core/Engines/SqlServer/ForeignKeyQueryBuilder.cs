@@ -21,8 +21,8 @@ namespace DbRefactor.Engines.SqlServer
 			AddNameRestriction();
 			AddPrimaryTableRestriction();
 			AddPrimaryColumnRestriction();
-			var whereClause = String.Join(" AND ", restrictions.ToArray());
-			return whereClause != String.Empty ? baseQuery + " WHERE " + whereClause : baseQuery;
+			var whereClause = String.Join(" and ", restrictions.ToArray());
+			return whereClause != String.Empty ? baseQuery + " where " + whereClause : baseQuery;
 		}
 
 		private void AddForeignTableRestriction()
@@ -34,7 +34,7 @@ namespace DbRefactor.Engines.SqlServer
 		private void AddForeignColumnRestriction()
 		{
 			if (filter.ForeignKeyColumns == null) return;
-			restrictions.Add(String.Format("{0} IN ('{1}')", ForeignColumnSql, String.Join("', '", filter.ForeignKeyColumns)));
+			restrictions.Add(String.Format("{0} in ('{1}')", ForeignColumnSql, String.Join("', '", filter.ForeignKeyColumns)));
 		}
 
 		private void AddNameRestriction()
@@ -52,20 +52,21 @@ namespace DbRefactor.Engines.SqlServer
 		private void AddPrimaryColumnRestriction()
 		{
 			if (filter.PrimaryKeyColumns == null) return;
-			restrictions.Add(String.Format("{0} IN ('{1}')", PrimaryColumnSql, String.Join("', '", filter.PrimaryKeyColumns)));
+			restrictions.Add(String.Format("{0} in ('{1}')", PrimaryColumnSql, String.Join("', '", filter.PrimaryKeyColumns)));
 		}
 
 		readonly string baseQuery =
-			String.Format(@"
-SELECT ForeignKeys.[name] AS [Name],
-   {0} AS ForeignTable,
-   {1} AS ForeignColumn,
-   {2} AS PrimaryTable,
-   {3} AS PrimaryColumn,
-   COLUMNPROPERTY(OBJECT_ID({0}), {1},'AllowsNull') As ForeignNullable
-FROM sys.foreign_keys AS ForeignKeys
-INNER JOIN sys.foreign_key_columns AS ForeignColumns
-   ON ForeignKeys.object_id = ForeignColumns.constraint_object_id
+			String.Format(
+@"
+select ForeignKeys.[name] as [Name],
+   {0} as ForeignTable,
+   {1} as ForeignColumn,
+   {2} as PrimaryTable,
+   {3} as PrimaryColumn,
+   COLUMNPROPERTY(OBJECT_ID({0}), {1},'AllowsNull') as ForeignNullable
+from sys.foreign_keys as ForeignKeys
+inner join sys.foreign_key_columns as ForeignColumns
+   on ForeignKeys.object_id = ForeignColumns.constraint_object_id
 				", ForeignTableSql, ForeignColumnSql, PrimaryTableSql, PrimaryColumnSql);
 
 		private const string ForeignTableSql = "OBJECT_NAME(ForeignKeys.parent_object_id)";

@@ -66,7 +66,12 @@ namespace DbRefactor.Engines.SqlServer.Compact
 		{
 			string value = DatabaseEnvironment.ExecuteScalar(
 				String.Format(
-					@"select IS_NULLABLE from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
+@"
+select IS_NULLABLE 
+from INFORMATION_SCHEMA.COLUMNS 
+where TABLE_NAME = '{0}' 
+	and COLUMN_NAME = '{1}'
+",
 					table, column)).ToString();
 			return value == "YES";
 		}
@@ -75,7 +80,12 @@ namespace DbRefactor.Engines.SqlServer.Compact
 		{
 			increment = DatabaseEnvironment.ExecuteScalar(
 				String.Format(
-					@"select AUTOINC_INCREMENT from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'",
+@"
+select AUTOINC_INCREMENT 
+from INFORMATION_SCHEMA.COLUMNS 
+where TABLE_NAME = '{0}' 
+	and COLUMN_NAME = '{1}'
+",
 					table,
 					column));
 			int result;
@@ -85,42 +95,42 @@ namespace DbRefactor.Engines.SqlServer.Compact
 		public override bool TableExists(string table)
 		{
 			return Convert.ToInt32(DatabaseEnvironment.ExecuteScalar(
-				String.Format(
-					@"
+			                       	String.Format(
+@"
 select count(*)
 from INFORMATION_SCHEMA.TABLES 
 where TABLE_NAME = '{0}' 
 	and TABLE_TYPE = 'TABLE'
 ",
-					table)
-				)) > 0;
+			                       		table)
+			                       	)) > 0;
 		}
 
 		public override bool ColumnExists(string table, string column)
 		{
 			return Convert.ToInt32(DatabaseEnvironment.ExecuteScalar(
-				String.Format(
-					@"
+			                       	String.Format(
+@"
 select count(*)
 from INFORMATION_SCHEMA.COLUMNS 
 where TABLE_NAME = '{0}' 
 	and COLUMN_NAME = '{1}'
 ",
-					table, column)
-				)) > 0;
+			                       		table, column)
+			                       	)) > 0;
 		}
 
 		protected override ColumnProvider GetProvider(IDataRecord reader)
 		{
 			var data = new ColumnData
-			{
-				Name = reader["COLUMN_NAME"].ToString(),
-				DataType = reader["DATA_TYPE"].ToString(),
-				Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
-				Precision = NullSafeGet<int>(reader, "NUMERIC_PRECISION"),
-				Scale = NullSafeGet<int>(reader, "NUMERIC_SCALE"),
-				DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
-			};
+			           	{
+			           		Name = reader["COLUMN_NAME"].ToString(),
+			           		DataType = reader["DATA_TYPE"].ToString(),
+			           		Length = NullSafeGet<int>(reader, "CHARACTER_MAXIMUM_LENGTH"),
+			           		Precision = NullSafeGet<int>(reader, "NUMERIC_PRECISION"),
+			           		Scale = NullSafeGet<int>(reader, "NUMERIC_SCALE"),
+			           		DefaultValue = GetDefaultValue(reader["COLUMN_DEFAULT"])
+			           	};
 			var typesMap = GetTypesMap();
 			if (!typesMap.ContainsKey(data.DataType))
 			{
@@ -140,26 +150,34 @@ where TABLE_NAME = '{0}'
 		{
 			Check.RequireNonEmpty(oldName, "oldName");
 			Check.RequireNonEmpty(newName, "newName");
-			DatabaseEnvironment.ExecuteNonQuery(String.Format("EXEC sp_rename '{0}', '{1}', 'OBJECT'", oldName, newName));
+			DatabaseEnvironment.ExecuteNonQuery(String.Format(
+@"
+exec sp_rename '{0}', '{1}', 'OBJECT'
+",
+			                                                  oldName, newName));
 		}
 
 		public override bool IsDefault(string table, string column)
 		{
 			return Convert.ToBoolean(DatabaseEnvironment.ExecuteScalar(
-				String.Format(
-					@"
+			                         	String.Format(			                         		
+@"
 select COLUMN_HASDEFAULT
 from INFORMATION_SCHEMA.COLUMNS 
 where TABLE_NAME = '{0}' 
 	and COLUMN_NAME = '{1}'
 ",
-					table, column)
-				));
+			                         		table, column)
+			                         	));
 		}
 
 		public override string[] GetTables()
 		{
-			const string query = "select [TABLE_NAME] as [name] from information_schema.tables";
+			const string query = 
+@"
+select [TABLE_NAME] as [name] 
+from information_schema.tables
+";
 			return DatabaseEnvironment.ExecuteQuery(query).AsReadable().Select(r => r.GetString(0)).ToArray();
 		}
 

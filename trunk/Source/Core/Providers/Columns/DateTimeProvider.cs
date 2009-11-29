@@ -22,8 +22,12 @@ namespace DbRefactor.Providers.Columns
 {
 	internal class DateTimeProvider : ColumnProvider
 	{
-		public DateTimeProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
-			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)
+		public DateTimeProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService,
+		                        ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService,
+		                        ColumnPropertyProviderFactory columnPropertyProviderFactory)
+			: base(
+				name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService,
+				columnPropertyProviderFactory)
 		{
 		}
 

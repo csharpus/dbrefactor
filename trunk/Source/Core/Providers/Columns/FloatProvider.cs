@@ -23,8 +23,12 @@ namespace DbRefactor.Providers.Columns
 {
 	internal class FloatProvider : ColumnProvider
 	{
-		public FloatProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService, ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService, ColumnPropertyProviderFactory columnPropertyProviderFactory)
-			: base(name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService, columnPropertyProviderFactory)
+		public FloatProvider(string name, object defaultValue, ICodeGenerationService codeGenerationService,
+		                     ISqlTypes sqlTypes, ISqlGenerationService sqlGenerationService,
+		                     ColumnPropertyProviderFactory columnPropertyProviderFactory)
+			: base(
+				name, defaultValue, codeGenerationService, sqlTypes, sqlGenerationService,
+				columnPropertyProviderFactory)
 		{
 		}
 

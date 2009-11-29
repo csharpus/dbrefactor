@@ -21,8 +21,8 @@ namespace DbRefactor.Engines.SqlServer.Compact
 			AddNameRestriction();
 			AddPrimaryTableRestriction();
 			AddPrimaryColumnRestriction();
-			var whereClause = String.Join(" AND ", restrictions.ToArray());
-			return whereClause != String.Empty ? baseQuery + " WHERE " + whereClause : baseQuery;
+			var whereClause = String.Join(" and ", restrictions.ToArray());
+			return whereClause != String.Empty ? baseQuery + " where " + whereClause : baseQuery;
 		}
 
 		private void AddForeignTableRestriction()
@@ -34,7 +34,7 @@ namespace DbRefactor.Engines.SqlServer.Compact
 		private void AddForeignColumnRestriction()
 		{
 			if (filter.ForeignKeyColumns == null) return;
-			restrictions.Add(String.Format("{0} IN ('{1}')", ForeignColumnSql, String.Join("', '", filter.ForeignKeyColumns)));
+			restrictions.Add(String.Format("{0} in ('{1}')", ForeignColumnSql, String.Join("', '", filter.ForeignKeyColumns)));
 		}
 
 		private void AddNameRestriction()
@@ -52,7 +52,7 @@ namespace DbRefactor.Engines.SqlServer.Compact
 		private void AddPrimaryColumnRestriction()
 		{
 			if (filter.PrimaryKeyColumns == null) return;
-			restrictions.Add(String.Format("{0} IN ('{1}')", PrimaryColumnSql, String.Join("', '", filter.PrimaryKeyColumns)));
+			restrictions.Add(String.Format("{0} in ('{1}')", PrimaryColumnSql, String.Join("', '", filter.PrimaryKeyColumns)));
 		}
 
 		private readonly string baseQuery = @"

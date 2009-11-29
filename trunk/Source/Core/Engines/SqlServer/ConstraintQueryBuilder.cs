@@ -21,7 +21,7 @@ namespace DbRefactor.Engines.SqlServer
 			// sys.default_constraints - view for default constraints
 			// http://blogs.msdn.com/sqltips/archive/2005/07/05/435882.aspx
 			const string baseQuery =
-				@"
+@"
 WITH AllConstraints
 AS (
 	SELECT 
@@ -50,13 +50,13 @@ UNION ALL
 		ON Schemas.schema_id = Objects.schema_id)
 SELECT ConstraintName, TableSchema, TableName, ColumnName, ConstraintType
 FROM AllConstraints
-				";
+";
 			AddTableRestriction();
 			AddColumnRestriction();
 			AddTypeRestriction();
 			AddNameRestriction();
-			var whereClause = String.Join(" AND ", restrictions.ToArray());
-			return whereClause != String.Empty ? baseQuery + " WHERE " + whereClause : baseQuery;
+			var whereClause = String.Join(" and ", restrictions.ToArray());
+			return whereClause != String.Empty ? baseQuery + " where " + whereClause : baseQuery;
 		}
 
 		private void AddNameRestriction()
@@ -92,7 +92,7 @@ FROM AllConstraints
 		private void AddColumnRestriction()
 		{
 			if (filter.ColumnNames == null) return;
-			restrictions.Add(String.Format("ColumnName IN ('{0}')", String.Join("', '", filter.ColumnNames)));
+			restrictions.Add(String.Format("ColumnName in ('{0}')", String.Join("', '", filter.ColumnNames)));
 		}
 
 		private void AddTableRestriction()
