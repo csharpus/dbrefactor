@@ -153,6 +153,15 @@ where TABLE_NAME = '{0}'
 			                         	));
 		}
 
+		public override string[] GetTables(TableFilter filter)
+		{
+			var query = new MySqlTableQueryBuilder(filter).BuildQuery();
+			return DatabaseEnvironment
+				.ExecuteQuery(query)
+				.AsReadable()
+				.Select(r => r.GetString(0)).ToArray();
+		}
+
 //        public override string[] GetTables()
 //        {
 //            const string query =

@@ -156,7 +156,7 @@ namespace DbRefactor.Providers
 
 		public abstract bool IsDefault(string table, string column);
 
-		public string[] GetTables(TableFilter filter)
+		public virtual string[] GetTables(TableFilter filter)
 		{
 			var query = new TableQueryBuilder(filter).BuildQuery();
 			return DatabaseEnvironment

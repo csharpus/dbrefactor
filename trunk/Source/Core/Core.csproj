@@ -73,6 +73,7 @@
     <Compile Include="Engines\MySql\MySqlEnvironment.cs" />
     <Compile Include="Engines\MySql\MySqlObjectNameService.cs" />
     <Compile Include="Engines\MySql\MySqlSchemaProvider.cs" />
+    <Compile Include="Engines\MySql\MySqlTableQueryBuilder.cs" />
     <Compile Include="Engines\SqlServer\Compact\CeConstraintQueryBuilder.cs" />
     <Compile Include="Engines\SqlServer\Compact\CeForeignKeyQueryBuilder.cs" />
     <Compile Include="Engines\SqlServer\Compact\CeIndexQueryBuilder.cs" />
