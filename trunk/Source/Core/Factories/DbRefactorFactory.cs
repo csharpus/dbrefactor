@@ -36,31 +36,36 @@ namespace DbRefactor.Factories
 			return new DbRefactorFactory(providerFactory);
 		}
 
-		public static DbRefactorFactory BuildSqlServerFactory(string connectionString, string category,
-		                                                      bool trace)
+		public static DbRefactorFactory BuildSqlServerFactory(string connectionString, ILogger logger, string category)
 		{
-			var logger = new Logger();
-			logger.Attach(new ConsoleWriter());
 			var providerFactory = new SqlServerFactory(connectionString, logger, null);
 			providerFactory.Init();
 			return new DbRefactorFactory(providerFactory);
 		}
 
-		public static DbRefactorFactory BuildSqlServerCeFactory(string connectionString, string category,
-		                                                        bool trace)
+		public static DbRefactorFactory BuildSqlServerCeFactory(string connectionString)
 		{
-			var logger = new Logger();
-			logger.Attach(new ConsoleWriter());
-			var providerFactory = new SqlServerCeFactory(connectionString, logger, null);
+			return BuildSqlServerCeFactory(connectionString, null, Logger.NullLogger);
+		}
+
+		public static DbRefactorFactory BuildSqlServerCeFactory(string connectionString, string category,
+		                                                        ILogger logger)
+		{
+			//var logger = new Logger();
+			//logger.Attach(new ConsoleWriter());
+			var providerFactory = new SqlServerCeFactory(connectionString, logger, category);
 			providerFactory.Init();
 			return new DbRefactorFactory(providerFactory);
 		}
 
-		public static DbRefactorFactory BuildMySqlFactory(string connectionString, string category,
-																bool trace)
+		public static DbRefactorFactory BuildMySqlFactory(string connectionString)
 		{
-			var logger = new Logger();
-			logger.Attach(new ConsoleWriter());
+			return BuildMySqlFactory(connectionString, null, Logger.NullLogger);
+		}
+
+		public static DbRefactorFactory BuildMySqlFactory(string connectionString, string category,
+		                                                  ILogger logger)
+		{
 			var providerFactory = new MySqlFactory(connectionString, logger, null);
 			providerFactory.Init();
 			return new DbRefactorFactory(providerFactory);
@@ -171,7 +176,8 @@ namespace DbRefactor.Factories
 			provider = new TransformationProvider(databaseEnvironment, schemaProvider, objectNameService);
 			apiFactory = new ApiFactory(provider, columnProviderFactory, objectNameService);
 			database = new Database(provider, columnProviderFactory, objectNameService, apiFactory);
-			databaseMigrationTarget = new DatabaseMigrationTarget(provider, database, databaseEnvironment, category);
+			databaseMigrationTarget = new DatabaseMigrationTarget(provider, database, databaseEnvironment,
+			                                                      category);
 			var migrationRunner = new MigrationRunner(databaseMigrationTarget, logger);
 			var migrationReader = new MigrationReader(databaseMigrationTarget);
 			migrationService = new MigrationService(databaseMigrationTarget, migrationRunner, migrationReader);
@@ -318,8 +324,8 @@ namespace DbRefactor.Factories
 		}
 
 		internal override SchemaProvider CreateSchemaProvider(IDatabaseEnvironment databaseEnvironment,
-															  ObjectNameService objectNameService,
-															  SqlServerColumnMapper sqlServerColumnMapper)
+		                                                      ObjectNameService objectNameService,
+		                                                      SqlServerColumnMapper sqlServerColumnMapper)
 		{
 			return new MySqlSchemaProvider(databaseEnvironment, objectNameService, sqlServerColumnMapper);
 		}

@@ -1,15 +1,17 @@
 ﻿using DbRefactor.Factories;
+using DbRefactor.Infrastructure.Loggers;
 using NUnit.Framework;
 
 namespace DbRefactor.Tests.Integration.Engines.SqlServer2008
 {
-	class SqlServer2008Helper
+	static class SqlServer2008Helper
 	{
 		public static DbRefactorFactory CreateFactory()
 		{
+			var logger = new ConsoleLogger();
 			return DbRefactorFactory.BuildSqlServerFactory(
-				@"Data Source=.\SQLEXPRESS2008;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI",
-				null, true);
+				@"Data Source=.\SQLEXPRESS2008;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI", logger,
+				null);
 		}
 	}
 

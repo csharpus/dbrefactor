@@ -8,8 +8,7 @@ namespace DbRefactor.Tests.Integration.Engines.MySql
 		public static DbRefactorFactory CreateFactory()
 		{
 			return DbRefactorFactory.BuildMySqlFactory(
-				@"Server=localhost;Uid=root;Pwd=1;Database=dbrefactor_tests;",
-				null, true);
+				@"Server=localhost;Uid=root;Pwd=1;Database=dbrefactor_tests;");
 		}
 	}
 

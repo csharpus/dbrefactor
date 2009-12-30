@@ -101,8 +101,9 @@ namespace DbRefactor.NAnt
 		{
 			Assembly asm = Assembly.LoadFrom(migrationsAssembly.FullName);
 
-			var mig = DbRefactorFactory.BuildSqlServerFactory(connectionString, null, trace).CreateSqlServerMigrator();
-			//mig.Logger = new TaskLogger(this);
+			var logger = new TaskLogger(this);
+			var mig = DbRefactorFactory.BuildSqlServerFactory(connectionString, logger,  null).CreateSqlServerMigrator();
+			
 			
 			if (to == -1)
 				mig.MigrateToLastVersion(asm);

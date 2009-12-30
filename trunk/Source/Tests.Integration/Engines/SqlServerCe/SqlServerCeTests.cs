@@ -8,8 +8,7 @@ namespace DbRefactor.Tests.Integration.Engines.SqlServerCe
 		public static DbRefactorFactory CreateFactory()
 		{
 			return DbRefactorFactory.BuildSqlServerCeFactory(
-				@"Data Source=..\..\Database\SqlServerCe.sdf",
-				null, true);
+				@"Data Source=..\..\Database\SqlServerCe.sdf");
 		}
 	}
 

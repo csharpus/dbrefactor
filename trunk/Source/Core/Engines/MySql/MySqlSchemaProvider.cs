@@ -128,6 +128,7 @@ where TABLE_NAME = '{0}'
 			throw new NotSupportedException();
 		}
 
+
 		public override void RenameTable(string oldName, string newName)
 		{
 			Check.RequireNonEmpty(oldName, "oldName");

@@ -1,4 +1,5 @@
 ﻿using DbRefactor.Factories;
+using DbRefactor.Infrastructure.Loggers;
 using NUnit.Framework;
 
 namespace DbRefactor.Tests.Integration.Engines.SqlServer2005
@@ -13,7 +14,7 @@ namespace DbRefactor.Tests.Integration.Engines.SqlServer2005
 
 		protected override DbRefactorFactory CreateFactory()
 		{
-			return DbRefactorFactory.BuildSqlServerFactory(GetConnectionString(), null, true);
+			return DbRefactorFactory.BuildSqlServerFactory(GetConnectionString(), Logger.NullLogger, null);
 		}
 	}
 }

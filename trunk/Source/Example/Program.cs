@@ -1,6 +1,7 @@
 using System.Configuration;
 using System.Reflection;
 using DbRefactor.Factories;
+using DbRefactor.Infrastructure.Loggers;
 
 namespace Example
 {
@@ -8,9 +9,10 @@ namespace Example
 	{
 		static void Main()
 		{
-			var migrator = DbRefactorFactory.BuildSqlServerFactory(ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString,
-				null,
-				false).CreateSqlServerMigrator(
+			var connectionString =
+				ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString;
+			var migrator = DbRefactorFactory.BuildSqlServerFactory(connectionString, Logger.NullLogger,
+				null).CreateSqlServerMigrator(
 				);
 			migrator.MigrateToLastVersion(Assembly.GetExecutingAssembly());
 		}

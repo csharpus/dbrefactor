@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using DbRefactor.Api;
 using DbRefactor.Factories;
+using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
 using DbRefactor.Tools;
 using NUnit.Framework;
@@ -41,7 +42,8 @@ namespace DbRefactor.Tests.Integration
 
 		protected virtual DbRefactorFactory CreateFactory()
 		{
-			return DbRefactorFactory.BuildSqlServerFactory(GetConnectionString(), null, true);
+			var logger = new ConsoleLogger();
+			return DbRefactorFactory.BuildSqlServerFactory(GetConnectionString(), logger, null);
 		}
 
 		public const string ConnectionString =

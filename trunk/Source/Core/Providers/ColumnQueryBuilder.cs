@@ -24,13 +24,13 @@ namespace DbRefactor.Providers
 		private void AddTableNameRestirctions()
 		{
 			if (filter.TableName == null) return;
-			restrictions.Add(String.Format("TABLE_NAME = '{0}'", filter.TableName));
+			restrictions.Add(String.Format("TABLE_NAME like '{0}'", filter.TableName));
 		}
 
 		private void AddColumnNameRestrictions()
 		{
 			if (filter.ColumnName == null) return;
-			restrictions.Add(String.Format("COLUMN_NAME = '{0}'", filter.ColumnName));
+			restrictions.Add(String.Format("COLUMN_NAME like '{0}'", filter.ColumnName));
 		}
 
 		private const string BaseQuery =
