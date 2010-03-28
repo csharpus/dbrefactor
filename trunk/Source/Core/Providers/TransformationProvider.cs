@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using DbRefactor.Core;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
@@ -46,7 +47,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(name, "name");
 			Check.Require(columns.Length > 0, "At least one column should be passed");
 			var columnsSql = GetCreateColumnsSql(columns);
-			ExecuteNonQuery("create table {0} ({1})", objectNameService.EncodeTable(name), columnsSql);
+			ExecuteNonQuery("create table [{0}] ({1})", objectNameService.EncodeTable(name), columnsSql);
 		}
 
 		private static string GetCreateColumnsSql(IEnumerable<ColumnProvider> columns)
@@ -60,13 +61,13 @@ namespace DbRefactor.Providers
 		public void DropTable(string name)
 		{
 			Check.RequireNonEmpty(name, "name");
-			ExecuteNonQuery("drop table {0}", 
+			ExecuteNonQuery("drop table [{0}]", 
 				objectNameService.EncodeTable(name));
 		}
 
 		public void AddColumn(string table, ColumnProvider columnProvider)
 		{
-			ExecuteNonQuery("alter table {0} add {1}", 
+			ExecuteNonQuery("alter table [{0}] add {1}", 
 				objectNameService.EncodeTable(table), columnProvider.GetAddColumnSql());
 		}
 
@@ -75,7 +76,7 @@ namespace DbRefactor.Providers
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(column, "column");
 			DropColumnConstraints(table, column);
-			ExecuteNonQuery("alter table {0} drop column {1}", 
+			ExecuteNonQuery("alter table [{0}] drop column {1}", 
 				objectNameService.EncodeTable(table), 
 				objectNameService.EncodeColumn(column));
 		}
@@ -84,7 +85,7 @@ namespace DbRefactor.Providers
 		{
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(sqlColumn, "sqlColumn");
-			ExecuteNonQuery("alter table {0} alter column {1}", 
+			ExecuteNonQuery("alter table [{0}] alter column {1}", 
 				objectNameService.EncodeTable(table),
 				sqlColumn);
 		}
@@ -317,7 +318,7 @@ references {3} ({4})
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(name, "name");
 
-			ExecuteNonQuery("alter table {0} drop constraint [{1}]", objectNameService.EncodeTable(table), name);
+			ExecuteNonQuery("alter table [{0}] drop constraint [{1}]", objectNameService.EncodeTable(table), name);
 		}
 
 		private void DropForeignKey(string table, string name)
@@ -325,7 +326,7 @@ references {3} ({4})
 			Check.RequireNonEmpty(table, "table");
 			Check.RequireNonEmpty(name, "name");
 
-			ExecuteNonQuery("alter table {0} drop constraint [{1}]", objectNameService.EncodeTable(table), name);
+			ExecuteNonQuery("alter table [{0}] drop constraint [{1}]", objectNameService.EncodeTable(table), name);
 		}
 
 

@@ -7,7 +7,7 @@
     <ProjectGuid>{1FEE70A4-AAD7-4C60-BE60-3F7DC03A8C4D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DbRefactor</RootNamespace>
+    <RootNamespace>DbRefactor.Core</RootNamespace>
     <AssemblyName>DbRefactor.Core</AssemblyName>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>DbRefactor.snk</AssemblyOriginatorKeyFile>

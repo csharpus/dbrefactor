@@ -13,6 +13,7 @@
 
 using System;
 using DbRefactor.Api;
+using DbRefactor.Core;
 using DbRefactor.Engines;
 using DbRefactor.Engines.MySql;
 using DbRefactor.Engines.SqlServer;

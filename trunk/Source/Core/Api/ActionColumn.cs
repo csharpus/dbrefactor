@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DbRefactor.Core;
 using DbRefactor.Factories;
 using DbRefactor.Providers;
 

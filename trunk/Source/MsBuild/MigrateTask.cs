@@ -13,6 +13,7 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 using DbRefactor.Factories;
+using DbRefactor.MSBuild.Logger;
 using Microsoft.Build.Utilities;
 using Microsoft.Build.Framework;
 
@@ -45,11 +46,9 @@ namespace DbRefactor.MsBuild
 				Assembly assembly = Assembly.LoadFrom(MigrationsAssembly);
 				if (assembly == null)
 					return false;
-				// TODO: use ms build logger instead of null logger
-				var migrator = DbRefactorFactory.BuildSqlServerFactory(
-					ConnectionString,
-					DbRefactor.Infrastructure.Loggers.Logger.NullLogger,
-					null).CreateSqlServerMigrator();
+
+				var logger = new TaskLogger(this);
+                var migrator = DbRefactorFactory.BuildSqlServerFactory(ConnectionString, logger, null).CreateSqlServerMigrator();
 
 				if (Version <= 0)
 				{

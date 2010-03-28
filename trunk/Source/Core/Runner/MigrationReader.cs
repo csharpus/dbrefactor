@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using DbRefactor.Core;
 using DbRefactor.Exceptions;
 
 namespace DbRefactor.Runner
@@ -62,7 +63,8 @@ namespace DbRefactor.Runner
 
 		private static MigrationAttribute GetMigrationAttribute(Type t)
 		{
-			return (MigrationAttribute) Attribute.GetCustomAttribute(t, typeof (MigrationAttribute));
+			//return (MigrationAttribute) t.GetCustomAttributes(typeof (MigrationAttribute), true).FirstOrDefault();
+			return (MigrationAttribute)Attribute.GetCustomAttribute(t, typeof(MigrationAttribute));
 		}
 
 		private void CheckForDuplicatedVersion(IEnumerable<IVersionedMigration> migrations)

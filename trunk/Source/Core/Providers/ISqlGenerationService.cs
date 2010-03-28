@@ -27,7 +27,7 @@ namespace DbRefactor.Providers
 				.Select(p => p.CreateTableSql()).SpaceSeparated();
 
 			string returnValue =
-				String.Format("{0} {1} {2}", objectNameService.EncodeColumn(columnProvider.Name),
+				String.Format("[{0}] {1} {2}", objectNameService.EncodeColumn(columnProvider.Name),
 				              columnProvider.SqlType(), propertiesSql).TrimEnd();
 			if (columnProvider.HasDefaultValue)
 			{

@@ -14,7 +14,7 @@
 using System.Reflection;
 using DbRefactor.Runner;
 
-namespace DbRefactor
+namespace DbRefactor.Core
 {
 	public sealed class Migrator
 	{

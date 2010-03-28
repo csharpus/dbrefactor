@@ -11,12 +11,12 @@
 
 using System;
 
-namespace DbRefactor
+namespace DbRefactor.Core
 {
 	/// <summary>
 	/// Describe a migration
 	/// </summary>
-	public sealed class MigrationAttribute : Attribute
+	public class MigrationAttribute : Attribute
 	{
 		/// <summary>
 		/// Describe the migration

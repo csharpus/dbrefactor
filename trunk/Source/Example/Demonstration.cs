@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using DbRefactor;
+using DbRefactor.Core;
 
 namespace Example
 {
@@ -281,7 +281,7 @@ namespace Example
 
 	/// <summary>
 	/// In case you do not want to have a deal with folders and coping files to build derectory
-	/// and want to keep single library, then just mark script file as embedded resource and
+	/// and want to keep single library for your migrations, then just mark script file as embedded resource and
 	/// call ExecuteResource method.
 	/// </summary>
 	[Migration(14)]
@@ -333,7 +333,7 @@ namespace Example
 		{
 			using(var reader = Table("User").Where(new {Id = 1, Name = "John"}).Select("Id", "Name"))
 			{
-				
+				//...
 			}
 
 
