@@ -16,6 +16,7 @@ using DbRefactor.Factories;
 using DbRefactor.Infrastructure.Loggers;
 using NConsoler;
 using System.Reflection;
+using System.Threading;
 
 namespace DbRefactor.Cli
 {
@@ -40,7 +41,8 @@ namespace DbRefactor.Cli
 			[Optional(false, Description = "Show debug information")] bool trace,
 			[Optional(null, Description = "To define another set of migrations")] string category)
 		{
-			Assembly asm = Assembly.LoadFrom(migrationAssembly);
+
+				Assembly asm = Assembly.LoadFrom(migrationAssembly);
 			var logger = trace ? new ConsoleLogger() : Logger.NullLogger;
 			var migrator = DbRefactorFactory.BuildSqlServerFactory(connectionString, logger, category).CreateSqlServerMigrator();
 			if (version == -1)

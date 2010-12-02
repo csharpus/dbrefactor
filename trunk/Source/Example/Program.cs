@@ -2,6 +2,7 @@ using System.Configuration;
 using System.Reflection;
 using DbRefactor.Factories;
 using DbRefactor.Infrastructure.Loggers;
+using System.Threading;
 
 namespace Example
 {

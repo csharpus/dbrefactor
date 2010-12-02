@@ -23,7 +23,14 @@ namespace DbRefactor.Infrastructure.Loggers
 
 		public void WriteLine(string message, params object[] args)
 		{
-			Console.WriteLine(message, args);
+            if (args.Length == 0)
+            {
+                Console.WriteLine(message);
+            }
+            else
+            {
+                Console.WriteLine(message, args);
+            }
 		}
 
 		#endregion

@@ -22,6 +22,7 @@ using DbRefactor.Extensions;
 using DbRefactor.Infrastructure;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Tools.DesignByContract;
+using System.Text.RegularExpressions;
 
 
 namespace DbRefactor.Providers
@@ -336,10 +337,40 @@ references {3} ({4})
 		public int ExecuteNonQuery(string sql, params string[] values)
 		{
 			Check.RequireNonEmpty(sql, "sql");
-			return environment.ExecuteNonQuery(String.Format(sql, values));
+            if (values.Length > 0)
+            {
+                sql = String.Format(sql, values);
+            }
+
+            var commands = GetCommands(sql);
+            foreach (var command in commands)
+            {
+                try
+                {
+                    environment.ExecuteNonQuery(command);
+                }
+                catch (Exception ex)
+                {
+                    environment.ExecuteNonQuery(command);
+                    throw new Exception(String.Format("Command: {0}", command), ex);
+                }
+            }
+            return 1;
 		}
 
-		#region CRUD
+        /// <summary>
+        /// Gets the sql commands.
+        /// </summary>
+        /// <param name="dataSql">The data SQL.</param>
+        /// <returns>The list of SQL commands</returns>
+        private static List<string> GetCommands(string dataSql)
+        {
+            var splitcommands = Regex.Split(dataSql, @"GO[\n\s]");
+            List<string> commandList = new List<string>(splitcommands);
+            return commandList;
+        }
+
+        #region CRUD
 
 		/// <summary>
 		/// Execute an SQL query returning results.

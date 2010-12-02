@@ -50,7 +50,7 @@ namespace DbRefactor.Core
 			Check.RequireNonEmpty(assemblyName, "assemblyName");
 			Check.RequireNonEmpty(resourceName, "resourceName");
 
-			Assembly assembly = Assembly.Load(assemblyName);
+            Assembly assembly = Assembly.GetCallingAssembly();
 			resourceName = GetResource(resourceName, assembly, MigrationHelper.GetMigrationVersion(GetType()));
 
 			Stream stream = assembly.GetManifestResourceStream(resourceName);
@@ -62,6 +62,7 @@ namespace DbRefactor.Core
 			{
 				script = streamReader.ReadToEnd();
 			}
+
 			Database.Execute().NonQuery(script);
 		}
 
