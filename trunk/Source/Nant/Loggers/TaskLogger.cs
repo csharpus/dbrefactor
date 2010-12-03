@@ -29,12 +29,26 @@ namespace DbRefactor.NAnt.Loggers
 		
 		protected void LogInfo(string format, params object[] args)
 		{
-			task.Log(Level.Info, format, args);
+			if (args.Length == 0)
+			{
+				task.Log(Level.Info, format);
+			}
+			else
+			{
+				task.Log(Level.Info, format, args);
+			}
 		}
 		
 		protected void LogError(string format, params object[] args)
 		{
-			task.Log(Level.Error, format, args);
+			if (args.Length == 0)
+			{
+				task.Log(Level.Error, format);
+			}
+			else
+			{
+				task.Log(Level.Error, format, args);
+			}
 		}
 		
 		public void Started(int currentVersion, int finalVersion)
@@ -84,17 +98,39 @@ namespace DbRefactor.NAnt.Loggers
 		
 		public void Log(string format, params object[] args)
 		{
-			LogInfo("{0} {1}", "".PadLeft(WidthFirstColumn), String.Format(format, args));
+			if (args.Length == 0)
+			{
+				LogInfo("{0} {1}", "".PadLeft(WidthFirstColumn), format);
+			}
+			else
+			{
+				LogInfo("{0} {1}", "".PadLeft(WidthFirstColumn), String.Format(format, args));
+			}
 		}
 		
 		public void Warn(string format, params object[] args)
 		{
-			LogInfo("{0} [Warning] {1}", "".PadLeft(WidthFirstColumn), String.Format(format, args));
+			if (args.Length == 0)
+			{
+				LogInfo("{0} [Warning] {1}", "".PadLeft(WidthFirstColumn), format);
+			}
+			else
+			{
+				LogInfo("{0} [Warning] {1}", "".PadLeft(WidthFirstColumn), String.Format(format, args));
+			}
 		}		
 		
 		public void Trace(string format, params object[] args)
 		{
-			task.Log(Level.Debug, "{0} {1}", "".PadLeft(WidthFirstColumn), String.Format(format, args));
+			if (args.Length == 0)
+			{
+				task.Log(Level.Debug, "{0} {1}", "".PadLeft(WidthFirstColumn), format);
+			}
+			else
+			{
+				task.Log(Level.Debug, "{0} {1}", "".PadLeft(WidthFirstColumn), String.Format(format, args));
+			}
+			
 		}
 
 		public void Modify(string query)

@@ -28,7 +28,7 @@ namespace DbRefactor.NAnt
 		private string provider;
 		private string connectionString;
 		private FileInfo migrationsAssembly;
-		private bool trace;
+		private bool trace = false;
 		
 		#region Attribute properties
 		[TaskAttribute("provider", Required=true)]
