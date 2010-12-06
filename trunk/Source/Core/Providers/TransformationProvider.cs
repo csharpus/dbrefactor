@@ -365,7 +365,7 @@ references {3} ({4})
         /// <returns>The list of SQL commands</returns>
         private static List<string> GetCommands(string dataSql)
         {
-            var splitcommands = Regex.Split(dataSql, @"GO[\n\s]");
+			var splitcommands = Regex.Split(dataSql, @"GO([\n\s]|$)");
             List<string> commandList = new List<string>(splitcommands);
             return commandList;
         }
