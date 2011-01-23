@@ -1,0 +1,233 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1FEE70A4-AAD7-4C60-BE60-3F7DC03A8C4D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DbRefactor</RootNamespace>
+    <AssemblyName>DbRefactor.Core</AssemblyName>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>DbRefactor.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>False</DelaySign>
+    <AssemblyOriginatorKeyMode>File</AssemblyOriginatorKeyMode>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+    <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;DBC_CHECK_ALL</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
+    <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
+    <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
+    <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
+    <CodeContractsRunCodeAnalysis>False</CodeContractsRunCodeAnalysis>
+    <CodeContractsNonNullObligations>False</CodeContractsNonNullObligations>
+    <CodeContractsBoundsObligations>False</CodeContractsBoundsObligations>
+    <CodeContractsArithmeticObligations>False</CodeContractsArithmeticObligations>
+    <CodeContractsRedundantAssumptions>False</CodeContractsRedundantAssumptions>
+    <CodeContractsRunInBackground>True</CodeContractsRunInBackground>
+    <CodeContractsShowSquigglies>False</CodeContractsShowSquigglies>
+    <CodeContractsUseBaseLine>False</CodeContractsUseBaseLine>
+    <CodeContractsEmitXMLDocs>False</CodeContractsEmitXMLDocs>
+    <CodeContractsCustomRewriterAssembly />
+    <CodeContractsCustomRewriterClass />
+    <CodeContractsLibPaths />
+    <CodeContractsExtraRewriteOptions />
+    <CodeContractsExtraAnalysisOptions />
+    <CodeContractsBaseLineFile />
+    <CodeContractsCacheAnalysisResults>False</CodeContractsCacheAnalysisResults>
+    <CodeContractsRuntimeCheckingLevel>Preconditions</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsReferenceAssembly>Build</CodeContractsReferenceAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Migrator\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MySql.Data, Version=6.1.3.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dependencies\MySql\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="NAnt.Core, Version=0.85.2344.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dependencies\NAnt\NAnt.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.SqlServerCe, Version=3.5.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\Dependencies\SqlServerCe\System.Data.SqlServerCe.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Api\ActionColumn.cs" />
+    <Compile Include="Api\ActionTable.cs" />
+    <Compile Include="Api\AddColumnTable.cs" />
+    <Compile Include="Api\ExecuteEngine.cs" />
+    <Compile Include="Api\NewTable.cs" />
+    <Compile Include="Api\OtherTypeColumn.cs" />
+    <Compile Include="Api\Table.cs" />
+    <Compile Include="Api\WhereTable.cs" />
+    <Compile Include="BaseMigration.cs" />
+    <Compile Include="Engines\SqlServer\Compact\CeConstraintQueryBuilder.cs" />
+    <Compile Include="Engines\SqlServer\Compact\CeForeignKeyQueryBuilder.cs" />
+    <Compile Include="Engines\SqlServer\Compact\CeIndexQueryBuilder.cs" />
+    <Compile Include="Engines\SqlServer\Compact\SqlServerCeEnvironment.cs" />
+    <Compile Include="Infrastructure\Loggers\LoggerDecorator.cs" />
+    <Compile Include="Providers\ICrudGenerator.cs" />
+    <Compile Include="Engines\SqlServer\NameEncoderHelper.cs" />
+    <Compile Include="Engines\SqlServer\SqlServerCrudGenerator.cs" />
+    <Compile Include="Max.cs" />
+    <Compile Include="Providers\Filters\ColumnFilter.cs" />
+    <Compile Include="Providers\CrudProvider.cs" />
+    <Compile Include="Providers\ICrudProvider.cs" />
+    <Compile Include="Providers\IDatabaseProvider.cs" />
+    <Compile Include="Providers\ISchemaProvider.cs" />
+    <Compile Include="Providers\Model\PrimaryKey.cs" />
+    <Compile Include="Providers\Filters\PrimaryKeyFilter.cs" />
+    <Compile Include="Providers\Properties\NullProvider.cs" />
+    <Compile Include="Providers\Model\Index.cs" />
+    <Compile Include="Providers\Filters\IndexFilter.cs" />
+    <Compile Include="Providers\Filters\ConstraintFilter.cs" />
+    <Compile Include="Providers\Model\DatabaseConstraint.cs" />
+    <Compile Include="Providers\Filters\ForeignKeyFilter.cs" />
+    <Compile Include="Exceptions\IncorrectQueryException.cs" />
+    <Compile Include="Factories\ApiFactory.cs" />
+    <Compile Include="Extended\TypeExtensions.cs" />
+    <Compile Include="Infrastructure\Loggers\ConsoleLogger.cs" />
+    <Compile Include="Infrastructure\Loggers\ConsoleWriter.cs" />
+    <Compile Include="Infrastructure\Loggers\IAttachableLogger.cs" />
+    <Compile Include="Infrastructure\Loggers\ILogger.cs" />
+    <Compile Include="Infrastructure\Loggers\ILogWriter.cs" />
+    <Compile Include="Infrastructure\Loggers\Logger.cs" />
+    <Compile Include="Providers\ObjectNameService.cs" />
+    <Compile Include="Infrastructure\TemplateParser.cs" />
+    <Compile Include="Tools\DependencySorter.cs" />
+    <Compile Include="Providers\Properties\EmptyProvider.cs" />
+    <Compile Include="Providers\SchemaHelper.cs" />
+    <Compile Include="Engines\SqlServer\SqlServerDatabaseProvider.cs" />
+    <Compile Include="Engines\SqlServer\SqlServerTypeHelper.cs" />
+    <Compile Include="Engines\SqlServer\QueryBuilders\SqlServerColumnQueryBuilder.cs" />
+    <Compile Include="Providers\Filters\TableFilter.cs" />
+    <Compile Include="Engines\SqlServer\QueryBuilders\TableQueryBuilder.cs" />
+    <Compile Include="Providers\Model\Unique.cs" />
+    <Compile Include="Providers\Filters\UniqueFilter.cs" />
+    <Compile Include="Engines\SqlServer\Compact\SqlServerCeSchemaProvider.cs" />
+    <Compile Include="Engines\SqlServer\SqlServerSchemaProvider.cs" />
+    <Compile Include="Runner\IMigrationTarget.cs" />
+    <Compile Include="Runner\IVersionedMigration.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Migration.cs" />
+    <Compile Include="MigrationAttribute.cs" />
+    <Compile Include="Exceptions\MigrationException.cs" />
+    <Compile Include="Migrator.cs" />
+    <Compile Include="Infrastructure\CodeGenerationService.cs" />
+    <Compile Include="Providers\Model\ColumnData.cs" />
+    <Compile Include="Engines\SqlServer\QueryBuilders\ConstraintQueryBuilder.cs" />
+    <Compile Include="Api\Database.cs" />
+    <Compile Include="Extensions\DataReaderExtensions.cs" />
+    <Compile Include="Providers\Model\ForeignKey.cs" />
+    <Compile Include="Engines\SqlServer\QueryBuilders\ForeignKeyQueryBuilder.cs" />
+    <Compile Include="Engines\SqlServer\QueryBuilders\IndexQueryBuilder.cs" />
+    <Compile Include="Providers\Properties\IdentityProvider.cs" />
+    <Compile Include="Providers\Properties\PrimaryKeyProvider.cs" />
+    <Compile Include="Providers\Properties\PropertyProvider.cs" />
+    <Compile Include="Providers\Columns\BinaryProvider.cs" />
+    <Compile Include="Providers\Columns\BooleanProvider.cs" />
+    <Compile Include="Providers\Columns\ColumnProvider.cs" />
+    <Compile Include="Providers\Columns\DateTimeProvider.cs" />
+    <Compile Include="Exceptions\DbRefactorException.cs" />
+    <Compile Include="Providers\Columns\DecimalProvider.cs" />
+    <Compile Include="Providers\Columns\DoubleProvider.cs" />
+    <Compile Include="Providers\Columns\FloatProvider.cs" />
+    <Compile Include="Infrastructure\ICodeGenerationService.cs" />
+    <Compile Include="OnDelete.cs" />
+    <Compile Include="Providers\IDatabaseEnvironment.cs" />
+    <Compile Include="Providers\Columns\IntProvider.cs" />
+    <Compile Include="Providers\Columns\LongProvider.cs" />
+    <Compile Include="Providers\Properties\NotNullProvider.cs" />
+    <Compile Include="Factories\DbRefactorFactory.cs" />
+    <Compile Include="Engines\SqlServer\SqlServerEnvironment.cs" />
+    <Compile Include="Providers\Columns\StringProvider.cs" />
+    <Compile Include="Providers\Columns\TextProvider.cs" />
+    <Compile Include="Extensions\StringListExtensions.cs" />
+    <Compile Include="Providers\TransformationProvider.cs" />
+    <Compile Include="Providers\Properties\UniqueProvider.cs" />
+    <Compile Include="Infrastructure\CodeGenerationHelper.cs" />
+    <Compile Include="Runner\MigrationHelper.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Runner\MigrationReader.cs" />
+    <Compile Include="Runner\MigrationRunner.cs" />
+    <Compile Include="Runner\MigrationService.cs" />
+    <Compile Include="Runner\MigratorFactory.cs" />
+    <Compile Include="Runner\VersionedMigration.cs" />
+    <Compile Include="Tools\DataDumper.cs" />
+    <Compile Include="Infrastructure\ExpressionHelper.cs" />
+    <Compile Include="Infrastructure\ParametersHelper.cs" />
+    <Compile Include="Infrastructure\ReflectionHelper.cs" />
+    <Compile Include="Tools\SchemaDumper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DbRefactor.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>
