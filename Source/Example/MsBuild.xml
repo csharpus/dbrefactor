@@ -1,0 +1,17 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<UsingTask 
+		TaskName="DbRefactor.MsBuild.MigrateTask" 
+		AssemblyFile="..\MsBuild\bin\Debug\DbRefactor.MSBuild.dll"/>
+
+	<Target Name="Migrator">
+		<MigrateTask
+		Provider="SqlServer"
+		ConnectionString="Data Source=.\SQLEXPRESS;Initial Catalog=Test;Integrated Security=SSPI"
+		MigrationsAssembly="..\AcceptanceDatabase\bin\Debug\AcceptanceDatabase.dll"
+		Trace="true"
+		Version="1"
+	 />
+			
+	
+	</Target>
+</Project>
