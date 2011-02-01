@@ -112,6 +112,7 @@
     <Compile Include="Engines\SqlServer\Compact\CeIndexQueryBuilder.cs" />
     <Compile Include="Engines\SqlServer\Compact\SqlServerCeEnvironment.cs" />
     <Compile Include="Infrastructure\Loggers\LoggerDecorator.cs" />
+    <Compile Include="Infrastructure\Loggers\NullLogger.cs" />
     <Compile Include="Providers\ICrudGenerator.cs" />
     <Compile Include="Engines\SqlServer\NameEncoderHelper.cs" />
     <Compile Include="Engines\SqlServer\SqlServerCrudGenerator.cs" />

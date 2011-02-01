@@ -42,7 +42,7 @@ namespace DbRefactor.Cli
 		{
 			Assembly asm = Assembly.LoadFrom(migrationAssembly);
 			var logger = trace ? new ConsoleLogger() : Logger.NullLogger;
-			var migrator = DbRefactorFactory.BuildSqlServerFactory(connectionString, logger, category).CreateSqlServerMigrator();
+			var migrator = NewDbRefactorFactory.SqlServer().CreateMigrator(connectionString, logger, category);
 			if (version == -1)
 			{
 				migrator.MigrateToLastVersion(asm);
@@ -53,12 +53,12 @@ namespace DbRefactor.Cli
 			}
 		}
 
-		[Action]
-		public static void Dump(string provider, string connectionString, string outputFolder)
-		{
-			var logger = new ConsoleLogger();
-			var dumper = DbRefactorFactory.BuildSqlServerFactory(connectionString, logger, null).CreateSchemaDumper();
-			dumper.DumpTo(outputFolder);
-		}
+		//[Action]
+		//public static void Dump(string provider, string connectionString, string outputFolder)
+		//{
+		//    var logger = new ConsoleLogger();
+		//    var dumper = DbRefactorFactory.BuildSqlServerFactory(connectionString, logger, null).CreateSchemaDumper();
+		//    dumper.DumpTo(outputFolder);
+		//}
 	}
 }

@@ -48,7 +48,7 @@ namespace DbRefactor.MsBuild
 					return false;
 
 				var logger = new TaskLogger(this);
-                var migrator = DbRefactorFactory.BuildSqlServerFactory(ConnectionString, logger, null).CreateSqlServerMigrator();
+                var migrator = NewDbRefactorFactory.SqlServer().CreateMigrator(ConnectionString, logger);
 
 				if (Version <= 0)
 				{

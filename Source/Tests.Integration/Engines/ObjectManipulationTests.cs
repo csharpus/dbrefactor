@@ -42,20 +42,6 @@ namespace DbRefactor.Tests.Integration.Engines
 			return "override GetCreateTableSql method";
 		}
 
-		[Test, Ignore("should be fixed")]
-		public void Should_create_schema_dump()
-		{
-			#region CreateTable
-
-			Provider.ExecuteNonQuery(GetCreateTableSql());
-
-			#endregion
-
-			string values = new SchemaDumper(Provider, SchemaHelper).Dump();
-			Console.Write(values);
-		}
-
-
 		[Test]
 		public void Should_generate_method_call_from_lambda()
 		{

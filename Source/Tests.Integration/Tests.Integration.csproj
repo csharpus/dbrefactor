@@ -83,6 +83,7 @@
     <Compile Include="Engines\SqlServer2008\SqlServer2008Tests.cs" />
     <Compile Include="Engines\SqlServerCe\SqlServerCeTests.cs" />
     <Compile Include="Engines\Tools\DependencySorterTests.cs" />
+    <Compile Include="Engines\Tools\SchemaDumperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProviderTestBase.cs" />
     <Compile Include="Engines\ObjectManipulationTests.cs" />
