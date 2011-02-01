@@ -85,6 +85,7 @@ namespace DbRefactor.Tools
 
 		public string GenerateDropStatement()
 		{
+			environment.OpenConnection();
 			shouldDelete = true;
 			writer = new StringWriter();
 			var relations = GetRelations();
@@ -95,6 +96,7 @@ namespace DbRefactor.Tools
 			{
 				DropStatement(table);
 			}
+			environment.CloseConnection();
 			return writer.ToString();
 		}
 

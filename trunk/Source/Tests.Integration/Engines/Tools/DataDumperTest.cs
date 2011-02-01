@@ -1,11 +1,9 @@
 using System;
-using System.Linq;
 using DbRefactor.Factories;
 using DbRefactor.Providers;
-using DbRefactor.Tools;
 using NUnit.Framework;
 
-namespace DbRefactor.Tests.Integration.Engines
+namespace DbRefactor.Tests.Integration.Engines.Tools
 {
 	[TestFixture]
 	public class DataDumperTest : ProviderTestBase
@@ -28,11 +26,8 @@ namespace DbRefactor.Tests.Integration.Engines
 		[Ignore]
 		public void DumpTest()
 		{
-			var factory = new SqlServerFactory(@"Data Source=.\SQLExpress;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
+			var d = NewDbRefactorFactory.SqlServer().CreateDataDumper(@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
 
-			TransformationProvider provider = factory.GetProvider();
-			SchemaHelper schemaHelper = factory.GetSchemaProvider();
-			var d = new DataDumper(factory.GetEnvironment(), provider, schemaHelper, false);
 			string result = d.Dump(true);
 		}
 
@@ -58,8 +53,7 @@ namespace DbRefactor.Tests.Integration.Engines
 			Database.Table("C").Column("AId").AddForeignKeyTo("A", "Id");
 			DatabaseEnvironment.CloseConnection();
 
-			var factory = CreateFactory();
-			var d = new DataDumper(factory.GetEnvironment(), factory.GetProvider(), factory.GetSchemaProvider(), false);
+			var d = NewDbRefactorFactory.SqlServer().CreateDataDumper(@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
 			string result = d.GenerateDeleteStatement();
 			Console.Write(result);
 		}
@@ -73,12 +67,9 @@ namespace DbRefactor.Tests.Integration.Engines
 			Database.Table("A").Insert(new {B = 100});
 			DatabaseEnvironment.CloseConnection();
 
-			var factory = CreateFactory();
-			var d = new DataDumper(factory.GetEnvironment(), factory.GetProvider(), factory.GetSchemaProvider(), false);
+			var d = NewDbRefactorFactory.SqlServer().CreateDataDumper(@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
 
-			var dumper = new DataDumper(factory.GetEnvironment(), factory.GetProvider(), factory.GetSchemaProvider(), false);
-
-			var result = dumper.Dump(false);
+			string result = d.Dump(true);
 
 			Assert.That(result, Is.EqualTo("insert into [A] ([B]) values (100)\r\n"));
 		}

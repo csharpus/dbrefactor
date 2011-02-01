@@ -11,9 +11,7 @@ namespace Example
 		{
 			var connectionString =
 				ConfigurationManager.ConnectionStrings["SqlServerConnectionString"].ConnectionString;
-			var migrator = DbRefactorFactory.BuildSqlServerFactory(connectionString, Logger.NullLogger,
-				null).CreateSqlServerMigrator(
-				);
+			var migrator = NewDbRefactorFactory.SqlServer().CreateMigrator(connectionString, Logger.NullLogger);
 			migrator.MigrateToLastVersion(Assembly.GetExecutingAssembly());
 		}
 	}

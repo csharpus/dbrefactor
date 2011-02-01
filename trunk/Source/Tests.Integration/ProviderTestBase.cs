@@ -24,7 +24,7 @@ namespace DbRefactor.Tests.Integration
 			CreateProvider();
 			DropAllTables();
 		}
-
+		
 		[TearDown]
 		public virtual void TearDown()
 		{
@@ -34,14 +34,17 @@ namespace DbRefactor.Tests.Integration
 
 		protected void DropAllTables()
 		{
+			
 			var sql = dataDumper.GenerateDropStatement();
 			var lines = Regex.Split(sql, "GO")
 				.Where(l => l.Trim() != String.Empty).ToList();
 
+			
 			foreach (var line in lines)
 			{
 				Provider.ExecuteNonQuery(line);
 			}
+			
 		}
 
 		public virtual string GetConnectionString()
@@ -49,10 +52,10 @@ namespace DbRefactor.Tests.Integration
 			return ConnectionString;
 		}
 
-		protected virtual DbRefactorFactory CreateFactory()
+		protected virtual NewDbRefactorFactory CreateFactory()
 		{
 			var logger = new ConsoleLogger();
-			return DbRefactorFactory.BuildSqlServerFactory(GetConnectionString(), logger, null);
+			return NewDbRefactorFactory.SqlServer(); // .BuildSqlServerFactory(GetConnectionString(), logger, null)
 		}
 
 		public const string ConnectionString =
@@ -61,12 +64,15 @@ namespace DbRefactor.Tests.Integration
 		protected void CreateProvider()
 		{
 			var factory = CreateFactory();
-			//var info = new DbRefactorFactory().CreateAll(ConnectionString, new ConsoleLogger());
-			SchemaHelper = factory.GetSchemaProvider();
-			Provider = factory.GetProvider();
-			Database = factory.CreateDatabase();
-			dataDumper = factory.CreateDataDumper();
-			DatabaseEnvironment = factory.GetEnvironment();
+			Database = factory.CreateDatabase(GetConnectionString());
+
+			SchemaHelper = ((ISchemaAccessor)Database).SchemaHelper;
+
+			Provider = ((IProviderAccessor) Database).Provider;
+
+			
+			dataDumper = factory.CreateDataDumper(GetConnectionString());
+			DatabaseEnvironment = ((IEngineAccessor) Database).Engine.Environment;
 			DatabaseEnvironment.OpenConnection();
 			DatabaseEnvironment.BeginTransaction();
 		}

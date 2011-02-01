@@ -31,17 +31,20 @@ namespace DbRefactor.Tools
 		// Override all constraint names
 		// Override only generated constraint names
 		// Use namespace for migrations
+		private readonly IDatabaseEnvironment _environment;
 		private readonly TransformationProvider provider;
 		private readonly SchemaHelper schemaHelper;
 
-		internal SchemaDumper(TransformationProvider transformationProvider, SchemaHelper schemaHelper)
+		internal SchemaDumper(IDatabaseEnvironment environment, TransformationProvider transformationProvider, SchemaHelper schemaHelper)
 		{
+			_environment = environment;
 			provider = transformationProvider;
 			this.schemaHelper = schemaHelper;
 		}
 
 		public string Dump()
 		{
+			_environment.OpenConnection();
 			var writer = new StringWriter();
 
 			writer.WriteLine("using DbRefactor;");
@@ -73,7 +76,7 @@ namespace DbRefactor.Tools
 
 			writer.WriteLine("\t}");
 			writer.WriteLine("}");
-
+			_environment.CloseConnection();
 			return writer.ToString();
 		}
 

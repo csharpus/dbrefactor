@@ -1,33 +1,36 @@
 ﻿using DbRefactor.Factories;
 using DbRefactor.Infrastructure.Loggers;
+using DbRefactor.Tests.Integration.Engines.Tools;
 using NUnit.Framework;
 
 namespace DbRefactor.Tests.Integration.Engines.SqlServer2008
 {
 	static class SqlServer2008Helper
 	{
-		public static DbRefactorFactory CreateFactory()
+		public static NewDbRefactorFactory CreateFactory()
 		{
 			var logger = new ConsoleLogger();
-			return DbRefactorFactory.BuildSqlServerFactory(
-				@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI", logger,
-				null);
+			return NewDbRefactorFactory.SqlServer();
+
+			//.BuildSqlServerFactory(
+			//@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI", logger,
+			//null);
 		}
 	}
 
 	[TestFixture]
 	public class SqlServer2008AddColumnTests : AddColumnTests
 	{
-		protected override DbRefactorFactory CreateFactory()
+		protected override NewDbRefactorFactory CreateFactory()
 		{
-			return SqlServer2008Helper.CreateFactory();
+			return  SqlServer2008Helper.CreateFactory();
 		}
 	}
 
 	[TestFixture]
 	public class SqlServer2008AlterTableTests : AlterTableTests
 	{
-		protected override DbRefactorFactory CreateFactory()
+		protected override NewDbRefactorFactory CreateFactory()
 		{
 			return SqlServer2008Helper.CreateFactory();
 		}
@@ -36,7 +39,7 @@ namespace DbRefactor.Tests.Integration.Engines.SqlServer2008
 	[TestFixture]
 	public class SqlServer2008CreateTableTests : CreateTableTests
 	{
-		protected override DbRefactorFactory CreateFactory()
+		protected override NewDbRefactorFactory CreateFactory()
 		{
 			return SqlServer2008Helper.CreateFactory();
 		}
@@ -45,7 +48,7 @@ namespace DbRefactor.Tests.Integration.Engines.SqlServer2008
 	[TestFixture]
 	public class SqlServer2008CrudTests : CrudTests
 	{
-		protected override DbRefactorFactory CreateFactory()
+		protected override NewDbRefactorFactory CreateFactory()
 		{
 			return SqlServer2008Helper.CreateFactory();
 		}
@@ -54,7 +57,7 @@ namespace DbRefactor.Tests.Integration.Engines.SqlServer2008
 	[TestFixture]
 	public class SqlServer2008DataDumperTests : DataDumperTest
 	{
-		protected override DbRefactorFactory CreateFactory()
+		protected override NewDbRefactorFactory CreateFactory()
 		{
 			return SqlServer2008Helper.CreateFactory();
 		}
@@ -63,7 +66,7 @@ namespace DbRefactor.Tests.Integration.Engines.SqlServer2008
 	[TestFixture]
 	public class SqlServer2008ObjectManipulationTests : ObjectManipulationTests
 	{
-		protected override DbRefactorFactory CreateFactory()
+		protected override NewDbRefactorFactory CreateFactory()
 		{
 			return SqlServer2008Helper.CreateFactory();
 		}
@@ -111,7 +114,7 @@ CREATE TABLE Table1 (
 	[TestFixture]
 	public class SqlServer2008SqlGenerationVerificationTests : SqlGenerationVerificationTests
 	{
-		protected override DbRefactorFactory CreateFactory()
+		protected override NewDbRefactorFactory CreateFactory()
 		{
 			return SqlServer2008Helper.CreateFactory();
 		}
