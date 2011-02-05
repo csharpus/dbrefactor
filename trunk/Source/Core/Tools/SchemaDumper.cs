@@ -31,20 +31,20 @@ namespace DbRefactor.Tools
 		// Override all constraint names
 		// Override only generated constraint names
 		// Use namespace for migrations
-		private readonly IDatabaseEnvironment _environment;
+		private readonly IDatabaseEnvironment environment;
 		private readonly TransformationProvider provider;
 		private readonly SchemaHelper schemaHelper;
 
 		internal SchemaDumper(IDatabaseEnvironment environment, TransformationProvider transformationProvider, SchemaHelper schemaHelper)
 		{
-			_environment = environment;
+			this.environment = environment;
 			provider = transformationProvider;
 			this.schemaHelper = schemaHelper;
 		}
 
 		public string Dump()
 		{
-			_environment.OpenConnection();
+			environment.OpenConnection();
 			var writer = new StringWriter();
 
 			writer.WriteLine("using DbRefactor;");
@@ -76,7 +76,7 @@ namespace DbRefactor.Tools
 
 			writer.WriteLine("\t}");
 			writer.WriteLine("}");
-			_environment.CloseConnection();
+			environment.CloseConnection();
 			return writer.ToString();
 		}
 
@@ -133,7 +133,7 @@ namespace DbRefactor.Tools
 			var keys = schemaHelper.GetForeignKeys();
 			foreach (var key in keys)
 			{
-				values += String.Format("Table(\"{0}\").Column(\"{1}\").AddForeignKeyTo(\"{2}\", \"{3}\")",
+				values += String.Format("\t\tTable(\"{0}\").Column(\"{1}\").AddForeignKeyTo(\"{2}\", \"{3}\")",
 										key.ForeignTable,
 										key.ForeignColumn,
 										key.PrimaryTable,
@@ -149,7 +149,7 @@ namespace DbRefactor.Tools
 			var keys = schemaHelper.GetForeignKeys();
 			foreach (var key in keys)
 			{
-				values += String.Format("Table(\"{0}\").Column(\"{1}\").DropForeignKey(\"{2}\", \"{3}\")",
+				values += String.Format("\t\tTable(\"{0}\").Column(\"{1}\").DropForeignKey(\"{2}\", \"{3}\")",
 										key.ForeignTable,
 										key.ForeignColumn,
 										key.PrimaryTable,
@@ -164,7 +164,7 @@ namespace DbRefactor.Tools
 			var expression = columnProvider.Method();
 			string methodName = GetMethodName(expression);
 
-			List<string> methodArguments = GetMethodArguments(expression);
+			List<string> methodArguments = columnProvider.MethodArguments().ToList();
 			if (columnProvider.HasDefaultValue)
 			{
 				methodArguments.Add(columnProvider.GetDefaultValueCode());

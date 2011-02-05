@@ -36,5 +36,28 @@ namespace DbRefactor.Providers.Columns
 		{
 			return t => t.String(Name, Size);
 		}
+
+		public override string MethodCode()
+		{
+			var sizeString = size != Max.Value ? size.ToString() : "Max.Value";
+			
+			return Method().Name + "(" + "\"" + Name + "\"" + ", " + sizeString + ")";
+		}
+
+		public override string[] MethodArguments()
+		{
+			var sizeString = size != Max.Value ? size.ToString() : "Max.Value";
+
+			return new[] { "\"" + Name + "\"", sizeString};
+		}
+
+		protected override string DefaultValueCode()
+		{
+			if (size == Max.Value)
+			{
+				return "Max.Value";
+			}
+			return base.DefaultValueCode();
+		}
 	}
 }

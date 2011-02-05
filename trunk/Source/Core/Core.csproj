@@ -113,6 +113,9 @@
     <Compile Include="Engines\SqlServer\Compact\SqlServerCeEnvironment.cs" />
     <Compile Include="Infrastructure\Loggers\LoggerDecorator.cs" />
     <Compile Include="Infrastructure\Loggers\NullLogger.cs" />
+    <Compile Include="Providers\Columns\GuidProvider.cs" />
+    <Compile Include="Providers\Columns\MoneyProvider.cs" />
+    <Compile Include="Providers\Columns\SmallintProvider.cs" />
     <Compile Include="Providers\ICrudGenerator.cs" />
     <Compile Include="Engines\SqlServer\NameEncoderHelper.cs" />
     <Compile Include="Engines\SqlServer\SqlServerCrudGenerator.cs" />

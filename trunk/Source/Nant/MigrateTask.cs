@@ -102,7 +102,7 @@ namespace DbRefactor.NAnt
 			Assembly asm = Assembly.LoadFrom(migrationsAssembly.FullName);
 
 			var logger = new TaskLogger(this);
-			var mig = NewDbRefactorFactory.SqlServer().CreateMigrator(connectionString, logger);
+			var mig = DbRefactorFactory.SqlServer().CreateMigrator(connectionString, logger);
 			
 			
 			if (to == -1)

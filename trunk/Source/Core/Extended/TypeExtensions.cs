@@ -11,6 +11,7 @@
 
 #endregion
 
+using System;
 using DbRefactor.Api;
 using DbRefactor.Providers.Columns;
 
@@ -39,6 +40,42 @@ namespace DbRefactor.Extended
 		public static NewTable Float(this NewTable newTable, string name, float defaultValue)
 		{
 			newTable.AddColumn(new FloatProvider(name, defaultValue));
+			return newTable;
+		}
+
+		public static NewTable Guid(this NewTable newTable, string name)
+		{
+			newTable.AddColumn(new GuidProvider(name, null));
+			return newTable;
+		}
+
+		public static NewTable Guid(this NewTable newTable, string name, Guid defaultValue)
+		{
+			newTable.AddColumn(new GuidProvider(name, defaultValue));
+			return newTable;
+		}
+
+		public static NewTable Smallint(this NewTable newTable, string name)
+		{
+			newTable.AddColumn(new SmallintProvider(name, null));
+			return newTable;
+		}
+
+		public static NewTable Smallint(this NewTable newTable, string name, Int16 defaultValue)
+		{
+			newTable.AddColumn(new SmallintProvider(name, defaultValue));
+			return newTable;
+		}
+
+		public static NewTable Money(this NewTable newTable, string name)
+		{
+			newTable.AddColumn(new MoneyProvider(name, null));
+			return newTable;
+		}
+
+		public static NewTable Money(this NewTable newTable, string name, decimal defaultValue)
+		{
+			newTable.AddColumn(new MoneyProvider(name, defaultValue));
 			return newTable;
 		}
 

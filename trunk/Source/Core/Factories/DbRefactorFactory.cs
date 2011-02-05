@@ -22,16 +22,16 @@ using DbRefactor.Tools;
 
 namespace DbRefactor.Factories
 {
-	public class NewDbRefactorFactory
+	public class DbRefactorFactory
 	{
 		private Func<string, DatabaseEngine> createEngine;
 
-		private NewDbRefactorFactory(Func<string, DatabaseEngine> createEngine)
+		private DbRefactorFactory(Func<string, DatabaseEngine> createEngine)
 		{
 			this.createEngine = createEngine;
 		}
 
-		public static NewDbRefactorFactory SqlServer()
+		public static DbRefactorFactory SqlServer()
 		{
 			Func<string, DatabaseEngine> createEngine = cs =>
 				{
@@ -49,7 +49,7 @@ namespace DbRefactor.Factories
 					             	};
 				};
 
-			return new NewDbRefactorFactory(createEngine);
+			return new DbRefactorFactory(createEngine);
 		}
 
 		public Database CreateDatabase(string connectionString)

@@ -43,6 +43,16 @@ namespace DbRefactor.Providers.Columns
 			get { return precision; }
 		}
 
+		public override string MethodCode()
+		{
+			return Method().Name + "(" + "\"" + Name + "\"" + ", " + Precision + ", " + Scale + ")";
+		}
+
+		public override string[] MethodArguments()
+		{
+			return new[] { "\"" + Name + "\"", Precision.ToString(), Scale.ToString()};
+		}
+
 		public override Expression<Action<NewTable>> Method()
 		{
 			return t => t.Decimal(Name, Precision, Scale);

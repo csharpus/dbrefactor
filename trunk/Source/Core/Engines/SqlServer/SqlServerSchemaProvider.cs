@@ -132,6 +132,7 @@ select columnproperty(object_id('{0}'),'{1}','IsIdentity')
 				               	{
 				               		TableName = filter.TableName,
 				               		Name = filter.Name,
+									ColumnNames = filter.ColumnNames,
 				               		ConstraintType = ConstraintType.Unique
 				               	})
 					.Select(c => new Unique
@@ -149,6 +150,7 @@ select columnproperty(object_id('{0}'),'{1}','IsIdentity')
 				               	{
 				               		TableName = filter.TableName,
 				               		Name = filter.Name,
+									ColumnNames = filter.ColumnNames,
 				               		ConstraintType = ConstraintType.PrimaryKey
 				               	})
 					.GroupBy(c => c.TableName)
@@ -215,11 +217,11 @@ select columnproperty(object_id('{0}'),'{1}','IsIdentity')
 			}
 		}
 
+		// TODO: write test for GetPrimaryKey
 		private PrimaryKey GetPrimaryKey(string table, string column)
 		{
 			return GetPrimaryKeys(new PrimaryKeyFilter
 			                      	{
-			                      		Name = table,
 			                      		TableName = table,
 			                      		ColumnNames = new[] {column}
 			                      	}).FirstOrDefault();
