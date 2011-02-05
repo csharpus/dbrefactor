@@ -94,11 +94,6 @@ namespace DbRefactor.Tests.Integration.Engines.Tools
 			Assert.That(values.Contains(".Unique()"));
 			Assert.That(new Regex(@"\.Unique\(\)").Matches(values).Count, Is.EqualTo(1));
 		}
-
-		protected virtual string GetCreateTableSql()
-		{
-			return "override GetCreateTableSql method";
-		}
 	}
 
 	[TestFixture]

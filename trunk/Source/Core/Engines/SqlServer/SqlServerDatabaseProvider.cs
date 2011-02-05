@@ -150,7 +150,7 @@ references {3} ({4})
 			AlterColumn(tableName, GenerateAlterColumnSql(tableName, provider));
 		}
 
-		private string GetDefaultValueSql(ColumnProvider columnProvider)
+		private static string GetDefaultValueSql(ColumnProvider columnProvider)
 		{
 			if (!columnProvider.HasDefaultValue)
 			{
@@ -159,7 +159,7 @@ references {3} ({4})
 			return new SqlServerTypeHelper().GetValueSql(columnProvider, columnProvider.DefaultValue);
 		}
 
-		private string ResolveForeignKeyConstraint(OnDelete constraint)
+		private static string ResolveForeignKeyConstraint(OnDelete constraint)
 		{
 			switch (constraint)
 			{
@@ -419,7 +419,7 @@ end
 			return keys[0].Name;
 		}
 
-		private string Name(string objectName)
+		private static string Name(string objectName)
 		{
 			return NameEncoderHelper.Encode(objectName);
 		}

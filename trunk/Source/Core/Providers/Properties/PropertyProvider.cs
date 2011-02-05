@@ -6,10 +6,6 @@ namespace DbRefactor.Providers.Properties
 {
 	public abstract class PropertyProvider
 	{
-		protected PropertyProvider()
-		{
-		}
-
 		public abstract Expression<Action<NewTable>> Method();
 
 		public string MethodName()
