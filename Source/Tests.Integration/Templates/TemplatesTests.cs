@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using DbRefactor.Infrastructure;
-using DbRefactor.Providers;
 using NUnit.Framework;
 
 namespace DbRefactor.Tests.Integration.Templates

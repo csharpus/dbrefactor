@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using DbRefactor.Providers;
 using DbRefactor.Providers.Filters;
 
 namespace DbRefactor.Engines.SqlServer.Compact

@@ -1,6 +1,6 @@
 ﻿namespace DbRefactor
 {
-	public class Max
+	public static class Max
 	{
 		public static int Value
 		{
