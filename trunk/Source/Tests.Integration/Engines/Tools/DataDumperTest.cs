@@ -1,6 +1,5 @@
 using System;
 using DbRefactor.Factories;
-using DbRefactor.Providers;
 using DbRefactor.Providers.Model;
 using NUnit.Framework;
 

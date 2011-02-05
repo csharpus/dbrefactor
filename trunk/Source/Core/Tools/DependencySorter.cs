@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using DbRefactor.Providers;
 using DbRefactor.Providers.Model;
 
 namespace DbRefactor.Tools
