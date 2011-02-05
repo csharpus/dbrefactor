@@ -202,7 +202,6 @@
     <Compile Include="Runner\MigrationReader.cs" />
     <Compile Include="Runner\MigrationRunner.cs" />
     <Compile Include="Runner\MigrationService.cs" />
-    <Compile Include="Runner\MigratorFactory.cs" />
     <Compile Include="Runner\VersionedMigration.cs" />
     <Compile Include="Tools\DataDumper.cs" />
     <Compile Include="Infrastructure\ExpressionHelper.cs" />

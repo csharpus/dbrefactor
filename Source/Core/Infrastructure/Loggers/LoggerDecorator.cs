@@ -1,8 +1,7 @@
 ﻿using System.Data;
-using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
 
-namespace DbRefactor.Factories
+namespace DbRefactor.Infrastructure.Loggers
 {
 	public class LoggerDecorator : IDatabaseEnvironment
 	{

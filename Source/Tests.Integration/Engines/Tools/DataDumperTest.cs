@@ -79,10 +79,6 @@ namespace DbRefactor.Tests.Integration.Engines.Tools
 
 		internal class R : ForeignKey
 		{
-			public R()
-			{
-			}
-
 			public string Foreign
 			{
 				get { return ForeignTable; }
