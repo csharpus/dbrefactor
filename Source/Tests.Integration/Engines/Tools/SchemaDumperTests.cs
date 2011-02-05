@@ -104,10 +104,10 @@ namespace DbRefactor.Tests.Integration.Engines.Tools
 	[TestFixture]
 	public class ExternalDbTests
 	{
-		[Test]
+		[Test, Ignore]
 		public void should_create_schema_dump()
 		{
-			var d = DbRefactorFactory.SqlServer().CreateSchemaDumper(@"Data Source=.;Initial Catalog=Alka;Integrated Security=SSPI");
+			var d = DbRefactorFactory.SqlServer().CreateSchemaDumper(@"Data Source=.;Initial Catalog=  ;Integrated Security=SSPI");
 			var result = d.Dump();
 		}
 	}

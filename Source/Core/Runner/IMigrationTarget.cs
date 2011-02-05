@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using DbRefactor.Api;
-using DbRefactor.Core;
 using DbRefactor.Extensions;
 using DbRefactor.Providers;
 

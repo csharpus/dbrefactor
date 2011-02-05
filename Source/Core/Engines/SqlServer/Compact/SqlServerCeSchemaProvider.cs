@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DbRefactor.Engines.SqlServer;
-using DbRefactor.Engines.SqlServer.Compact;
 using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
+using DbRefactor.Providers;
+using DbRefactor.Providers.Filters;
+using DbRefactor.Providers.Model;
 
-namespace DbRefactor.Providers
+namespace DbRefactor.Engines.SqlServer.Compact
 {
 	public class SqlServerCeSchemaProvider : SqlServerSchemaProvider
 	{

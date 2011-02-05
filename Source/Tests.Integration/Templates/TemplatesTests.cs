@@ -1,8 +1,4 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using DbRefactor.Infrastructure;
 using DbRefactor.Providers;
 using NUnit.Framework;
@@ -15,7 +11,7 @@ namespace DbRefactor.Tests.Integration.Templates
 		[Test]
 		public void should_format_data()
 		{
-			string name = "test";
+			const string name = "test";
 			var result = new TemplateParser().Add("select {0}", name).Apply();
 			Assert.That(result, Is.EqualTo("select test"));
 		}

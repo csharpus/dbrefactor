@@ -1,4 +1,6 @@
-namespace DbRefactor.Providers
+using DbRefactor.Providers.Filters;
+
+namespace DbRefactor.Providers.Model
 {
 	public class DatabaseConstraint
 	{

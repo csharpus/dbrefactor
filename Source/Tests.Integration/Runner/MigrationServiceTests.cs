@@ -41,7 +41,7 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void Should_run_migrations_from_1_to_specified_when_executing_on_empty_db()
+		public void should_run_migrations_from_1_to_specified_when_executing_on_empty_db()
 		{
 			migrationService.MigrateTo(null, 2);
 
@@ -51,7 +51,7 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void Should_run_migrations_from_current_to_specified_when_executing_on_non_empty_db()
+		public void should_run_migrations_from_current_to_specified_when_executing_on_non_empty_db()
 		{
 			target.Expect(t => t.GetVersion()).Return(1);
 			migrationService.MigrateTo(null, 2);
@@ -62,7 +62,7 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void Should_run_migrations_down_from_current_to_specified_when_current_is_greater_than_specified()
+		public void should_run_migrations_down_from_current_to_specified_when_current_is_greater_than_specified()
 		{
 			target.Expect(t => t.GetVersion()).Return(2);
 			migrationService.MigrateTo(null, 0);
@@ -73,7 +73,7 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void Should_run_migrations_from_current_to_lattest()
+		public void should_run_migrations_from_current_to_lattest()
 		{
 			target.Expect(t => t.GetVersion()).Return(1);
 			migrationService.MigrateToLastVersion(null);
@@ -84,7 +84,7 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void Should_not_run_migrations_when_current_is_lattest()
+		public void should_not_run_migrations_when_current_is_lattest()
 		{
 			target.Expect(t => t.GetVersion()).Return(3);
 			runner.Expect(r => r.MigrateUp(null)).IgnoreArguments().Repeat.Never();

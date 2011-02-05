@@ -13,7 +13,6 @@
 
 using System;
 using DbRefactor.Api;
-using DbRefactor.Core;
 using DbRefactor.Engines.SqlServer;
 using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
@@ -24,7 +23,7 @@ namespace DbRefactor.Factories
 {
 	public class DbRefactorFactory
 	{
-		private Func<string, DatabaseEngine> createEngine;
+		private readonly Func<string, DatabaseEngine> createEngine;
 
 		private DbRefactorFactory(Func<string, DatabaseEngine> createEngine)
 		{
@@ -103,9 +102,8 @@ namespace DbRefactor.Factories
 		{
 			var database = CreateDatabase(connectionString);
 			ISchemaAccessor schemaAccessor = database;
-			IProviderAccessor providerAccessor = database;
 			IEngineAccessor accessor = database;
-			return new SchemaDumper(accessor.Engine.Environment, providerAccessor.Provider, schemaAccessor.SchemaHelper);
+			return new SchemaDumper(accessor.Engine.Environment, schemaAccessor.SchemaHelper);
 		}
 	}
 

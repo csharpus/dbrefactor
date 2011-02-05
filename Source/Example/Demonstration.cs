@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using DbRefactor.Core;
+using DbRefactor;
 
 namespace Example
 {
@@ -259,7 +259,7 @@ namespace Example
 	/// <summary>
 	/// runs script from file that could be specified as full path
 	/// or only file name (if you set only file name, make sure 
-	/// folder structure following next template <ProjectRoot\Scripts\[Migration number]>
+	/// folder structure following next template: ProjectRoot\Scripts\[Migration number]
 	/// and Scripts folder must be copied to build folder.)
 	/// Scripts coping could be automatical using post-build event that is a project options. 
 	/// Follow string will be usefull for post-build event:

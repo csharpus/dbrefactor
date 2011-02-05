@@ -1,4 +1,3 @@
-using DbRefactor.Core;
 using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Providers

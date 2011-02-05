@@ -1,6 +1,4 @@
-﻿using System;
-using DbRefactor.Tools;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace DbRefactor.Tests.Integration.Engines
 {
@@ -8,7 +6,7 @@ namespace DbRefactor.Tests.Integration.Engines
 	public class ObjectManipulationTests : ProviderTestBase
 	{
 		[Test]
-		public void Can_create_table()
+		public void can_create_table()
 		{
 			Database.CreateTable("Test").Int("Id").Execute();
 
@@ -17,7 +15,7 @@ namespace DbRefactor.Tests.Integration.Engines
 		}
 
 		[Test]
-		public void Can_create_table_using_column_providers()
+		public void can_create_table_using_column_providers()
 		{
 			Assert.False(SchemaHelper.TableExists("A"));
 			Assert.False(SchemaHelper.ColumnExists("A", "B"));
@@ -29,7 +27,7 @@ namespace DbRefactor.Tests.Integration.Engines
 		}
 
 		[Test]
-		public void Can_drop_table()
+		public void can_drop_table()
 		{
 			Database.CreateTable("Test").Int("Id").Execute();
 			Database.DropTable("Test");
@@ -37,13 +35,8 @@ namespace DbRefactor.Tests.Integration.Engines
 			Assert.That(SchemaHelper.TableExists("Test"), Is.False);
 		}
 
-		protected virtual string GetCreateTableSql()
-		{
-			return "override GetCreateTableSql method";
-		}
-
 		[Test]
-		public void Should_generate_method_call_from_lambda()
+		public void should_generate_method_call_from_lambda()
 		{
 			//var codeGenerationService = MockRepository.GenerateMock<ICodeGenerationService>();
 			//codeGenerationService.Expect(s => s.PrimitiveValue(1)).Return("1");
@@ -55,7 +48,7 @@ namespace DbRefactor.Tests.Integration.Engines
 		}
 
 		[Test]
-		public void Can_rename_table()
+		public void can_rename_table()
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").RenameTo("C");
@@ -64,7 +57,7 @@ namespace DbRefactor.Tests.Integration.Engines
 		}
 
 		[Test]
-		public void Can_rename_column()
+		public void can_rename_column()
 		{
 			Database.CreateTable("A").Int("B").Execute();
 			Database.Table("A").Column("B").RenameTo("C");

@@ -1,7 +1,4 @@
-﻿using DbRefactor.Factories;
-using NUnit.Framework;
-
-//namespace DbRefactor.Tests.Integration.Engines.SqlServerCe
+﻿//namespace DbRefactor.Tests.Integration.Engines.SqlServerCe
 //{
 //    class SqlServerCeHelper
 //    {

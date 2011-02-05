@@ -1,4 +1,4 @@
-﻿using DbRefactor.Core;
+﻿using DbRefactor;
 
 namespace AcceptanceDatabase
 {

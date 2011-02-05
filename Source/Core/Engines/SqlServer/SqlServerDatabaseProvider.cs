@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using DbRefactor.Core;
 using DbRefactor.Exceptions;
 using DbRefactor.Extensions;
+using DbRefactor.Infrastructure;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
+using DbRefactor.Providers.Filters;
+using DbRefactor.Providers.Model;
 
 namespace DbRefactor.Engines.SqlServer
 {

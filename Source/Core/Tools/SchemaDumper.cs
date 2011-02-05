@@ -18,6 +18,7 @@ using DbRefactor.Api;
 using DbRefactor.Infrastructure;
 using DbRefactor.Providers;
 using DbRefactor.Providers.Columns;
+using DbRefactor.Providers.Filters;
 
 namespace DbRefactor.Tools
 {
@@ -32,13 +33,11 @@ namespace DbRefactor.Tools
 		// Override only generated constraint names
 		// Use namespace for migrations
 		private readonly IDatabaseEnvironment environment;
-		private readonly TransformationProvider provider;
 		private readonly SchemaHelper schemaHelper;
 
-		internal SchemaDumper(IDatabaseEnvironment environment, TransformationProvider transformationProvider, SchemaHelper schemaHelper)
+		internal SchemaDumper(IDatabaseEnvironment environment, SchemaHelper schemaHelper)
 		{
 			this.environment = environment;
-			provider = transformationProvider;
 			this.schemaHelper = schemaHelper;
 		}
 
@@ -98,10 +97,7 @@ namespace DbRefactor.Tools
 			var providers = schemaHelper.GetColumns(new ColumnFilter { TableName = tableName });
 
 			string values = CreateTableMethodCode(tableName);
-			foreach (var columnProvider in providers)
-			{
-				values += GetColumnCode(columnProvider);
-			}
+			values = providers.Aggregate(values, (current, columnProvider) => current + GetColumnCode(columnProvider));
 			values += ExecuteMethodCode();
 			return values;
 		}
@@ -116,15 +112,11 @@ namespace DbRefactor.Tools
 			return String.Format("\t\tCreateTable(\"{0}\")", tableName);
 		}
 
-		private string GetColumnCode(ColumnProvider columnProvider)
+		private static string GetColumnCode(ColumnProvider columnProvider)
 		{
 			var methodCode = GetColumnMethodCode(columnProvider);
 			var values = Environment.NewLine + "\t\t\t." + methodCode;
-			foreach (var property in columnProvider.Properties)
-			{
-				values += "." + property.MethodName() + "()";
-			}
-			return values;
+			return columnProvider.Properties.Aggregate(values, (current, property) => current + ("." + property.MethodName() + "()"));
 		}
 
 		private string GetAddForeignKeysCode()
@@ -159,7 +151,7 @@ namespace DbRefactor.Tools
 			return values;
 		}
 
-		private string GetColumnMethodCode(ColumnProvider columnProvider)
+		private static string GetColumnMethodCode(ColumnProvider columnProvider)
 		{
 			var expression = columnProvider.Method();
 			string methodName = GetMethodName(expression);
@@ -170,15 +162,6 @@ namespace DbRefactor.Tools
 				methodArguments.Add(columnProvider.GetDefaultValueCode());
 			}
 			return CodeGenerationHelper.GenerateMethodCall(methodName, methodArguments);
-		}
-
-		private List<string> GetMethodArguments(Expression<Action<NewTable>> expression)
-		{
-			var methodCall = (MethodCallExpression)expression.Body;
-			IList<Expression> argumentsList = methodCall.Method.IsStatic
-			                                  	? methodCall.Arguments.Skip(1).ToList()
-			                                  	: methodCall.Arguments.ToList();
-			return argumentsList.Select(a => ObtainValue(a)).ToList();
 		}
 
 		private static string GetMethodName(Expression<Action<NewTable>> expression)

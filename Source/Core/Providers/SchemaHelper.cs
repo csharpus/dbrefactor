@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using DbRefactor.Providers.Columns;
+using DbRefactor.Providers.Filters;
+using DbRefactor.Providers.Model;
 
 namespace DbRefactor.Providers
 {

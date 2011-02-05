@@ -17,7 +17,7 @@ using System.IO;
 
 namespace DbRefactor.Infrastructure
 {
-	internal class ReflectionHelper
+	internal static class ReflectionHelper
 	{
 		public static string ToCsharpString(object value)
 		{

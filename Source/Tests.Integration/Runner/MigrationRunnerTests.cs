@@ -10,7 +10,7 @@ namespace DbRefactor.Tests.Integration.Runner
 	public class MigrationRunnerTests
 	{
 		[Test]
-		public void Should_run_passed_migrations()
+		public void should_run_passed_migrations()
 		{
 			var migrations = new List<IVersionedMigration>();
 			var m1 = MockRepository.GenerateMock<IVersionedMigration>();
@@ -26,7 +26,7 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void Should_update_version()
+		public void should_update_version()
 		{
 			const int lattestVersion = 2;
 			var migrations = new List<IVersionedMigration>();
@@ -43,7 +43,7 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void Should_update_version_down()
+		public void should_update_version_down()
 		{
 			const int lattestVersion = 2;
 			var migrations = new List<IVersionedMigration>();

@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using DbRefactor.Api;
 using DbRefactor.Factories;
-using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Providers;
 using DbRefactor.Tools;
 using NUnit.Framework;
@@ -12,7 +11,7 @@ namespace DbRefactor.Tests.Integration
 {
 	public abstract class ProviderTestBase
 	{
-		internal TransformationProvider Provider;
+		private TransformationProvider provider;
 		protected IDatabase Database;
 		private DataDumper dataDumper;
 		protected SchemaHelper SchemaHelper;
@@ -44,23 +43,22 @@ namespace DbRefactor.Tests.Integration
 			
 			foreach (var line in lines)
 			{
-				Provider.ExecuteNonQuery(line);
+				provider.ExecuteNonQuery(line);
 			}
 			
 		}
 
-		public virtual string GetConnectionString()
+		private static string GetConnectionString()
 		{
 			return ConnectionString;
 		}
 
 		protected virtual DbRefactorFactory CreateFactory()
 		{
-			var logger = new ConsoleLogger();
 			return DbRefactorFactory.SqlServer(); // .BuildSqlServerFactory(GetConnectionString(), logger, null)
 		}
 
-		public const string ConnectionString =
+		protected const string ConnectionString =
 			@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI";
 
 		protected void CreateProvider()
@@ -70,7 +68,7 @@ namespace DbRefactor.Tests.Integration
 
 			SchemaHelper = ((ISchemaAccessor)Database).SchemaHelper;
 
-			Provider = ((IProviderAccessor) Database).Provider;
+			provider = ((IProviderAccessor) Database).Provider;
 
 			
 			dataDumper = factory.CreateDataDumper(GetConnectionString());

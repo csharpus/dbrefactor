@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using DbRefactor.Providers;
-using DbRefactor.Tests.Integration.Engines.Tools;
+using DbRefactor.Providers.Model;
+using DbRefactor.Tools;
 using NUnit.Framework;
 
-namespace DbRefactor.Tests.Integration.Engines
+namespace DbRefactor.Tests.Integration.Engines.Tools
 {
 	[TestFixture]
 	public class DependencySorterTests
@@ -27,7 +28,7 @@ namespace DbRefactor.Tests.Integration.Engines
 		}
 
 		[Test]
-		public void Should_sort_tables_with_cyclic_dependency()
+		public void should_sort_tables_with_cyclic_dependency()
 		{
 			// data from foreign table should be deleted first
 			var tables = new List<string> { "C", "A", "B" };//, "G", "F"};
@@ -43,7 +44,7 @@ namespace DbRefactor.Tests.Integration.Engines
 		}
 
 		[Test]
-		public void Should_sort_tables_with_all_weak_cyclic_dependency()
+		public void should_sort_tables_with_all_weak_cyclic_dependency()
 		{
 			var tables = new List<string> { "A", "B", "C", "G", "F" };
 			var relations = new List<ForeignKey>

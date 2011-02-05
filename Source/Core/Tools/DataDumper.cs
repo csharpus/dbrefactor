@@ -16,7 +16,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using DbRefactor.Engines.SqlServer;
 using DbRefactor.Providers;
+using DbRefactor.Providers.Filters;
+using DbRefactor.Providers.Model;
 
 namespace DbRefactor.Tools
 {
