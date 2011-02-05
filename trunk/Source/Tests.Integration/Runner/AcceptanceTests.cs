@@ -21,9 +21,9 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void Should_run_all_migrations_to_specified_version()
+		public void should_run_all_migrations_to_specified_version()
 		{
-			DbRefactor.Cli.Boot.Migrate(
+			Cli.Boot.Migrate(
 				"sqlserver",
 				ConnectionString,
 				"../../../AcceptanceDatabase/bin/Debug/AcceptanceDatabase.dll",
@@ -33,9 +33,9 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void Should_run_all_migrations_to_last_version()
+		public void should_run_all_migrations_to_last_version()
 		{
-			DbRefactor.Cli.Boot.Migrate(
+			Cli.Boot.Migrate(
 				"sqlserver",
 				ConnectionString,
 				"../../../AcceptanceDatabase/bin/Debug/AcceptanceDatabase.dll",
@@ -45,9 +45,9 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void Should_run_all_migrations_from_current_to_last_version()
+		public void should_run_all_migrations_from_current_to_last_version()
 		{
-			DbRefactor.Cli.Boot.Migrate(
+			Cli.Boot.Migrate(
 				"sqlserver",
 				ConnectionString,
 				"../../../AcceptanceDatabase/bin/Debug/AcceptanceDatabase.dll",
@@ -55,7 +55,8 @@ namespace DbRefactor.Tests.Integration.Runner
 				false,
 				null);
 
-			DbRefactor.Cli.Boot.Migrate(
+			
+			Cli.Boot.Migrate(
 				"sqlserver",
 				ConnectionString,
 				"../../../AcceptanceDatabase/bin/Debug/AcceptanceDatabase.dll",
@@ -65,9 +66,9 @@ namespace DbRefactor.Tests.Integration.Runner
 		}
 
 		[Test]
-		public void Should_run_all_migrations_down_to_zero_version()
+		public void should_run_all_migrations_down_to_zero_version()
 		{
-			DbRefactor.Cli.Boot.Migrate(
+			Cli.Boot.Migrate(
 				"sqlserver",
 				ConnectionString,
 				"../../../AcceptanceDatabase/bin/Debug/AcceptanceDatabase.dll",
@@ -75,7 +76,7 @@ namespace DbRefactor.Tests.Integration.Runner
 				false,
 				null);
 
-			DbRefactor.Cli.Boot.Migrate(
+			Cli.Boot.Migrate(
 				"sqlserver",
 				ConnectionString,
 				"../../../AcceptanceDatabase/bin/Debug/AcceptanceDatabase.dll",

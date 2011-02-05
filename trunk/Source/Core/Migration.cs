@@ -18,8 +18,7 @@ using DbRefactor.Exceptions;
 using DbRefactor.Providers;
 using DbRefactor.Runner;
 
-
-namespace DbRefactor.Core
+namespace DbRefactor
 {
 	public abstract class Migration : BaseMigration, IDatabase
 	{

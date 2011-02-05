@@ -11,7 +11,7 @@
 
 #endregion
 
-namespace DbRefactor.Core
+namespace DbRefactor
 {
 	/// <summary>
 	/// Controls what actions are taken when you try to delete a row to which existing foreign keys point

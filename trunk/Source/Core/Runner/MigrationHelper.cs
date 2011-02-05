@@ -12,7 +12,6 @@
 #endregion
 
 using System;
-using DbRefactor.Core;
 
 namespace DbRefactor.Runner
 {

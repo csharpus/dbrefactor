@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DbRefactor.Engines.SqlServer;
 using DbRefactor.Extensions;
-using StringListExtensions = DbRefactor.Extensions.StringListExtensions;
+using DbRefactor.Providers;
 
-namespace DbRefactor.Providers
+namespace DbRefactor.Engines.SqlServer
 {
 	public class SqlServerCrudGenerator : ICrudGenerator
 	{
 		public string GetInsertStatement(Dictionary<string, object> values, string table)
 		{
-			string valuesExpression = StringListExtensions.ComaSeparated(values.Select(p => ConvertToSql(p.Value)));
-			string columnList = StringListExtensions.ComaSeparated(values.Select(v => Name(v.Key)));
+			string valuesExpression = values.Select(p => ConvertToSql(p.Value)).ComaSeparated();
+			string columnList = values.Select(v => Name(v.Key)).ComaSeparated();
 
 			return string.Format("insert into {0} ({1}) values ({2})",
 			                     Name(table),
@@ -57,12 +56,12 @@ namespace DbRefactor.Providers
 			return query;
 		}
 
-		private string ConvertToSql(object value)
+		private static string ConvertToSql(object value)
 		{
 			return new SqlServerTypeHelper().GetValueSql(value);
 		}
 
-		private string Name(string objectName)
+		private static string Name(string objectName)
 		{
 			return NameEncoderHelper.Encode(objectName);
 		}

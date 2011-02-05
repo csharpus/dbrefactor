@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using DbRefactor.Providers.Columns;
+using DbRefactor.Providers.Filters;
+using DbRefactor.Providers.Model;
 
 namespace DbRefactor.Providers
 {

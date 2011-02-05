@@ -11,7 +11,7 @@
 
 using System;
 
-namespace DbRefactor.Core
+namespace DbRefactor
 {
 	/// <summary>
 	/// Describe a migration

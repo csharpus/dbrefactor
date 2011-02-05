@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using DbRefactor.Providers.Filters;
 
-namespace DbRefactor.Providers
+namespace DbRefactor.Engines.SqlServer.QueryBuilders
 {
 	public class TableQueryBuilder
 	{

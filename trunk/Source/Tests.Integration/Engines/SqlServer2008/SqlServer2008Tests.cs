@@ -1,5 +1,4 @@
 ﻿using DbRefactor.Factories;
-using DbRefactor.Infrastructure.Loggers;
 using DbRefactor.Tests.Integration.Engines.Tools;
 using NUnit.Framework;
 
@@ -9,12 +8,7 @@ namespace DbRefactor.Tests.Integration.Engines.SqlServer2008
 	{
 		public static DbRefactorFactory CreateFactory()
 		{
-			var logger = new ConsoleLogger();
 			return DbRefactorFactory.SqlServer();
-
-			//.BuildSqlServerFactory(
-			//@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI", logger,
-			//null);
 		}
 	}
 
@@ -71,7 +65,7 @@ namespace DbRefactor.Tests.Integration.Engines.SqlServer2008
 			return SqlServer2008Helper.CreateFactory();
 		}
 
-		protected override string GetCreateTableSql()
+		protected virtual string GetCreateTableSql()
 		{
 			#region create table
 			return @"

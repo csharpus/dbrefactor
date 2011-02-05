@@ -1,4 +1,4 @@
-﻿namespace DbRefactor.Providers
+﻿namespace DbRefactor.Providers.Filters
 {
 	public class PrimaryKeyFilter
 	{

@@ -1,6 +1,7 @@
 using System;
 using DbRefactor.Factories;
 using DbRefactor.Providers;
+using DbRefactor.Providers.Model;
 using NUnit.Framework;
 
 namespace DbRefactor.Tests.Integration.Engines.Tools

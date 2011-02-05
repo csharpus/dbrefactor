@@ -16,26 +16,26 @@ namespace DbRefactor.Providers
 
 		public int Insert(string table, Dictionary<string, object> values)
 		{
-			string sql = crudGenerator.GetInsertStatement(values, table);
+			var sql = crudGenerator.GetInsertStatement(values, table);
 			return environment.ExecuteNonQuery(sql);
 		}
 
 		public int Delete(string tableName, Dictionary<string, object> whereValues)
 		{
-			string sql = crudGenerator.GetDeleteStatement(whereValues, tableName);
+			var sql = crudGenerator.GetDeleteStatement(whereValues, tableName);
 			return environment.ExecuteNonQuery(sql);
 		}
 
 		public int Update(string tableName, Dictionary<string, object> operationalValues,
 		                  Dictionary<string, object> whereValues)
 		{
-			string sql = crudGenerator.GetUpdateStatement(operationalValues, tableName, whereValues);
+			var sql = crudGenerator.GetUpdateStatement(operationalValues, tableName, whereValues);
 			return environment.ExecuteNonQuery(sql);
 		}
 
 		public IDataReader Select(string tableName, string[] columns, Dictionary<string, object> whereValues)
 		{
-			string query = crudGenerator.GetSelectStatement(columns, tableName, whereValues);
+			var query = crudGenerator.GetSelectStatement(columns, tableName, whereValues);
 			return environment.ExecuteQuery(query);
 		}
 	}

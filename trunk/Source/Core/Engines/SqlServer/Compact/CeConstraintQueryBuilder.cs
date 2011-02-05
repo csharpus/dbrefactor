@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using DbRefactor.Exceptions;
 using DbRefactor.Providers;
+using DbRefactor.Providers.Filters;
 
 namespace DbRefactor.Engines.SqlServer.Compact
 {

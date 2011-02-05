@@ -5,7 +5,7 @@ namespace DbRefactor.Tests.Integration.Engines
 	public abstract class CreateTableTests : ProviderTestBase
 	{
 		[Test]
-		public void Can_create_not_null_column()
+		public void can_create_not_null_column()
 		{
 			Database.CreateTable("A").Int("B").NotNull().Execute();
 
@@ -13,7 +13,7 @@ namespace DbRefactor.Tests.Integration.Engines
 		}
 
 		[Test]
-		public void Can_create_primary_key_column()
+		public void can_create_primary_key_column()
 		{
 			Database.CreateTable("A").Int("B").PrimaryKey().Execute();
 
@@ -21,7 +21,7 @@ namespace DbRefactor.Tests.Integration.Engines
 		}
 
 		[Test]
-		public void Can_create_identity_column()
+		public void can_create_identity_column()
 		{
 			Database.CreateTable("A").Int("B").Identity().Execute();
 
@@ -29,13 +29,13 @@ namespace DbRefactor.Tests.Integration.Engines
 		}
 
 		[Test]
-		public void Can_create_default_value_column()
+		public void can_create_default_value_column()
 		{
 			Database.CreateTable("A").Int("B", 1).Execute();
 		}
 
 		[Test]
-		public void Can_create_unique_column()
+		public void can_create_unique_column()
 		{
 			Database.CreateTable("A").Int("B").Unique().Execute();
 
@@ -44,7 +44,7 @@ namespace DbRefactor.Tests.Integration.Engines
 
 		[Test]
 		[Ignore("Doesn't work")]
-		public void Can_create_primary_key_on_two_columns()
+		public void can_create_primary_key_on_two_columns()
 		{
 			Database.CreateTable("A").Int("B").PrimaryKey().Int("C").PrimaryKey().Execute();
 		}
