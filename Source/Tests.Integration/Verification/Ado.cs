@@ -10,6 +10,8 @@ namespace DbRefactor.Tests.Integration.Verification
 		public override void Setup()
 		{
 			CreateProvider();
+			DatabaseEnvironment.OpenConnection();
+			DatabaseEnvironment.BeginTransaction();
 			DropAllTables();
 			DatabaseEnvironment.CommitTransaction();
 			DatabaseEnvironment.CloseConnection();

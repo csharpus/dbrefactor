@@ -8,6 +8,8 @@ namespace DbRefactor.Tests.Integration.Runner
 		public override void Setup()
 		{
 			CreateProvider();
+			DatabaseEnvironment.OpenConnection();
+			DatabaseEnvironment.BeginTransaction();
 			DropAllTables();
 			DatabaseEnvironment.CommitTransaction();
 			DatabaseEnvironment.CloseConnection();

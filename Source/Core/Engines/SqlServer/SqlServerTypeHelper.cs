@@ -46,6 +46,21 @@ namespace DbRefactor.Engines.SqlServer
 			       				CreateProvider = d => new DateTimeProvider(d.Name, d.DefaultValue),
 								ClrType = typeof(DateTime)
 			       			},
+						new Map
+			       			{
+			       				Provider = typeof (DateTimeProvider),
+			       				GetSqlValue = v =>
+			       					{
+			       						var dateTime = (DateTime) v;
+			       						return string.Format("'{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}'", dateTime.Year, dateTime.Month,
+			       						                     dateTime.Day, dateTime.Hour,
+			       						                     dateTime.Minute, dateTime.Second);
+			       					},
+			       				GetSqlType = p => "datetime2",
+			       				SqlType = "datetime2",
+			       				CreateProvider = d => new DateTimeProvider(d.Name, d.DefaultValue),
+								ClrType = typeof(DateTime)
+			       			},
 			       		new Map
 			       			{
 			       				Provider = typeof (StringProvider),
@@ -121,6 +136,33 @@ namespace DbRefactor.Engines.SqlServer
 			       				SqlType = "real",
 			       				CreateProvider = d => new FloatProvider(d.Name, d.DefaultValue),
 								ClrType = typeof(float)
+			       			},
+						new Map
+			       			{
+			       				Provider = typeof (GuidProvider),
+			       				GetSqlValue = v => Convert.ToString(v, CultureInfo.InvariantCulture),
+			       				GetSqlType = p => "uniqueidentifier",
+			       				SqlType = "uniqueidentifier",
+			       				CreateProvider = d => new GuidProvider(d.Name, d.DefaultValue),
+								ClrType = typeof(Guid)
+			       			},
+						new Map
+			       			{
+			       				Provider = typeof (MoneyProvider),
+			       				GetSqlValue = v => Convert.ToString(v, CultureInfo.InvariantCulture),
+			       				GetSqlType = p => "money",
+			       				SqlType = "money",
+			       				CreateProvider = d => new MoneyProvider(d.Name, d.DefaultValue),
+								ClrType = typeof(decimal)
+			       			},
+					new Map
+			       			{
+			       				Provider = typeof (SmallintProvider),
+			       				GetSqlValue = v => Convert.ToString(v, CultureInfo.InvariantCulture),
+			       				GetSqlType = p => "smallint",
+			       				SqlType = "smallint",
+			       				CreateProvider = d => new SmallintProvider(d.Name, d.DefaultValue),
+								ClrType = typeof(Int16)
 			       			}
 			       	};
 		}
@@ -132,7 +174,7 @@ namespace DbRefactor.Engines.SqlServer
 			var map = GetTypeMap().FirstOrDefault(m => m.ClrType == value.GetType());
 			if (map == null)
 			{
-				throw new NotSupportedException(String.Format("Can not find map for type: {0}", value.GetType()));
+				throw new NotSupportedException(String.Format("Can not find map for type: {0}. This type is not supported", value.GetType()));
 			}
 			return map.GetSqlValue(value);
 		}

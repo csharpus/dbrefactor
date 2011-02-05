@@ -42,7 +42,7 @@ namespace DbRefactor.Cli
 		{
 			Assembly asm = Assembly.LoadFrom(migrationAssembly);
 			var logger = trace ? new ConsoleLogger() : Logger.NullLogger;
-			var migrator = NewDbRefactorFactory.SqlServer().CreateMigrator(connectionString, logger, category);
+			var migrator = DbRefactorFactory.SqlServer().CreateMigrator(connectionString, logger, category);
 			if (version == -1)
 			{
 				migrator.MigrateToLastVersion(asm);
@@ -51,6 +51,13 @@ namespace DbRefactor.Cli
 			{
 				migrator.MigrateTo(asm, version);
 			}
+		}
+
+		[Action]
+		public static void Schema(string provider, string connectionString, string outputFolder)
+		{
+			var dumper = DbRefactorFactory.SqlServer().CreateSchemaDumper(connectionString);
+			dumper.DumpTo(outputFolder + "/M001_LegacyMigration.cs");
 		}
 
 		//[Action]

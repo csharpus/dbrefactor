@@ -12,6 +12,8 @@ namespace DbRefactor.Tests.Integration.Engines.Tools
 		public override void Setup()
 		{
 			CreateProvider();
+			DatabaseEnvironment.OpenConnection();
+			DatabaseEnvironment.BeginTransaction();
 			DropAllTables();
 			DatabaseEnvironment.CommitTransaction();
 			DatabaseEnvironment.CloseConnection();
@@ -26,7 +28,7 @@ namespace DbRefactor.Tests.Integration.Engines.Tools
 		[Ignore]
 		public void DumpTest()
 		{
-			var d = NewDbRefactorFactory.SqlServer().CreateDataDumper(@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
+			var d = DbRefactorFactory.SqlServer().CreateDataDumper(@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
 
 			string result = d.Dump(true);
 		}
@@ -53,7 +55,7 @@ namespace DbRefactor.Tests.Integration.Engines.Tools
 			Database.Table("C").Column("AId").AddForeignKeyTo("A", "Id");
 			DatabaseEnvironment.CloseConnection();
 
-			var d = NewDbRefactorFactory.SqlServer().CreateDataDumper(@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
+			var d = DbRefactorFactory.SqlServer().CreateDataDumper(@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
 			string result = d.GenerateDeleteStatement();
 			Console.Write(result);
 		}
@@ -67,7 +69,7 @@ namespace DbRefactor.Tests.Integration.Engines.Tools
 			Database.Table("A").Insert(new {B = 100});
 			DatabaseEnvironment.CloseConnection();
 
-			var d = NewDbRefactorFactory.SqlServer().CreateDataDumper(@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
+			var d = DbRefactorFactory.SqlServer().CreateDataDumper(@"Data Source=.;Initial Catalog=dbrefactor_tests;Integrated Security=SSPI");
 
 			string result = d.Dump(true);
 

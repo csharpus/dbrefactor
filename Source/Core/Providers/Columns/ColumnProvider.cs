@@ -59,6 +59,16 @@ namespace DbRefactor.Providers.Columns
 
 		public abstract Expression<Action<NewTable>> Method();
 
+		public virtual string MethodCode()
+		{
+			return Method().Name + "(" + "\"" + Name + "\"" + ")";
+		}
+
+		public virtual string[] MethodArguments()
+		{
+			return new [] { "\"" + Name + "\""};
+		}
+
 		public string MethodName()
 		{
 			return ((MethodCallExpression) Method().Body).Method.Name;

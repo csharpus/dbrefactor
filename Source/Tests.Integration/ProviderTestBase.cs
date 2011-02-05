@@ -22,6 +22,8 @@ namespace DbRefactor.Tests.Integration
 		public virtual void Setup()
 		{
 			CreateProvider();
+			DatabaseEnvironment.OpenConnection();
+			DatabaseEnvironment.BeginTransaction();
 			DropAllTables();
 		}
 		
@@ -52,10 +54,10 @@ namespace DbRefactor.Tests.Integration
 			return ConnectionString;
 		}
 
-		protected virtual NewDbRefactorFactory CreateFactory()
+		protected virtual DbRefactorFactory CreateFactory()
 		{
 			var logger = new ConsoleLogger();
-			return NewDbRefactorFactory.SqlServer(); // .BuildSqlServerFactory(GetConnectionString(), logger, null)
+			return DbRefactorFactory.SqlServer(); // .BuildSqlServerFactory(GetConnectionString(), logger, null)
 		}
 
 		public const string ConnectionString =
@@ -73,8 +75,6 @@ namespace DbRefactor.Tests.Integration
 			
 			dataDumper = factory.CreateDataDumper(GetConnectionString());
 			DatabaseEnvironment = ((IEngineAccessor) Database).Engine.Environment;
-			DatabaseEnvironment.OpenConnection();
-			DatabaseEnvironment.BeginTransaction();
 		}
 	}
 }
