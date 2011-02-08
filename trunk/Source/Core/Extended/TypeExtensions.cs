@@ -13,12 +13,23 @@
 
 using System;
 using DbRefactor.Api;
+using DbRefactor.Engines.SqlServer.Columns;
 using DbRefactor.Providers.Columns;
 
 namespace DbRefactor.Extended
 {
 	public static class TypeExtensions
 	{
+		public static NewTable Bigint(this NewTable newTable, string name)
+		{
+			return newTable.Long(name);
+		}
+
+		public static NewTable Bigint(this NewTable newTable, string name, long defaultValue)
+		{
+			return newTable.Long(name, defaultValue);
+		}
+
 		public static NewTable Binary(this NewTable newTable, string name)
 		{
 			newTable.AddColumn(new BinaryProvider(name, null));
@@ -88,6 +99,30 @@ namespace DbRefactor.Extended
 		public static NewTable Double(this NewTable newTable, string name, double defaultValue)
 		{
 			newTable.AddColumn(new DoubleProvider(name, defaultValue));
+			return newTable;
+		}
+
+		public static NewTable DateTimeOffset(this NewTable newTable, string name)
+		{
+			newTable.AddColumn(new DateTimeOffsetProvider(name, null));
+			return newTable;
+		}
+
+		public static NewTable DateTimeOffset(this NewTable newTable, string name, DateTimeOffset offset)
+		{
+			newTable.AddColumn(new DateTimeOffsetProvider(name, offset));
+			return newTable;
+		}
+
+		public static NewTable Time(this NewTable newTable, string name)
+		{
+			newTable.AddColumn(new TimeProvider(name, null));
+			return newTable;
+		}
+
+		public static NewTable Time(this NewTable newTable, string name, TimeSpan timeSpan)
+		{
+			newTable.AddColumn(new TimeProvider(name, timeSpan));
 			return newTable;
 		}
 	}
