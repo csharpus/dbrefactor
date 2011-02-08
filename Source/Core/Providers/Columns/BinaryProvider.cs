@@ -21,8 +21,7 @@ namespace DbRefactor.Providers.Columns
 	public class BinaryProvider : ColumnProvider
 	{
 		public BinaryProvider(string name, object defaultValue)
-			: base(
-				name, defaultValue)
+			: base(name, defaultValue)
 		{
 		}
 

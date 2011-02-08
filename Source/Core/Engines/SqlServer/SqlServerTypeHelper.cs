@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Text;
+using DbRefactor.Engines.SqlServer.Columns;
 using DbRefactor.Providers.Columns;
 using DbRefactor.Providers.Model;
 
@@ -16,11 +19,36 @@ namespace DbRefactor.Engines.SqlServer
 			       		new Map
 			       			{
 			       				Provider = typeof (BinaryProvider),
-			       				GetSqlValue = v => { throw new NotImplementedException(); },
+			       				GetSqlValue = v =>
+			       					{
+			       						var builder = new StringBuilder();
+			       						foreach (var b in (byte[]) v)
+			       						{
+			       							builder.Append(b.ToString("X"));
+			       						}
+			       						return "0x" + builder.ToString();
+			       					},
 			       				GetSqlType = p => "varbinary(max)",
 			       				SqlType = "varbinary",
 			       				CreateProvider = d => new BinaryProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(byte[])
+			       				ClrType = typeof (byte[])
+			       			},
+			       		new Map
+			       			{
+			       				Provider = typeof (DateTimeOffsetProvider),
+			       				GetSqlValue = v =>
+			       					{
+			       						var offset = (DateTimeOffset) v;
+			       						return string.Format("'{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}{6}{7:00}:{8:00}'", offset.Year,
+			       						                           offset.Month,
+			       						                           offset.Day, offset.Hour,
+			       						                           offset.Minute, offset.Second, offset.Offset.Seconds > 0 ? "+" : "-",
+			       						                           Math.Abs(offset.Offset.Hours), Math.Abs(offset.Offset.Minutes));
+			       					},
+			       				GetSqlType = p => "datetimeoffset",
+			       				SqlType = "datetimeoffset",
+			       				CreateProvider = d => new DateTimeOffsetProvider(d.Name, d.DefaultValue),
+			       				ClrType = typeof (DateTimeOffset)
 			       			},
 			       		new Map
 			       			{
@@ -29,7 +57,7 @@ namespace DbRefactor.Engines.SqlServer
 			       				GetSqlType = p => "bit",
 			       				SqlType = "bit",
 			       				CreateProvider = d => new BooleanProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(bool)
+			       				ClrType = typeof (bool)
 			       			},
 			       		new Map
 			       			{
@@ -44,9 +72,9 @@ namespace DbRefactor.Engines.SqlServer
 			       				GetSqlType = p => "datetime",
 			       				SqlType = "datetime",
 			       				CreateProvider = d => new DateTimeProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(DateTime)
+			       				ClrType = typeof (DateTime)
 			       			},
-						new Map
+			       		new Map
 			       			{
 			       				Provider = typeof (DateTimeProvider),
 			       				GetSqlValue = v =>
@@ -59,7 +87,20 @@ namespace DbRefactor.Engines.SqlServer
 			       				GetSqlType = p => "datetime2",
 			       				SqlType = "datetime2",
 			       				CreateProvider = d => new DateTimeProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(DateTime)
+			       				ClrType = typeof (DateTime)
+			       			},
+						new Map
+			       			{
+			       				Provider = typeof (TimeProvider),
+			       				GetSqlValue = v =>
+			       					{
+			       						var time = (TimeSpan) v;
+			       						return string.Format("'{0:00}:{1:00}:{2:00}'", time.Hours, time.Minutes, time.Seconds);
+			       					},
+			       				GetSqlType = p => "time",
+			       				SqlType = "time",
+			       				CreateProvider = d => new TimeProvider(d.Name, d.DefaultValue),
+			       				ClrType = typeof (TimeSpan)
 			       			},
 			       		new Map
 			       			{
@@ -77,7 +118,7 @@ namespace DbRefactor.Engines.SqlServer
 			       						int length = d.Length == null ? 10 : d.Length.Value;
 			       						return new StringProvider(d.Name, d.DefaultValue, length);
 			       					},
-								ClrType = typeof(string)
+			       				ClrType = typeof (string)
 			       			},
 			       		new Map
 			       			{
@@ -86,7 +127,7 @@ namespace DbRefactor.Engines.SqlServer
 			       				GetSqlType = p => "text",
 			       				SqlType = "text",
 			       				CreateProvider = d => new TextProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(string)
+			       				ClrType = typeof (string)
 			       			},
 			       		new Map
 			       			{
@@ -99,7 +140,7 @@ namespace DbRefactor.Engines.SqlServer
 			       					},
 			       				SqlType = "decimal",
 			       				CreateProvider = d => new DecimalProvider(d.Name, d.DefaultValue, d.Precision.Value, d.Scale.Value),
-								ClrType = typeof(decimal)
+			       				ClrType = typeof (decimal)
 			       			},
 			       		new Map
 			       			{
@@ -108,7 +149,7 @@ namespace DbRefactor.Engines.SqlServer
 			       				GetSqlType = p => "integer",
 			       				SqlType = "int",
 			       				CreateProvider = d => new IntProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(int)
+			       				ClrType = typeof (int)
 			       			},
 			       		new Map
 			       			{
@@ -117,7 +158,7 @@ namespace DbRefactor.Engines.SqlServer
 			       				GetSqlType = p => "bigint",
 			       				SqlType = "bigint",
 			       				CreateProvider = d => new LongProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(long)
+			       				ClrType = typeof (long)
 			       			},
 			       		new Map
 			       			{
@@ -126,7 +167,7 @@ namespace DbRefactor.Engines.SqlServer
 			       				GetSqlType = p => "float",
 			       				SqlType = "float",
 			       				CreateProvider = d => new DoubleProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(double)
+			       				ClrType = typeof (double)
 			       			},
 			       		new Map
 			       			{
@@ -135,34 +176,34 @@ namespace DbRefactor.Engines.SqlServer
 			       				GetSqlType = p => "real",
 			       				SqlType = "real",
 			       				CreateProvider = d => new FloatProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(float)
+			       				ClrType = typeof (float)
 			       			},
-						new Map
+			       		new Map
 			       			{
 			       				Provider = typeof (GuidProvider),
-			       				GetSqlValue = v => Convert.ToString(v, CultureInfo.InvariantCulture),
+			       				GetSqlValue = v => "'" + Convert.ToString(v, CultureInfo.InvariantCulture) + "'",
 			       				GetSqlType = p => "uniqueidentifier",
 			       				SqlType = "uniqueidentifier",
 			       				CreateProvider = d => new GuidProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(Guid)
+			       				ClrType = typeof (Guid)
 			       			},
-						new Map
+			       		new Map
 			       			{
 			       				Provider = typeof (MoneyProvider),
 			       				GetSqlValue = v => Convert.ToString(v, CultureInfo.InvariantCulture),
 			       				GetSqlType = p => "money",
 			       				SqlType = "money",
 			       				CreateProvider = d => new MoneyProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(decimal)
+			       				ClrType = typeof (decimal)
 			       			},
-					new Map
+			       		new Map
 			       			{
 			       				Provider = typeof (SmallintProvider),
 			       				GetSqlValue = v => Convert.ToString(v, CultureInfo.InvariantCulture),
 			       				GetSqlType = p => "smallint",
 			       				SqlType = "smallint",
 			       				CreateProvider = d => new SmallintProvider(d.Name, d.DefaultValue),
-								ClrType = typeof(Int16)
+			       				ClrType = typeof (Int16)
 			       			}
 			       	};
 		}
@@ -174,7 +215,8 @@ namespace DbRefactor.Engines.SqlServer
 			var map = GetTypeMap().FirstOrDefault(m => m.ClrType == value.GetType());
 			if (map == null)
 			{
-				throw new NotSupportedException(String.Format("Can not find map for type: {0}. This type is not supported", value.GetType()));
+				throw new NotSupportedException(String.Format("Can not find map for type: {0}. This type is not supported",
+				                                              value.GetType()));
 			}
 			return map.GetSqlValue(value);
 		}
@@ -233,10 +275,17 @@ namespace DbRefactor.Engines.SqlServer
 	//                    {"binary", sqlServerColumnMapper.CreateBinary},
 	//                    {"bit", sqlServerColumnMapper.CreateBoolean},
 	//                    {"char", sqlServerColumnMapper.CreateString},
+	// date
+	// datetime2
+	// datetimeoffset
+	// geography
+	// geometry
+	// hierarchyid
 	//                    {"datetime", sqlServerColumnMapper.CreateDateTime},
 	//                    {"decimal", sqlServerColumnMapper.CreateDecimal},
 	//                    {"float", sqlServerColumnMapper.CreateFloat},
 	//                    {"image", sqlServerColumnMapper.CreateBinary},
+	// 
 	//                    {"int", sqlServerColumnMapper.CreateInt},
 	//                    {"money", sqlServerColumnMapper.CreateDecimal},
 	//                    {"nchar", sqlServerColumnMapper.CreateString},
@@ -249,6 +298,7 @@ namespace DbRefactor.Engines.SqlServer
 	//                    {"smallmoney", sqlServerColumnMapper.CreateDecimal},
 	//                    {"sql_variant", sqlServerColumnMapper.CreateBinary},
 	//                    {"text", sqlServerColumnMapper.CreateText},
+	// time
 	//                    {"timestamp", sqlServerColumnMapper.CreateDateTime},
 	//                    {"tinyint", sqlServerColumnMapper.CreateInt},
 	//                    {"uniqueidentifier", sqlServerColumnMapper.CreateString},

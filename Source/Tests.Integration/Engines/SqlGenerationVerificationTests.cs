@@ -14,12 +14,80 @@ namespace DbRefactor.Tests.Integration.Engines
 		}
 
 		[Test]
-		[Ignore(
-			"This value can be inserted - 0xC9CBBBCCCEB9C8CABCCCCEB9C9CBBB, but we need to check order of numbers when converting bytes to hex. It is better to insert and select one pixel png file"
-			)]
 		public void can_generate_binary_sql()
 		{
-			Database.CreateTable("A").Binary("B", new byte[] {1}).Execute();
+			Database.CreateTable("A").Int("C").Binary("D", new byte[] {40, 41, 42}).Execute();
+
+			Database.Table("A").Insert(new {C = 1});
+
+			using (var reader = Database.Table("A").Select("D"))
+			{
+				reader.Read();
+				var buffer = new byte[3];
+				reader.GetBytes(0, 0, buffer, 0, 3);
+				Assert.That(buffer[0], Is.EqualTo(40));
+				Assert.That(buffer[1], Is.EqualTo(41));
+				Assert.That(buffer[2], Is.EqualTo(42));
+			}
+		}
+
+		[Test]
+		public void can_generate_date_time_offset()
+		{
+			Database.CreateTable("A").Int("C")
+				.DateTimeOffset("D", new DateTimeOffset(2000, 1, 1, 0, 0, 0, 0, -TimeSpan.FromMinutes(90))).Execute();
+
+			Database.Table("A").Insert(new {C = 1});
+
+			using(var reader = Database.Table("A").Select("D"))
+			{
+				reader.Read();
+				var offset = (DateTimeOffset)reader.GetValue(0);
+				Assert.That(offset.Year, Is.EqualTo(2000));
+				Assert.That(offset.Month, Is.EqualTo(1));
+				Assert.That(offset.Day, Is.EqualTo(1));
+				Assert.That(offset.Hour, Is.EqualTo(0));
+				Assert.That(offset.Minute, Is.EqualTo(0));
+				Assert.That(offset.Second, Is.EqualTo(0));
+				Assert.That(offset.Offset.Hours, Is.EqualTo(-1));
+				Assert.That(offset.Offset.Minutes, Is.EqualTo(-30));
+			}
+		}
+
+		[Test]
+		public void can_generate_guid()
+		{
+			Database.CreateTable("A").Int("C")
+				.Guid("D", new Guid("5F732BF3-6950-4FF4-B635-32C1B6199CD8")).Execute();
+
+			Database.Table("A").Insert(new {C = 1});
+
+			using(var reader = Database.Table("A").Select("D"))
+			{
+				reader.Read();
+				var guid = reader.GetGuid(0);
+				Assert.That(guid, Is.EqualTo(new Guid("5F732BF3-6950-4FF4-B635-32C1B6199CD8")));
+			}
+		}
+
+		[Test]
+		public void can_generate_time()
+		{
+			Database.CreateTable("A").Int("C")
+				.Time("D", new TimeSpan(1, 30, 40)).Execute();
+
+			Database.Table("A").Insert(new {C = 1});
+
+			using(var reader = Database.Table("A").Select("D"))
+			{
+				reader.Read();
+
+				var time = (TimeSpan)reader.GetValue(0);
+
+				Assert.That(time.Hours, Is.EqualTo(1));
+				Assert.That(time.Minutes, Is.EqualTo(30));
+				Assert.That(time.Seconds, Is.EqualTo(40));
+			}
 		}
 
 		[Test]
@@ -31,7 +99,18 @@ namespace DbRefactor.Tests.Integration.Engines
 		[Test]
 		public void can_generate_decimal_sql()
 		{
-			Database.CreateTable("A").Decimal("B", 1.5M).Execute();
+			Database.CreateTable("A").Int("C").Decimal("B", 1.5M).Execute();
+
+			Database.Table("A").Insert(new {C = 1});
+
+			using(var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var number = reader.GetDecimal(0);
+
+				Assert.That(number, Is.EqualTo(1.5M));
+			}
 		}
 
 		[Test]
