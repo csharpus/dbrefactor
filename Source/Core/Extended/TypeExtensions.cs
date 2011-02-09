@@ -125,5 +125,29 @@ namespace DbRefactor.Extended
 			newTable.AddColumn(new TimeProvider(name, timeSpan));
 			return newTable;
 		}
+
+		public static NewTable Char(this NewTable newTable, string name, int size, string value = null, string collation = null)
+		{
+			newTable.AddColumn(new CharProvider(name, value, size, collation));
+			return newTable;
+		}
+
+		public static NewTable Date(this NewTable newTable, string name, DateTime? defaultValue = null)
+		{
+			newTable.AddColumn(new DateProvider(name, defaultValue != null ? defaultValue.Value : (DateTime?)null));
+			return newTable;
+		}
+
+		public static NewTable Image(this NewTable newTable, string name, byte[] defaultValue)
+		{
+			newTable.AddColumn(new ImageProvider(name, defaultValue));
+			return newTable;
+		}
+
+		public static NewTable NChar(this NewTable newTable, string name, int size, string value = null)
+		{
+			newTable.AddColumn(new NCharProvider(name, value, size));
+			return newTable;
+		}
 	}
 }

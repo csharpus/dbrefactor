@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using DbRefactor.Extended;
 using NUnit.Framework;
 
@@ -110,6 +110,78 @@ namespace DbRefactor.Tests.Integration.Engines
 				var number = reader.GetDecimal(0);
 
 				Assert.That(number, Is.EqualTo(1.5M));
+			}
+		}
+
+		[Test]
+		public void can_generate_char_sql()
+		{
+			Database.CreateTable("A").Int("C").Char("B", 3, "абв").Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetString(0);
+
+				Assert.That(value, Is.EqualTo("абв"));
+			}
+		}
+
+		[Test]
+		public void can_generate_nchar_sql()
+		{
+			Database.CreateTable("A").Int("C").NChar("B", 3, "абв").Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetString(0);
+
+				Assert.That(value, Is.EqualTo("абв"));
+			}
+		}
+
+		[Test]
+		public void can_generate_date_sql()
+		{
+			Database.CreateTable("A").Int("C").Date("B", new DateTime(2000, 1, 1)).Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetDateTime(0);
+
+				Assert.That(value.Year, Is.EqualTo(2000));
+				Assert.That(value.Month, Is.EqualTo(1));
+				Assert.That(value.Day, Is.EqualTo(1));
+			}
+		}
+
+
+		[Test]
+		public void can_generate_image()
+		{
+			Database.CreateTable("A").Int("C").Image("B", new byte[] {42, 43, 44}).Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+				var buffer = new byte[3];
+				reader.GetBytes(0, 0, buffer, 0, 3);
+				Assert.That(buffer[0], Is.EqualTo(42));
+				Assert.That(buffer[1], Is.EqualTo(43));
+				Assert.That(buffer[2], Is.EqualTo(44));
 			}
 		}
 

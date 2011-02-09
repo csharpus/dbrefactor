@@ -33,6 +33,23 @@ namespace DbRefactor.Engines.SqlServer
 			       				CreateProvider = d => new BinaryProvider(d.Name, d.DefaultValue),
 			       				ClrType = typeof (byte[])
 			       			},
+						new Map
+			       			{
+			       				Provider = typeof (ImageProvider),
+			       				GetSqlValue = v =>
+			       					{
+			       						var builder = new StringBuilder();
+			       						foreach (var b in (byte[]) v)
+			       						{
+			       							builder.Append(b.ToString("X"));
+			       						}
+			       						return "0x" + builder.ToString();
+			       					},
+			       				GetSqlType = p => "image",
+			       				SqlType = "image",
+			       				CreateProvider = d => new ImageProvider(d.Name, d.DefaultValue),
+			       				ClrType = typeof (byte[])
+			       			},
 			       		new Map
 			       			{
 			       				Provider = typeof (DateTimeOffsetProvider),
@@ -72,6 +89,20 @@ namespace DbRefactor.Engines.SqlServer
 			       				GetSqlType = p => "datetime",
 			       				SqlType = "datetime",
 			       				CreateProvider = d => new DateTimeProvider(d.Name, d.DefaultValue),
+			       				ClrType = typeof (DateTime)
+			       			},
+						new Map
+			       			{
+			       				Provider = typeof (DateProvider),
+			       				GetSqlValue = v =>
+			       					{
+			       						var dateTime = (DateTime) v;
+			       						return string.Format("'{0:0000}-{1:00}-{2:00}'", dateTime.Year, dateTime.Month,
+			       						                     dateTime.Day);
+			       					},
+			       				GetSqlType = p => "date",
+			       				SqlType = "date",
+			       				CreateProvider = d => new DateProvider(d.Name, d.DefaultValue),
 			       				ClrType = typeof (DateTime)
 			       			},
 			       		new Map
@@ -204,6 +235,24 @@ namespace DbRefactor.Engines.SqlServer
 			       				SqlType = "smallint",
 			       				CreateProvider = d => new SmallintProvider(d.Name, d.DefaultValue),
 			       				ClrType = typeof (Int16)
+			       			},
+						new Map
+			       			{
+			       				Provider = typeof (CharProvider),
+			       				GetSqlValue = v => string.Format("'{0}'", ((string) v).Replace("'", "''")),
+			       				GetSqlType = p => string.Format("char({0})", ((CharProvider)p).Size),
+			       				SqlType = "char",
+			       				CreateProvider = d => new CharProvider(d.Name, d.DefaultValue, d.Length.Value, null), // todo: select collation
+			       				ClrType = typeof (string)
+			       			},
+						new Map
+			       			{
+			       				Provider = typeof (NCharProvider),
+			       				GetSqlValue = v => string.Format("N'{0}'", ((string) v).Replace("'", "''")),
+			       				GetSqlType = p => string.Format("nchar({0})", ((NCharProvider)p).Size),
+			       				SqlType = "nchar",
+			       				CreateProvider = d => new NCharProvider(d.Name, d.DefaultValue, d.Length.Value),
+			       				ClrType = typeof (string)
 			       			}
 			       	};
 		}
