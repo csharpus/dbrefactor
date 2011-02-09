@@ -108,7 +108,11 @@
     <Compile Include="Api\WhereTable.cs" />
     <Compile Include="BaseMigration.cs" />
     <Compile Include="Engines\SqlServer\Columns\BigintProvider.cs" />
+    <Compile Include="Engines\SqlServer\Columns\CharProvider.cs" />
+    <Compile Include="Engines\SqlServer\Columns\NCharProvider.cs" />
+    <Compile Include="Engines\SqlServer\Columns\DateProvider.cs" />
     <Compile Include="Engines\SqlServer\Columns\DateTimeOffsetProvider.cs" />
+    <Compile Include="Engines\SqlServer\Columns\ImageProvider.cs" />
     <Compile Include="Engines\SqlServer\Columns\TimeProvider.cs" />
     <Compile Include="Engines\SqlServer\Compact\CeConstraintQueryBuilder.cs" />
     <Compile Include="Engines\SqlServer\Compact\CeForeignKeyQueryBuilder.cs" />
