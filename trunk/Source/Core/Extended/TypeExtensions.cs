@@ -114,15 +114,9 @@ namespace DbRefactor.Extended
 			return newTable;
 		}
 
-		public static NewTable Time(this NewTable newTable, string name)
+		public static NewTable Time(this NewTable newTable, string name, int? scale = null, TimeSpan? defaultValue = null)
 		{
-			newTable.AddColumn(new TimeProvider(name, null));
-			return newTable;
-		}
-
-		public static NewTable Time(this NewTable newTable, string name, TimeSpan timeSpan)
-		{
-			newTable.AddColumn(new TimeProvider(name, timeSpan));
+			newTable.AddColumn(new TimeProvider(name, scale, defaultValue != null ? defaultValue.Value : (TimeSpan?)null));
 			return newTable;
 		}
 
@@ -138,6 +132,12 @@ namespace DbRefactor.Extended
 			return newTable;
 		}
 
+		public static NewTable Smalldatetime(this NewTable newTable, string name, DateTime? defaultValue = null)
+		{
+			newTable.AddColumn(new SmalldatetimeProvider(name, defaultValue != null ? defaultValue.Value : (DateTime?)null));
+			return newTable;
+		}
+
 		public static NewTable Image(this NewTable newTable, string name, byte[] defaultValue)
 		{
 			newTable.AddColumn(new ImageProvider(name, defaultValue));
@@ -147,6 +147,78 @@ namespace DbRefactor.Extended
 		public static NewTable NChar(this NewTable newTable, string name, int size, string value = null)
 		{
 			newTable.AddColumn(new NCharProvider(name, value, size));
+			return newTable;
+		}
+
+		public static NewTable Varchar(this NewTable newTable, string name, int size, string value = null, string collation = null)
+		{
+			newTable.AddColumn(new VarcharProvider(name, value, size, collation));
+			return newTable;
+		}
+
+		public static NewTable NVarchar(this NewTable newTable, string name, int size, string value = null)
+		{
+			newTable.AddColumn(new NVarcharProvider(name, value, size));
+			return newTable;
+		}
+
+		public static NewTable NText(this NewTable newTable, string name, string value = null)
+		{
+			newTable.AddColumn(new NTextProvider(name, value));
+			return newTable;
+		}
+
+		public static NewTable Varbinary(this NewTable newTable, string name, int size, string value = null)
+		{
+			newTable.AddColumn(new VarbinaryProvider(name, value, size));
+			return newTable;
+		}
+
+		public static NewTable Numeric(this NewTable newTable, string name, int precision, int scale, decimal? defaultValue = null)
+		{
+			newTable.AddColumn(new NumericProvider(name, defaultValue != null ? defaultValue.Value : (decimal?)null, precision, scale));
+			return newTable;
+		}
+
+		public static NewTable Smallmoney(this NewTable newTable, string name, decimal? defaultValue = null)
+		{
+			newTable.AddColumn(new SmallmoneyProvider(name, defaultValue != null ? defaultValue.Value : (decimal?)null));
+			return newTable;
+		}
+
+		public static NewTable Tinyint(this NewTable newTable, string name, byte? defaultValue = null)
+		{
+			newTable.AddColumn(new TinyintProvider(name, defaultValue != null ? defaultValue.Value : (byte?)null));
+			return newTable;
+		}
+
+		public static NewTable Geography(this NewTable newTable, string name, string defaultValue = null)
+		{
+			newTable.AddColumn(new GeographyProvider(name, defaultValue));
+			return newTable;
+		}
+
+		public static NewTable Geometry(this NewTable newTable, string name, string defaultValue = null)
+		{
+			newTable.AddColumn(new GeometryProvider(name, defaultValue));
+			return newTable;
+		}
+
+		public static NewTable Xml(this NewTable newTable, string name, string defaultValue = null)
+		{
+			newTable.AddColumn(new XmlProvider(name, defaultValue));
+			return newTable;
+		}
+
+		public static NewTable Timestamp(this NewTable newTable, string name)
+		{
+			newTable.AddColumn(new TimestampProvider(name));
+			return newTable;
+		}
+
+		public static NewTable Datetime2(this NewTable newTable, string name, DateTime? defaultValue = null)
+		{
+			newTable.AddColumn(new Datetime2Provider(name, defaultValue));
 			return newTable;
 		}
 	}
