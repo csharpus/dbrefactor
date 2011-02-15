@@ -74,7 +74,7 @@ namespace DbRefactor.Tests.Integration.Engines
 		public void can_generate_time()
 		{
 			Database.CreateTable("A").Int("C")
-				.Time("D", new TimeSpan(1, 30, 40)).Execute();
+				.Time("D", null, new TimeSpan(0, 1, 30, 40, 4)).Execute();
 
 			Database.Table("A").Insert(new {C = 1});
 
@@ -87,6 +87,25 @@ namespace DbRefactor.Tests.Integration.Engines
 				Assert.That(time.Hours, Is.EqualTo(1));
 				Assert.That(time.Minutes, Is.EqualTo(30));
 				Assert.That(time.Seconds, Is.EqualTo(40));
+				Assert.That(time.Milliseconds, Is.EqualTo(4));
+			}
+		}
+
+		[Test]
+		public void can_generate_smalldatetime()
+		{
+			Database.CreateTable("A").Int("C")
+				.Smalldatetime("D", new DateTime(2000, 1, 1, 1, 59, 59, 998)).Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("D"))
+			{
+				reader.Read();
+
+				var date = reader.GetDateTime(0);
+
+				Assert.That(date, Is.EqualTo(new DateTime(2000, 1, 1, 2, 0, 0, 0)));
 			}
 		}
 
@@ -144,6 +163,193 @@ namespace DbRefactor.Tests.Integration.Engines
 				var value = reader.GetString(0);
 
 				Assert.That(value, Is.EqualTo("абв"));
+			}
+		}
+
+		[Test]
+		public void can_generate_varchar_sql()
+		{
+			Database.CreateTable("A").Int("C").Varchar("B", 3, "абв").Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetString(0);
+
+				Assert.That(value, Is.EqualTo("абв"));
+			}
+		}
+
+		[Test]
+		public void can_generate_ntext_sql()
+		{
+			Database.CreateTable("A").Int("C").NText("B", "абв").Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetString(0);
+
+				Assert.That(value, Is.EqualTo("абв"));
+			}
+		}
+
+		[Test]
+		public void can_generate_nvarchar_sql()
+		{
+			Database.CreateTable("A").Int("C").NVarchar("B", 3, "абв").Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetString(0);
+
+				Assert.That(value, Is.EqualTo("абв"));
+			}
+		}
+
+		[Test]
+		public void can_generate_numeric_sql()
+		{
+			Database.CreateTable("A").Int("C").Numeric("B", 5, 2, 123.45M).Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetDecimal(0);
+
+				Assert.That(value, Is.EqualTo(123.45M));
+			}
+		}
+
+		[Test]
+		public void can_generate_smallmoney_sql()
+		{
+			Database.CreateTable("A").Int("C").Smallmoney("B", 123.45M).Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetDecimal(0);
+
+				Assert.That(value, Is.EqualTo(123.45M));
+			}
+		}
+
+		[Test]
+		public void can_generate_xml_sql()
+		{
+			Database.CreateTable("A").Int("C").Xml("B", "<val>1</val>").Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetString(0);
+
+				Assert.That(value, Is.EqualTo("<val>1</val>"));
+			}
+		}
+
+		[Test]
+		public void can_generate_timestamp_column()
+		{
+			Database.CreateTable("A").Int("C").Timestamp("B").Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetValue(0);
+				var arr = (byte[]) value;
+				Assert.That(arr.Length, Is.EqualTo(8));
+				// Assert.That(value, Is.EqualTo("<val>1</val>"));
+			}
+		}
+
+		[Test]
+		public void can_generate_datetime2()
+		{
+			Database.CreateTable("A").Int("C").Datetime2("B", new DateTime(2000, 1, 1, 1, 2, 3, 4)).Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetDateTime(0);
+				Assert.That(value, Is.EqualTo(new DateTime(2000, 1, 1, 1, 2, 3, 4)));
+			}
+		}
+
+		[Test]
+		public void can_generate_tinyint_sql()
+		{
+			Database.CreateTable("A").Int("C").Tinyint("B", 42).Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetByte(0);
+
+				Assert.That(value, Is.EqualTo(42));
+			}
+		}
+
+		[Test]
+		public void can_generate_geography_sql()
+		{
+			Database.CreateTable("A").Int("C").Geography("B", "geography::Parse('POINT (1 2)')").Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetValue(0).ToString();
+
+				Assert.That(value, Is.EqualTo("POINT (1 2)"));
+			}
+		}
+
+		[Test]
+		public void can_generate_geometry_sql()
+		{
+			Database.CreateTable("A").Int("C").Geometry("B", "geometry::Parse('POINT (1 2)')").Execute();
+
+			Database.Table("A").Insert(new { C = 1 });
+
+			using (var reader = Database.Table("A").Select("B"))
+			{
+				reader.Read();
+
+				var value = reader.GetValue(0).ToString();
+
+				Assert.That(value, Is.EqualTo("POINT (1 2)"));
 			}
 		}
 
