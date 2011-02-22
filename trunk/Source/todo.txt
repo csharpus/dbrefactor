@@ -1,0 +1,5 @@
+- Research robust way to create engine, helpers etc.
+- Support all possible sql server types
+	Support text/string with length = -1
+- Extend schema and data helpers and write tests for them
+	Fix wrong PrimaryKey and Unique columns
